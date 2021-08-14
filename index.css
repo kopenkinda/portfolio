@@ -58,6 +58,8 @@ h2::before {
 #about img {
   float: left;
   margin-right: 1rem;
+  max-width: 600px;
+  width: 100%;
 }
 
 article {
