@@ -90,12 +90,6 @@ article > img {
   display: block;
 }
 
-footer {
-  margin-top: auto;
-  background-color: rgba(245, 150, 96, 0.623);
-  padding: 2rem 0;
-}
-
 header,
 main,
 footer {
@@ -132,16 +126,9 @@ a:hover::after {
 }
 
 footer {
-  display: flex;
-}
-
-footer > a {
-  margin-right: 1rem;
-}
-
-footer span {
-  margin-left: auto;
-  display: block;
+  margin-top: auto;
+  background-color: rgba(245, 150, 96, 0.623);
+  padding: 2rem;
 }
 
 .no-uppercase {
@@ -152,14 +139,6 @@ footer span {
   html,
   body {
     font-size: 16px;
-  }
-  footer {
-    flex-direction: column;
-  }
-  footer > a,
-  footer > span {
-    margin-right: auto;
-    margin-left: 0;
   }
   h2 {
     font-size: 2rem;
