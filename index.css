@@ -135,6 +135,14 @@ footer {
   text-transform: none;
 }
 
+p[lang]::before {
+  content: attr(lang);
+  text-transform: uppercase;
+  background-color: #000;
+  color: #fff;
+  padding: 0.1rem 0.25rem;
+}
+
 @media screen and (max-width: 690px) {
   html,
   body {
