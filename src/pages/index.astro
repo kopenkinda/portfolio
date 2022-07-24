@@ -1,0 +1,26 @@
+---
+import DefaultLayout from "../layouts/default.astro";
+import AboutMe from "../components/homepage/about-me";
+import UnderConstruction from "../components/ui/under-construction";
+import Mogus from "../components/mogus";
+import { Suspense } from "react";
+---
+
+<DefaultLayout title="Kopenkin Dmitrii">
+  <div class="grow rounded-xl border border-zinc-300 p-4">
+    <h2 class="font-semibold text-xl mb-4" id="#about">About me</h2>
+    <AboutMe />
+
+    <h2 class="font-semibold text-xl mb-4 mt-8" id="#projects">Projects</h2>
+    <div>
+      <UnderConstruction />
+    </div>
+    <h2 class="font-semibold text-xl mb-4 mt-8" id="#blog">Blog</h2>
+    <div>
+      <UnderConstruction />
+    </div>
+  </div>
+  <Suspense fallback={null}>
+    <Mogus client:idle />
+  </Suspense>
+</DefaultLayout>
