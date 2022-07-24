@@ -1,0 +1,22 @@
+---
+import type { BlogPageMetadata } from "../utils/get-page-frontmatter";
+import DefaultLayout from "./default.astro";
+import Keywords from "../components/ui/keywords";
+
+const { content } = Astro.props as { content: BlogPageMetadata };
+---
+
+<DefaultLayout {...content} keywords={content.keywords.join(", ")}>
+  <div class="grow rounded-xl border border-zinc-300 p-4">
+    <div class="prose lg:prose-lg mx-auto">
+      <img
+        src={`/thumbnails/${content.thumbnail}`}
+        alt={content.title}
+        class="w-full rounded-xl"
+      />
+      <h1>{content.title}</h1>
+      <Keywords words={content.keywords} />
+      <slot />
+    </div>
+  </div>
+</DefaultLayout>

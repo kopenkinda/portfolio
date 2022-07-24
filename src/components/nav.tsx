@@ -1,18 +1,27 @@
 import Logo from "./logo";
 import { BrandGithub, BrandLinkedin, BrandTwitch } from "tabler-icons-react";
+import type { BreadcrumbsProps } from "./ui/breadcrumbs";
+import Breadcrumbs from "./ui/breadcrumbs";
 
-export default function Nav() {
+export interface NavProps {
+  breadcrumbs: BreadcrumbsProps["breadcrumbs"];
+}
+
+export default function Nav({ breadcrumbs }: NavProps) {
   return (
-    <nav className="flex justify-between p-4">
+    <nav className="flex p-4">
       <div className="flex items-center rounded-xl border border-zinc-300 px-6 py-4">
         <a href="/">
           <Logo />
         </a>
       </div>
-      <div className="flex items-center gap-1 rounded-xl border border-zinc-300 px-6 py-4 lg:gap-3">
+      <div className="ml-4 hidden items-center sm:flex">
+        <Breadcrumbs breadcrumbs={breadcrumbs} />
+      </div>
+      <div className="ml-auto flex items-center gap-1 rounded-xl border border-zinc-300 px-6 py-4 lg:gap-3">
         <a
           href="https://www.twitch.tv/dmitriyk_"
-          className="hidden h-6 w-6 place-items-center rounded-md transition-colors hover:bg-[#aa70ff] hover:text-white focus:bg-[#aa70ff] focus:text-white lg:grid"
+          className="hidden h-6 w-6 place-items-center rounded-md transition-colors hover:bg-[#aa70ff] hover:text-white focus:bg-[#aa70ff] focus:text-white sm:grid"
         >
           <BrandTwitch className="w-4" />
         </a>

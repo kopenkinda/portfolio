@@ -2,12 +2,16 @@
 import DefaultLayout from "../layouts/default.astro";
 import AboutMe from "../components/homepage/about-me";
 import UnderConstruction from "../components/ui/under-construction";
+import BlogpostPreview from "../components/ui/blogpost-preview";
 import Mogus from "../components/mogus";
 import { Suspense } from "react";
+import getBlogPages from "../utils/get-blog-pages";
+
+const posts = await getBlogPages();
 ---
 
 <DefaultLayout title="Kopenkin Dmitrii">
-  <div class="grow rounded-xl border border-zinc-300 p-4">
+  <div class="w-full rounded-xl border border-zinc-300 p-4">
     <h2 class="font-semibold text-xl mb-4" id="#about">About me</h2>
     <AboutMe />
 
@@ -15,9 +19,23 @@ import { Suspense } from "react";
     <div>
       <UnderConstruction />
     </div>
-    <h2 class="font-semibold text-xl mb-4 mt-8" id="#blog">Blog</h2>
-    <div>
-      <UnderConstruction />
+    <a href="/blog">
+      <h2 class="font-semibold text-xl mb-4 mt-8" id="#blog">Blog</h2>
+    </a>
+    <div class="overflow-hidden w-full">
+      <div
+        class="flex flex-nowrap w-full gap-4 snap-x snap-mandatory overflow-x-auto"
+      >
+        {posts.slice(0, 3).map((post) => <BlogpostPreview post={post} />)}
+        <a
+          href="/blog"
+          class="inline-flex snap-start items-center p-4 justify-center whitespace-nowrap rounded-md border border-zinc-300 transition-all hover:border-zinc-500"
+        >
+          <span class="w-72 text-center">
+            {posts.length >= 3 ? "More posts 👀" : "More posts coming soon 👀"}
+          </span>
+        </a>
+      </div>
     </div>
   </div>
   <Suspense fallback={null}>

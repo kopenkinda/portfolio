@@ -1,0 +1,23 @@
+---
+import BlogpostPreview from "../../components/ui/blogpost-preview";
+import DefaultLayout from "../../layouts/default.astro";
+import getBlogPages from "../../utils/get-blog-pages";
+const posts = await getBlogPages();
+---
+
+<DefaultLayout>
+  <div
+    class={`grid grid-cols-3 gap-4 w-full ${
+      posts.length === 0 ? "hidden" : ""
+    }`}
+  >
+    {[...posts, ...posts, ...posts, ...posts].map((post) => (
+      <BlogpostPreview post={post} className="!w-full" />
+    ))}
+  </div>
+  {posts.length === 0 && (
+    <strong class="mt-20 w-full text-center text-2xl font-bold">
+      Still nothing, please come back later 🙁
+    </strong>
+  )}
+</DefaultLayout>

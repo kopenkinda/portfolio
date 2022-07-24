@@ -4,8 +4,13 @@ import Footer from "../components/footer";
 
 export interface Props {
   title?: string;
+  description?: string;
+  keywords?: string;
 }
-const { title = "" } = Astro.props as Props;
+
+const { title = "", description = "", keywords = "" } = Astro.props as Props;
+
+const breadcrumbs = Astro.canonicalURL.pathname.split("/").filter(Boolean);
 ---
 
 <html lang="en">
@@ -14,10 +19,14 @@ const { title = "" } = Astro.props as Props;
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="keywords" content={keywords} />
   </head>
 
-  <body class="bg-stone-100 min-h-screen flex flex-col max-w-5xl mx-auto">
-    <Nav />
+  <body
+    class="bg-stone-100 min-h-screen flex flex-col max-w-5xl w-full mx-auto"
+  >
+    <Nav breadcrumbs={breadcrumbs} />
     <main class="px-4 flex">
       <slot />
     </main>
