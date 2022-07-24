@@ -18,7 +18,8 @@
     "prettier": "^2.7.1",
     "prettier-plugin-astro": "^0.1.2",
     "prettier-plugin-tailwindcss": "^0.1.12",
-    "tabler-icons-react": "^1.53.0"
+    "tabler-icons-react": "^1.53.0",
+    "vite": "^3.0.2"
   },
   "dependencies": {
     "@nanostores/react": "^0.2.0",
