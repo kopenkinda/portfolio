@@ -22,8 +22,8 @@ export default function Mogus() {
   };
   return (
     <div
-      className="group fixed -bottom-6 -right-6 p-4 transition-all hover:-translate-y-2 hover:-translate-x-2"
-      onMouseEnter={play}
+      className="group fixed -bottom-6 -right-6 cursor-pointer p-4 transition-all hover:-translate-y-2 hover:-translate-x-2"
+      onClick={play}
     >
       <BrandAmongus className="text-red-500/20 group-hover:text-red-500" />
     </div>
