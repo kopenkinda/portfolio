@@ -19,4 +19,4 @@ Thanks for stopping by!
 
 \- Dmitrii
 
-<small>PS: I have a <a href="https://t.me/unicorn_dev" target="_blank">telegram channel</a> where I post interesting things, go check it out 😉</small>
+<small>PS: I have a <a href="https://t.me/unicorn_dev" target="_blank" rel="noopener">telegram channel</a> where I post interesting things, go check it out 😉</small>

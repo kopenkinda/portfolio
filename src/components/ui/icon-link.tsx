@@ -21,6 +21,7 @@ export default function IconLink({
       href={href}
       className={`inline-flex items-center rounded-md border border-zinc-300 p-0.5 px-2  transition-colors ${className}`}
       target={blank ? "_blank" : undefined}
+      rel={blank ? "noopener" : undefined}
     >
       {_icon}
       <span className="ml-2">{text}</span>
