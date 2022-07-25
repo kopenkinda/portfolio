@@ -9,14 +9,14 @@ keywords:
   - Fluff
 ---
 
-Hi, I’m Dmitrii. I am passionate about a lot of stuff. I want to start writing more about the things I’m passionate about. That's why I made myself a blog.
+Hi 👋, I’m Dmitrii. I am passionate about a lot of stuff. I want to start writing more about the things I’m passionate about. That's why I made myself a blog.
 
 This blog is also built on things I’m passionate about.
 
 I’ll write more on the tech itself in the future, but for now this intro post will do.
 
-Thanks for stopping by 🙂
+Thanks for stopping by!
 
 \- Dmitrii
 
-<small>PS: I have a [telegram channel](https://t.me/unicorn_dev) where I post interesting things, go check it out.</small>
+<small>PS: I have a <a href="https://t.me/unicorn_dev" target="_blank">telegram channel</a> where I post interesting things, go check it out 😉</small>

@@ -90,6 +90,7 @@ export default function AboutMe() {
             text="read my CV"
             href="/cv-dmitrii_kopenkin.pdf"
             className="translate-y-1.5 hover:border-zinc-500 focus:border-zinc-500"
+            blank
           />
         </p>
         <p>
@@ -97,7 +98,7 @@ export default function AboutMe() {
           <IconLink
             icon={<At className="w-4" />}
             text="send me an email"
-            href="mailto:hi@kopenkin.tech?subject='Hi, I want to hire you'"
+            href="mailto:hi@kopenkin.tech?subject=Hi, I want to hire you 🚀"
             className="translate-y-1.5 hover:border-zinc-500 focus:border-zinc-500"
           />
         </p>
