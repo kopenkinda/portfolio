@@ -1,7 +1,7 @@
 ---
 import { Markdown } from "astro/components";
 import DefaultLayout from "../../layouts/default.astro";
-import Keywords from "../../components/ui/keywords";
+import Keywords from "../../components/ui/keywords.astro";
 import { Clock2, X } from "tabler-icons-react";
 import getBlogPages from "../../utils/get-blog-pages";
 import getPostMetadata from "../../utils/get-post-metadata";
@@ -39,7 +39,9 @@ const meta = await getPostMetadata(join(".", "_posts", `${post}.md`));
         <X className="w-2" />
         <Keywords words={meta.keywords} />
       </div>
-      <Markdown content={meta.body} />
+      <Markdown content={meta.body}>
+
+      </Markdown>
     </div>
   </div>
 </DefaultLayout>

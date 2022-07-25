@@ -1,11 +1,11 @@
 ---
 import DefaultLayout from "../layouts/default.astro";
-import AboutMe from "../components/homepage/about-me";
-import BlogpostPreview from "../components/ui/blogpost-preview";
+import AboutMe from "../components/homepage/about-me.astro";
+import BlogpostPreview from "../components/ui/blogpost-preview.astro";
 import Mogus from "../components/mogus";
 import { Suspense } from "react";
 import getBlogPages from "../utils/get-blog-pages";
-import Project from "../components/ui/project";
+import Project from "../components/ui/project.astro";
 
 const posts = await getBlogPages();
 ---

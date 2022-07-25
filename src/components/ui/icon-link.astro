@@ -1,0 +1,22 @@
+---
+import { Link } from "tabler-icons-react";
+
+export interface IconLinkProps {
+  href: string;
+  text: string;
+  class?: string;
+  blank?: boolean;
+}
+
+const { href, text, blank, class: _class = "" } = Astro.props as IconLinkProps;
+---
+
+<a
+  href={href}
+  class={`inline-flex items-center rounded-md border border-zinc-300 p-0.5 px-2  transition-colors ${_class}`}
+  target={blank ? "_blank" : undefined}
+  rel={blank ? "noopener" : undefined}
+>
+  <slot><Link className="w-4" /></slot>
+  <span class="ml-2">{text}</span>
+</a>

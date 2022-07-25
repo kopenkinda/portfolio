@@ -1,0 +1,11 @@
+---
+const { words } = Astro.props as { words: string[] };
+---
+
+<div class="flex items-center gap-2">
+  {words.map((word) => (
+    <span class="rounded-md bg-zinc-200 px-2 py-1 text-sm font-semibold text-zinc-500">
+      {word}
+    </span>
+  ))}
+</div>

@@ -1,0 +1,107 @@
+---
+import {
+  At,
+  BrandNextjs,
+  BrandTailwind,
+  FileCertificate,
+} from "tabler-icons-react";
+import IconLink from "../ui/icon-link.astro";
+import Typescript from "../ui/missing-icons/typescript.astro";
+import VSCode from "../ui/missing-icons/vscode.astro";
+---
+
+<div class="flex flex-col gap-4 md:flex-row">
+  <img src="/dk-memoji.png" class="h-40 w-40 rounded-lg lg:h-56 lg:w-56" alt=""
+  />
+  <div class="max-w-prose">
+    <p>👨🏻‍🎓 Senior Student Mentor at YNOV Toulouse.</p>
+    <p class="mb-4">In 😍 with all things web</p>
+    <p>I build stuff using these tools:</p>
+    <div class="mt-2 mb-3 grid grid-cols-2 gap-2">
+      <IconLink
+        class={[
+          "hover:border-[#3178c6]",
+          "focus:border-[#3178c6]",
+          "hover:bg-[#3178c6]",
+          "focus:bg-[#3178c6]",
+          "hover:text-white",
+          "focus:text-white",
+        ].join(" ")}
+        href="https://www.typescriptlang.org/"
+        text="TypeScript"
+        blank
+      >
+        <Typescript class="h-4 w-4 border border-white" />
+      </IconLink>
+      <IconLink
+        class={[
+          "hover:border-black",
+          "focus:border-black",
+          "hover:bg-black",
+          "focus:bg-black",
+          "hover:text-white",
+          "focus:text-white",
+        ].join(" ")}
+        href="https://nextjs.org/"
+        text="Next.js"
+        blank
+      >
+        <BrandNextjs className="h-4 w-4" />
+      </IconLink>
+      <IconLink
+        class={[
+          "group",
+          "hover:border-[#36bdf9]",
+          "hover:bg-[#36bdf9]",
+          "focus:border-[#36bdf9]",
+          "focus:bg-[#36bdf9]",
+          "hover:text-white",
+          "focus:text-white",
+        ].join(" ")}
+        href="https://tailwindcss.com/"
+        text="Tailwind"
+        blank
+      >
+        <BrandTailwind
+          className="h-4 w-4 text-[#36bdf9] transition-colors group-hover:text-white"
+        />
+      </IconLink>
+      <IconLink
+        class={[
+          "hover:border-white",
+          "focus:border-white",
+          "hover:bg-white",
+          "focus:bg-white",
+          "hover:text-[#1e9cf0]",
+          "focus:text-[#1e9cf0]",
+        ].join(" ")}
+        href="https://code.visualstudio.com/"
+        text="VSCode"
+        blank
+      >
+        <VSCode class="h-4 w-4" />
+      </IconLink>
+    </div>
+    <p>
+      If you want more details, you can{" "}
+      <IconLink
+        text="read my CV"
+        href="/cv-dmitrii_kopenkin.pdf"
+        class="translate-y-1.5 hover:border-zinc-500 focus:border-zinc-500"
+        blank
+      >
+        <FileCertificate className="w-4" />
+      </IconLink>
+    </p>
+    <p>
+      Alternatively, you can{" "}
+      <IconLink
+        text="send me an email"
+        href="mailto:hi@kopenkin.tech?subject=Hi, I want to hire you 🚀"
+        class="translate-y-1.5 hover:border-zinc-500 focus:border-zinc-500"
+      >
+        <At className="w-4" />
+      </IconLink>
+    </p>
+  </div>
+</div>
