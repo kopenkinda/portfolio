@@ -30,13 +30,14 @@ export default async function getPostMetadata(path: string) {
       throw new Error(`Invalid metadata in ${path}`);
     }
   }
+  const readTime = getReadingTime(content).minutes;
 
   return {
     ...data,
     date: new Date(data.date),
     slug: parse(path).base.slice(0, ".md".length * -1),
     file: join(process.cwd(), path),
-    readTime: getReadingTime(content).minutes,
+    readTime: readTime > 1 ? Math.ceil(readTime) : 1,
     body: content,
   } as PostMetadata;
 }

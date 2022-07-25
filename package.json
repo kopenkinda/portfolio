@@ -10,6 +10,7 @@
     "preview": "astro preview"
   },
   "devDependencies": {
+    "@astrojs/prefetch": "^0.0.5",
     "@astrojs/react": "^0.4.2",
     "@astrojs/sitemap": "^0.2.6",
     "@astrojs/tailwind": "^0.2.4",

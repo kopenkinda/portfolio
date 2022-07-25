@@ -27,14 +27,14 @@ const posts = await getBlogPages();
     <a href="/blog">
       <h2 class="font-semibold text-xl mb-4 mt-8" id="#blog">Blog</h2>
     </a>
-    <div class="overflow-hidden w-full">
+    <div class="overflow-hidden w-full -m-1">
       <div
-        class="flex flex-nowrap w-full gap-4 snap-x snap-mandatory overflow-x-auto"
+        class="grid grid-flow-col auto-cols-min w-full h-full gap-4 snap-x snap-mandatory overflow-x-auto p-1"
       >
         {posts.slice(0, 3).map((post) => <BlogpostPreview post={post} />)}
         <a
           href="/blog"
-          class="inline-flex snap-start items-center p-4 justify-center whitespace-nowrap rounded-md border border-zinc-300 transition-all hover:border-zinc-500"
+          class="inline-flex snap-start items-center py-4 justify-center whitespace-nowrap rounded-md border border-zinc-300 transition-all hover:border-zinc-500"
         >
           <span class="w-72 text-center">
             {posts.length >= 3 ? "More posts 👀" : "More posts coming soon 👀"}

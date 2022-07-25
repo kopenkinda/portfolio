@@ -24,7 +24,7 @@ const meta = await getPostMetadata(join(".", "_posts", `${post}.md`));
   keywords={meta.keywords.join(", ")}
 >
   <div class="grow rounded-xl border border-zinc-300 p-4">
-    <div class="prose lg:prose-lg mx-auto">
+    <div class="prose prose-zinc lg:prose-lg mx-auto">
       <img
         src={`/thumbnails/${meta.thumbnail}`}
         alt={meta.title}
