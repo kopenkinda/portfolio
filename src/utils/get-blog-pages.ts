@@ -3,7 +3,7 @@ import { join } from "path";
 import getPostMetadata from "./get-post-metadata";
 
 export default async function getBlogPages() {
-  const location = join(".", "src", "pages", "blog");
+  const location = join(".", "_posts");
   const posts = (await readdir(location)).filter((file) =>
     file.endsWith(".md")
   );

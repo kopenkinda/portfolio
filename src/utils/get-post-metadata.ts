@@ -1,13 +1,16 @@
 import { readFile } from "fs/promises";
+import { join, parse } from "path";
 import matter from "gray-matter";
-import getReadingTime from "./get-reading-time";
+import getReadingTime from "reading-time";
 
 export interface PostMetadata {
   title: string;
   description: string;
   thumbnail: string;
   keywords: string[];
+  body: string;
   slug: string;
+  file: string;
   readTime: number;
   date: Date;
   draft?: boolean;
@@ -31,7 +34,9 @@ export default async function getPostMetadata(path: string) {
   return {
     ...data,
     date: new Date(data.date),
-    slug: path.slice("/src/pages".length - 1, ".md".length * -1),
-    readTime: getReadingTime(content),
+    slug: parse(path).base.slice(0, ".md".length * -1),
+    file: join(process.cwd(), path),
+    readTime: getReadingTime(content).minutes,
+    body: content,
   } as PostMetadata;
 }

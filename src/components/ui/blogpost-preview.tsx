@@ -12,7 +12,7 @@ export default function BlogpostPreview({
   className,
 }: BlogpostPreviewProps) {
   return (
-    <a href={post.slug}>
+    <a href={"/blog/" + post.slug}>
       <div
         className={`inline-flex aspect-[16/6] w-72 snap-start flex-col rounded-md border border-zinc-300 p-4 transition-all hover:border-zinc-500 ${className}`}
       >
