@@ -9,19 +9,17 @@ export interface NavProps {
 
 export default function Nav({ breadcrumbs }: NavProps) {
   return (
-    <nav className="flex p-4">
-      <div className="flex items-center rounded-xl border border-zinc-300 px-6 py-4">
-        <a href="/">
-          <Logo />
-        </a>
-      </div>
+    <nav className="flex items-center p-4">
+      <a href="/">
+        <Logo />
+      </a>
       <div className="ml-4 hidden items-center sm:flex">
         <Breadcrumbs breadcrumbs={breadcrumbs} />
       </div>
       <div className="ml-auto flex items-center gap-1 rounded-xl border border-zinc-300 px-6 py-4 lg:gap-3">
         <a
           href="https://www.twitch.tv/dmitriyk_"
-          className="hidden h-6 w-6 place-items-center rounded-md transition-colors hover:bg-[#aa70ff] hover:text-white focus:bg-[#aa70ff] focus:text-white sm:grid"
+          className="grid h-6 w-6 place-items-center rounded-md transition-colors hover:bg-[#aa70ff] hover:text-white focus:bg-[#aa70ff] focus:text-white"
         >
           <BrandTwitch className="w-4" />
         </a>
