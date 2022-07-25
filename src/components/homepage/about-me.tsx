@@ -1,4 +1,5 @@
 import {
+  At,
   BrandNextjs,
   BrandTailwind,
   FileCertificate,
@@ -88,6 +89,15 @@ export default function AboutMe() {
             icon={<FileCertificate className="w-4" />}
             text="read my CV"
             href="/cv-dmitrii_kopenkin.pdf"
+            className="translate-y-1.5 hover:border-zinc-500 focus:border-zinc-500"
+          />
+        </p>
+        <p>
+          Alternatively, you can{" "}
+          <IconLink
+            icon={<At className="w-4" />}
+            text="send me an email"
+            href="mailto:hi@kopenkin.tech?subject='Hi, I want to hire you'"
             className="translate-y-1.5 hover:border-zinc-500 focus:border-zinc-500"
           />
         </p>

@@ -11,9 +11,7 @@ const posts = await getBlogPages();
       posts.length === 0 ? "hidden" : ""
     }`}
   >
-    {[...posts, ...posts, ...posts, ...posts].map((post) => (
-      <BlogpostPreview post={post} className="!w-full" />
-    ))}
+    {posts.map((post) => <BlogpostPreview post={post} />)}
   </div>
   {posts.length === 0 && (
     <strong class="mt-20 w-full text-center text-2xl font-bold">
