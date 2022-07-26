@@ -1,7 +1,9 @@
 ---
 import { Clock2, Dots, X } from "tabler-icons-react";
 import type { PostMetadata } from "../../utils/get-post-metadata";
+import { Image } from "@astrojs/image/components";
 import Keywords from "./keywords.astro";
+import { join } from "path";
 
 interface BlogpostPreviewProps {
   post: PostMetadata;
@@ -14,16 +16,17 @@ const { post, class: _class } = Astro.props as BlogpostPreviewProps;
 <a href={"/blog/" + post.slug} class="h-full" rel="prefetch">
   <div
     class:list={[
-      `inline-flex aspect-[16/6] h-full w-72 snap-start flex-col rounded-md border border-zinc-300 p-4 transition-all hover:border-zinc-500`,
+      `inline-flex h-full w-72 snap-start flex-col rounded-md border border-zinc-300 p-4 transition-all hover:border-zinc-500`,
       {
         [_class]: _class !== undefined,
       },
     ]}
   >
-    <img
-      src={`/thumbnails/${post.thumbnail}`}
+    <Image
+      src={import(join(process.cwd(), "public", "thumbnails", post.thumbnail))}
       alt={post.title}
-      class="w-full rounded-md"
+      class="w-full rounded-md aspect-[16/6]"
+      aspectRatio="16:6"
     />
     <strong class="my-2">{post.title}</strong>
     <div class="mt-auto flex items-center">
