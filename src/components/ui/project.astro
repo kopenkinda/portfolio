@@ -1,9 +1,7 @@
 ---
 import { Affiliate, Folders } from "tabler-icons-react";
-import { Image } from "@astrojs/image/components";
 import IconLink from "./icon-link.astro";
 import Keywords from "./keywords.astro";
-import { join } from "path";
 
 export interface ProjectProps {
   img: string;
@@ -19,11 +17,11 @@ const { img, tech, title, codeLink, demoLink, description } =
 ---
 
 <div class="flex w-72 flex-col rounded-lg border border-zinc-300 p-4">
-  <Image
-    src={import(join(process.cwd(), "public", img))}
+  <img
+    src={img}
     class="w-full rounded-md aspect-[16/6]"
-    aspectRatio="16:6"
     alt={title}
+    title={title}
   />
   <strong class="my-2 mb-1">{title}</strong>
   {description && <p class="mb-2">{description}</p>}

@@ -1,7 +1,6 @@
 ---
 import { Clock2, Dots, X } from "tabler-icons-react";
 import type { PostMetadata } from "../../utils/get-post-metadata";
-import { Image } from "@astrojs/image/components";
 import Keywords from "./keywords.astro";
 import { join } from "path";
 
@@ -22,11 +21,10 @@ const { post, class: _class } = Astro.props as BlogpostPreviewProps;
       },
     ]}
   >
-    <Image
-      src={import(join(process.cwd(), "public", "thumbnails", post.thumbnail))}
+    <img
+      src={`/thumbnails/${post.thumbnail}`}
       alt={post.title}
       class="w-full rounded-md aspect-[16/6]"
-      aspectRatio="16:6"
     />
     <strong class="my-2">{post.title}</strong>
     <div class="mt-auto flex items-center">
