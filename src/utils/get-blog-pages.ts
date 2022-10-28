@@ -10,5 +10,7 @@ export default async function getBlogPages() {
   const parsed = await Promise.all(
     posts.map((post) => getPostMetadata(join(location, post)))
   );
-  return parsed.filter((post) => post.draft !== undefined && !post.draft);
+  return parsed
+    .filter((post) => post.draft !== undefined && !post.draft)
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
 }

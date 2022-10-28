@@ -7,7 +7,7 @@ const posts = await getBlogPages();
 
 <DefaultLayout>
   <div
-    class={`grid grid-cols-3 gap-4 w-full ${
+    class={`grid md:grid-cols-3 gap-4 w-full ${
       posts.length === 0 ? "hidden" : ""
     }`}
   >
