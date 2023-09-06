@@ -1,5 +1,7 @@
 ---
 import "../../base.css";
+import Navbar from "./navbar.astro";
+
 export interface Props {
   title: string;
   description?: string;
@@ -29,6 +31,7 @@ const keywords =
     class="mx-4 mb-40 mt-8 flex max-w-2xl flex-col antialiased md:flex-row lg:mx-auto"
   >
     <main class="mt-6 flex min-w-0 flex-auto flex-col px-2 md:px-0">
+      <Navbar />
       <slot />
     </main>
   </body>

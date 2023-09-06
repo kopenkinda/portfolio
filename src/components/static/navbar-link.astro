@@ -1,0 +1,29 @@
+---
+export interface Props {
+  active: boolean;
+  title: string;
+  href: string;
+}
+---
+
+<a
+  class:list={[
+    "flex align-middle transition-all hover:text-neutral-800 dark:hover:text-neutral-200",
+    {
+      "text-neutral-500": !Astro.props.active,
+    },
+  ]}
+  href={Astro.props.href}
+>
+  <span class="relative px-2 py-1">
+    {Astro.props.title}
+    {
+      Astro.props.active ? (
+        <div
+          class="absolute inset-0 top-7 z-[-1] mx-2 h-[1px] bg-neutral-200 from-transparent to-neutral-900 dark:bg-neutral-800 dark:bg-gradient-to-r"
+          style="transform: none; transform-origin: 50% 50% 0px;"
+        />
+      ) : null
+    }
+  </span>
+</a>

@@ -1,0 +1,29 @@
+---
+import NavbarLink from "./navbar-link.astro";
+
+const isActive = (type: "home" | "blog") => {
+  switch (type) {
+    case "home": {
+      return Astro.url.pathname === "/";
+    }
+    case "blog":
+    default: {
+      return Astro.url.pathname.startsWith("/" + type);
+    }
+  }
+};
+---
+
+<aside class="-ml-[8px] mb-16 tracking-tight">
+  <div class="lg:sticky lg:top-20">
+    <nav
+      class="fade relative flex scroll-pr-6 flex-row items-start px-0 pb-0 md:relative md:overflow-auto"
+      id="nav"
+    >
+      <div class="flex flex-row space-x-0 pr-10">
+        <NavbarLink title="home" href="/" active={isActive("home")} />
+        <NavbarLink title="blog" href="/blog" active={isActive("blog")} />
+      </div>
+    </nav>
+  </div>
+</aside>
