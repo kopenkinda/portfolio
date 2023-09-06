@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@astrojs/tailwind": "^5.0.0",
+    "@fontsource/nunito": "^5.0.8",
     "astro": "^3.0.10",
     "tailwindcss": "^3.0.24"
   },
