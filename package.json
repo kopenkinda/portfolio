@@ -11,6 +11,8 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@astrojs/prefetch": "^0.4.0",
+    "@astrojs/sitemap": "^3.0.0",
     "@astrojs/tailwind": "^5.0.0",
     "@fontsource/nunito": "^5.0.8",
     "astro": "^3.0.10",
