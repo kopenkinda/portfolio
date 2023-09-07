@@ -14,7 +14,7 @@ const t = useTranslations(lang);
 const isActive = (type: "home" | "blog") => {
   switch (type) {
     case "home": {
-      return Astro.url.pathname === "/" + lang;
+      return ["/", "", `/${lang}`, `/${lang}/`].includes(Astro.url.pathname);
     }
     case "blog":
     default: {
