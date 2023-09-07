@@ -9,7 +9,11 @@ export const defaultLang: Language = Language.en;
 export const ui = {
   [Language.en]: {
     name: "Dmitrii Kopenkin",
-    "blog.title": "Blog",
+    "generic.reading-time": "min",
+    "blog.title": "Blog | Dmitrii Kopenkin",
+    "blog.empty": "There are no posts yet",
+    "blog.heading": "read my blog",
+    "blog.other-languages": "read in other languages:",
     "homepage.welcome": "hey, i'm dmitrii 👋",
     "homepage.description.0": "I'm a full-stack web developper working at ",
     "homepage.description.1":
@@ -28,6 +32,9 @@ export const ui = {
       'helps you find a game that you have to guess in the "guess" gamemode',
   },
   [Language.fr]: {
+    "blog.heading": "lire mon blog",
+    "blog.empty": "Il est vide pour l'instant :(",
+    "blog.other-languages": "lire dans d'autres langues:",
     "homepage.welcome": "salut, je suis dmitrii 👋",
     "homepage.description.0":
       "Je suis un développeur full-stack travaillant chez ",
@@ -48,7 +55,11 @@ export const ui = {
   },
   [Language.ru]: {
     name: "Дмитрий Копенкин",
-    "blog.title": "Блог",
+    "generic.reading-time": "мин",
+    "blog.title": "Блог | Дмитрий Копенкин",
+    "blog.empty": "Тут пока что пусто :(",
+    "blog.heading": "читать мой блог",
+    "blog.other-languages": "читать на других языках:",
     "homepage.welcome": "привет, я дмитрий 👋",
     "homepage.description.0":
       "Я full-stack веб-разработчик, работающий в компании ",
