@@ -8,6 +8,7 @@ export const defaultLang: Language = Language.en;
 
 export const ui = {
   [Language.en]: {
+    WIP: "The website is undergoing a rework, some content might be missing",
     name: "Dmitrii Kopenkin",
     "generic.reading-time": "min",
     "blog.title": "Blog | Dmitrii Kopenkin",
@@ -32,6 +33,7 @@ export const ui = {
       'helps you find a game that you have to guess in the "guess" gamemode',
   },
   [Language.fr]: {
+    WIP: "Le site web est en cours de refonte, il se peut que certains contenus soient manquants.",
     "blog.heading": "lire mon blog",
     "blog.empty": "Il est vide pour l'instant :(",
     "blog.other-languages": "lire dans d'autres langues:",
@@ -54,6 +56,7 @@ export const ui = {
       'vous aide à trouver un jeu que vous devez deviner dans le mode "guess".',
   },
   [Language.ru]: {
+    WIP: "Сайт находится в стадии переделки, некоторая информация может отсутствовать",
     name: "Дмитрий Копенкин",
     "generic.reading-time": "мин",
     "blog.title": "Блог | Дмитрий Копенкин",
