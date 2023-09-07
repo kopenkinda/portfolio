@@ -5,7 +5,7 @@ import {
   IconCopyOff,
   IconLineDashed,
 } from "@tabler/icons-react";
-import useCopy from "use-copy";
+import useCopy from "~/hooks/use-copy";
 
 const map: Record<string, string | undefined> = {
   а: "А́нна",
