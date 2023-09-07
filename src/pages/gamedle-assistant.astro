@@ -1,8 +1,13 @@
 ---
 import Layout from "~/components/static/layout.astro";
+import GamedleList from "~/components/interactive/gamedle/gamedle-list";
+import { Gamedle } from "../utils/gamedle/get-game-info";
+const list = await Gamedle.getGames();
 ---
 
 <Layout title="Gamedle Assistant">
-  <h1>Gamedle Assistant</h1>
-  <p>Coming back soon...</p>
+  <div class="border-l-2 border-red-400 pl-4">
+    Please note that Gamedle assistant is only available in English
+  </div>
+  <GamedleList initial={list} lastUpdated={new Date()} client:load />
 </Layout>
