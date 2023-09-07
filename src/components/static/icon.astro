@@ -1,0 +1,27 @@
+---
+export type TechLinkIcon = "digikare";
+export interface Props {
+  icon: TechLinkIcon;
+}
+---
+
+{
+  Astro.props.icon === "digikare" && (
+    <svg
+      width={78 * 0.17}
+      height={67 * 0.17}
+      viewBox="0 0 78 67"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M45 0.48999L17.65 33.97V0.48999H0.0200043V55.56V66.74H17.65H17.83L71.08 0.48999H45Z"
+        class="fill-current"
+      />
+      <path
+        d="M32.1 16.19L17.62 33.73L48.77 66.74H77.73L32.1 16.19Z"
+        class="fill-[#30C5A7]"
+      />
+    </svg>
+  )
+}

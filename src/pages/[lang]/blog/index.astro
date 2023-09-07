@@ -1,9 +1,12 @@
 ---
 export { getStaticPaths } from "../../../i18n/utils";
 import Layout from "../../../components/static/layout.astro";
+import { getLangFromUrl, useTranslations } from "../../../i18n/utils";
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 ---
 
-<Layout title="TODO: Put a proper title here">
+<Layout title={t("blog.title")}>
   <h1>
     Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti fugit
     facilis ullam ut, a illum deleniti sit vitae nisi esse omnis non cumque

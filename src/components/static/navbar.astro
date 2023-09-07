@@ -2,11 +2,13 @@
 import {
   getLangFromUrl,
   useTranslations,
+  getPathWithoutLangFromUrl,
   getStaticPaths,
 } from "../../i18n/utils";
 import NavbarLink from "./navbar-link.astro";
 
 const lang = getLangFromUrl(Astro.url);
+const pagePath = getPathWithoutLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 const isActive = (type: "home" | "blog") => {
@@ -45,7 +47,9 @@ const isActive = (type: "home" | "blog") => {
           getStaticPaths().map((path) => (
             <NavbarLink
               title={path.params.lang}
-              href={`/` + path.params.lang}
+              href={`/${path.params.lang}${
+                pagePath.length === 0 ? "" : "/" + pagePath
+              }`}
               active={lang === path.params.lang}
             />
           ))

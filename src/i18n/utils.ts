@@ -7,9 +7,20 @@ export function getLangFromUrl(url: URL) {
   return defaultLang;
 }
 
+export function getPathWithoutLangFromUrl(url: URL) {
+  const rest = url.pathname.split("/").slice(2);
+  return rest.join("/");
+}
+
+type DefaultTranslations = (typeof ui)[Language.en];
+
 export function useTranslations(lang: keyof typeof Language) {
-  return function t(key: keyof (typeof ui)[typeof defaultLang]) {
-    return ui[lang][key] || ui[defaultLang][key];
+  const _ui = ui as Record<
+    keyof typeof Language,
+    Record<keyof DefaultTranslations, string>
+  >;
+  return function t(key: keyof DefaultTranslations) {
+    return _ui[lang][key] || _ui[defaultLang][key];
   };
 }
 
