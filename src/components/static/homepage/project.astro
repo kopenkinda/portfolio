@@ -1,0 +1,62 @@
+---
+import type { TechLinkIcon } from "../icon.astro";
+import Icon from "../icon.astro";
+export interface Props {
+  title: string;
+  description: string;
+  href: string;
+  image: string;
+  blank?: boolean;
+  icon?: TechLinkIcon;
+}
+---
+
+<a
+  href={Astro.props.href}
+  target={Astro.props.blank ? "_blank" : undefined}
+  class="flex w-full items-center justify-between rounded border border-neutral-200 bg-neutral-50 px-3 py-4 dark:border-neutral-700 dark:bg-neutral-800"
+>
+  <div class="flex items-center space-x-3">
+    <div class="relative h-16">
+      <img
+        alt={Astro.props.title}
+        loading="lazy"
+        width="64"
+        height="64"
+        class="h-16 w-16 rounded-full border border-neutral-200 dark:border-neutral-700"
+        src={Astro.props.image}
+        style="color: transparent;"
+      />
+      {
+        Astro.props.icon !== undefined && (
+          <div class="relative -right-10 -top-6 inline-flex h-6 w-6 items-center rounded-full border border-neutral-200 bg-white p-1 dark:border-neutral-700">
+            <Icon icon={Astro.props.icon} />
+          </div>
+        )
+      }
+    </div>
+    <div class="flex flex-col">
+      <p class="font-bold text-neutral-900 dark:text-neutral-100">
+        {Astro.props.title}
+      </p>
+      <p class="text-sm leading-tight text-neutral-600 dark:text-neutral-400">
+        {Astro.props.description}
+      </p>
+    </div>
+  </div>
+  <div class="text-neutral-700 dark:text-neutral-300">
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M2.07102 11.3494L0.963068 10.2415L9.2017 1.98864H2.83807L2.85227 0.454545H11.8438V9.46023H10.2955L10.3097 3.09659L2.07102 11.3494Z"
+        fill="currentColor"
+      >
+      </path>
+    </svg>
+  </div>
+</a>

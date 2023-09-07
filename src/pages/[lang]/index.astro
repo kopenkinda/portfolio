@@ -2,24 +2,52 @@
 export { getStaticPaths } from "../../i18n/utils";
 import Layout from "../../components/static/layout.astro";
 import TechLink from "../../components/static/tech-link.astro";
+import Project from "../../components/static/homepage/project.astro";
 import { getLangFromUrl, useTranslations } from "../../i18n/utils";
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
 
 <Layout title={t("name")}>
-  <h1 class="mb-8 text-2xl font-bold tracking-tight">
+  <h1
+    class="mb-8 animate-fade-up text-2xl font-bold tracking-tight animate-delay-200"
+  >
     {t("homepage.welcome")}
   </h1>
 
-  <p class="prose prose-neutral dark:prose-invert">
-    {t("homepage.description.0")}
-    <TechLink
-      href="https://digikare.com/"
-      title="Digikare"
-      blank
-      icon="digikare"
-    />
-    {t("homepage.description.1")}
-  </p>
+  <div class="animate-fade-up animate-delay-1000">
+    <p class="prose prose-neutral dark:prose-invert">
+      {t("homepage.description.0")}
+      <TechLink
+        href="https://digikare.com/"
+        title="Digikare"
+        blank
+        icon="digikare"
+      />
+      {t("homepage.description.1")}
+    </p>
+
+    <div class="my-8">photo gallery</div>
+
+    <p class="prose prose-neutral dark:prose-invert">
+      {t("homepage.projects")}
+      <div
+        class="my-8 flex w-full flex-col space-x-0 space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
+      >
+        <Project
+          title={t("projects.1.title")}
+          description={t("projects.1.description")}
+          href="https://todos.kopenkin.tech/"
+          image="/images/projects/todos.png"
+          blank
+        />
+        <Project
+          title={t("projects.2.title")}
+          description={t("projects.2.description")}
+          image="/images/projects/todos.png"
+          href="/gamedle-assistant"
+        />
+      </div>
+    </p>
+  </div>
 </Layout>
