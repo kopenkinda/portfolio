@@ -1,8 +1,12 @@
 ---
 import Layout from "~/components/static/layout.astro";
+import BuzzerClient from "~/components/interactive/buzzer/buzzer";
 ---
 
-<Layout title="Жужжалка">
-  <h1>Жужжалка (УВБ-76)</h1>
-  <p>Coming back soon...</p>
+<Layout title="Buzzer (UVB-76)">
+  <div class="mb-8 border-l-2 border-red-400 pl-4">
+    Please note that Buzzer is only available in Russian & English (for now).
+  </div>
+  <h1 class="mb-4 text-xl font-bold">Buzzer (UVB-76)</h1>
+  <BuzzerClient client:load />
 </Layout>

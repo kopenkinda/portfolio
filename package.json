@@ -43,6 +43,7 @@
     "reading-time": "^1.5.0",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animated": "^1.0.1",
+    "use-copy": "^0.0.2",
     "zustand": "^4.4.1"
   },
   "lint-staged": {
