@@ -1,6 +1,7 @@
 ---
 import "../../base.css";
 import Navbar from "./navbar.astro";
+import { getLangFromUrl, useTranslations } from "../../i18n/utils";
 
 export interface Props {
   title: string;
@@ -8,9 +9,11 @@ export interface Props {
   keywords?: string[];
 }
 
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
 const title = Astro.props.title;
-const description =
-  Astro.props.description ?? "This webpage has no description provided";
+const description = Astro.props.description ?? t("seo.default-description");
 const keywords =
   Astro.props.keywords ?? Astro.props.description?.split(" ") ?? [];
 ---
@@ -32,7 +35,9 @@ const keywords =
   >
     <main class="mt-6 flex min-w-0 flex-auto flex-col px-2 md:px-0">
       <Navbar />
-      <slot />
+      <section>
+        <slot />
+      </section>
     </main>
   </body>
 </html>

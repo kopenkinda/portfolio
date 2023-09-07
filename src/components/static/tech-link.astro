@@ -1,0 +1,32 @@
+---
+type TechLinkIcon = "";
+export interface Props {
+  href: string;
+  blank?: boolean;
+  icon: TechLinkIcon;
+}
+---
+
+<span class="not-prose">
+  <a
+    href="https://vercel.com"
+    target={Astro.props.blank ? "_blank" : undefined}
+    class="inline-flex items-center rounded border border-neutral-200 bg-neutral-50 p-1 text-sm leading-4 text-neutral-900 no-underline dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+  >
+    <svg
+      width="13"
+      height="11"
+      viewBox="0 0 13 11"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      class="mr-1 inline-flex"
+    >
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M6.5 0L13 11H0L6.5 0Z"
+        fill="currentColor"></path>
+    </svg>
+     Vercel
+  </a>
+</span>

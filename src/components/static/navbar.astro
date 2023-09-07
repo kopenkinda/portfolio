@@ -1,14 +1,22 @@
 ---
+import {
+  getLangFromUrl,
+  useTranslations,
+  getStaticPaths,
+} from "../../i18n/utils";
 import NavbarLink from "./navbar-link.astro";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 
 const isActive = (type: "home" | "blog") => {
   switch (type) {
     case "home": {
-      return Astro.url.pathname === "/";
+      return Astro.url.pathname === "/" + lang;
     }
     case "blog":
     default: {
-      return Astro.url.pathname.startsWith("/" + type);
+      return Astro.url.pathname.includes("/" + type);
     }
   }
 };
@@ -21,8 +29,27 @@ const isActive = (type: "home" | "blog") => {
       id="nav"
     >
       <div class="flex flex-row space-x-0 pr-10">
-        <NavbarLink title="home" href="/" active={isActive("home")} />
-        <NavbarLink title="blog" href="/blog" active={isActive("blog")} />
+        <NavbarLink
+          title={t("nav.home")}
+          href={"/" + lang}
+          active={isActive("home")}
+        />
+        <NavbarLink
+          title={t("nav.about")}
+          href={`/${lang}/blog`}
+          active={isActive("blog")}
+        />
+      </div>
+      <div class="ml-auto flex">
+        {
+          getStaticPaths().map((path) => (
+            <NavbarLink
+              title={path.params.lang}
+              href={`/` + path.params.lang}
+              active={lang === path.params.lang}
+            />
+          ))
+        }
       </div>
     </nav>
   </div>
