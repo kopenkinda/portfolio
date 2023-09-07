@@ -25,39 +25,45 @@ const otherLangs = getOtherAvailableLanguages(lang, posts);
 ---
 
 <Layout title={t("blog.title")}>
-  <h1 class="mb-8 text-2xl font-bold tracking-tighter">{t("blog.heading")}</h1>
-  {postsForLang.length === 0 && <p class="mb-4">{t("blog.empty")}</p>}
-  {
-    otherLangs.length !== 0 && (
-      <p class="mt-2 flex items-center -space-x-2">
-        {t("blog.other-languages")}
-        {otherLangs.map(({ lang, amount }) => (
-          <NavbarLink
-            active={false}
-            href={`/${lang}/blog`}
-            title={lang + " | " + amount}
-          />
-        ))}
-      </p>
-    )
-  }
-  {
-    postsForLang.map((post) => (
-      <a
-        class="mb-4 flex flex-col space-y-1"
-        href={getLocalisedBlogLink(post.slug)}
-        rel="prefetch-intent"
-      >
-        <div class="flex w-full flex-col">
-          <p class="tracking-tight text-neutral-900 dark:text-neutral-100">
-            {post.data.title}
-          </p>
-          <p class="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
-            <Icon name="tabler:clock" class="h-4 w-4 pb-0.5" />
-            {readingTime(post.body)}&nbsp;{t("generic.reading-time")}
-          </p>
-        </div>
-      </a>
-    ))
-  }
+  <h1
+    class="mb-8 animate-fade-up text-2xl font-bold tracking-tighter animate-delay-100"
+  >
+    {t("blog.heading")}
+  </h1>
+  <div class="animate-fade-up animate-delay-300">
+    {postsForLang.length === 0 && <p class="mb-4">{t("blog.empty")}</p>}
+    {
+      otherLangs.length !== 0 && (
+        <p class="mt-2 flex items-center -space-x-2">
+          {t("blog.other-languages")}
+          {otherLangs.map(({ lang, amount }) => (
+            <NavbarLink
+              active={false}
+              href={`/${lang}/blog`}
+              title={lang + " | " + amount}
+            />
+          ))}
+        </p>
+      )
+    }
+    {
+      postsForLang.map((post) => (
+        <a
+          class="mb-4 flex flex-col space-y-1"
+          href={getLocalisedBlogLink(post.slug)}
+          rel="prefetch-intent"
+        >
+          <div class="flex w-full flex-col">
+            <p class="tracking-tight text-neutral-900 dark:text-neutral-100">
+              {post.data.title}
+            </p>
+            <p class="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
+              <Icon name="tabler:clock" class="h-4 w-4 pb-0.5" />
+              {readingTime(post.body)}&nbsp;{t("generic.reading-time")}
+            </p>
+          </div>
+        </a>
+      ))
+    }
+  </div>
 </Layout>

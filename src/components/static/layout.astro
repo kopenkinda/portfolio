@@ -3,6 +3,7 @@ import "@fontsource/nunito";
 import "~/base.css";
 import Navbar from "./navbar.astro";
 import { getLangFromUrl, useTranslations } from "~/i18n/utils";
+import { ViewTransitions } from "astro:transitions";
 
 export interface Props {
   title: string;
@@ -31,6 +32,7 @@ const keywords =
     <meta name="keywords" content={keywords.join(" ")} />
     <link rel="canonical" href={Astro.url} />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <ViewTransitions />
   </head>
   <body
     class="mx-4 mb-40 mt-8 flex max-w-2xl flex-col antialiased md:flex-row lg:mx-auto"
