@@ -1,13 +1,16 @@
 ---
 import { Icon } from "astro-icon";
-
 import {
   getPostsByLanguage,
   getOtherAvailableLanguages,
 } from "~/utils/get-posts-by-language";
 import { readingTime } from "~/utils/reading-time";
 import Layout from "~/components/static/layout.astro";
-import { getLangFromUrl, useTranslations } from "~/i18n/utils";
+import {
+  getLangFromUrl,
+  getLocalisedBlogLink,
+  useTranslations,
+} from "~/i18n/utils";
 import NavbarLink from "~/components/static/navbar-link.astro";
 
 export { getStaticPaths } from "~/i18n/utils";
@@ -19,8 +22,6 @@ const posts = await getPostsByLanguage();
 const postsForLang = posts[lang].filter((post) => !post.data.draft);
 
 const otherLangs = getOtherAvailableLanguages(lang, posts);
-
-const blogLink = (slug: string) => `/${lang}/blog/${slug.split("/")[1]}`;
 ---
 
 <Layout title={t("blog.title")}>
@@ -42,7 +43,10 @@ const blogLink = (slug: string) => `/${lang}/blog/${slug.split("/")[1]}`;
   }
   {
     postsForLang.map((post) => (
-      <a class="mb-4 flex flex-col space-y-1" href={blogLink(post.slug)}>
+      <a
+        class="mb-4 flex flex-col space-y-1"
+        href={getLocalisedBlogLink(post.slug)}
+      >
         <div class="flex w-full flex-col">
           <p class="tracking-tight text-neutral-900 dark:text-neutral-100">
             {post.data.title}

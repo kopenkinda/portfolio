@@ -1,24 +1,80 @@
 ---
 import { getCollection } from "astro:content";
+import Icon from "astro-icon";
+import Layout from "~/components/static/layout.astro";
+import { useTranslations } from "~/i18n/utils";
+import { getLangFromUrl } from "~/i18n/utils";
+import { getLocalisedBlogLink } from "~/i18n/utils";
+import type { BlogPosts } from "~/utils/get-posts-by-language";
+import { readingTime } from "~/utils/reading-time";
+import { Image } from "astro:assets";
 
 export async function getStaticPaths() {
   const pages = await getCollection("blog");
-
   const paths = pages.map((page) => {
-    const [lang, ...slug] = page.slug.split("/");
-    return { params: { lang, slug: slug.join("/") || undefined }, props: page };
+    const lang = page.slug.split("/")[0];
+    const slug = getLocalisedBlogLink(page.slug)
+      .split("/")
+      .slice(["", "[lang]", "blog"].length)
+      .join("/");
+    return {
+      params: {
+        lang,
+        slug,
+      },
+      props: { page },
+    };
   });
-
   return paths;
 }
 
-const { lang } = Astro.params;
-const page = Astro.props;
-const formattedDate = page.data.date.toLocaleString(lang);
+export interface Props {
+  page: BlogPosts[number];
+}
 
+const { page } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const { Content } = await page.render();
 ---
 
-<h1>{page.data.title}</h1>
-<p>by {page.data.author} • {formattedDate}</p>
-<Content />
+<Layout
+  title={`${page.data.title} | ${t("blog.title")}}`}
+  keywords={page.data.keywords}
+  description={page.data.description}
+>
+  {
+    page.data.thumbnail ? (
+      <Image
+        src={"/thumbnails/" + page.data.thumbnail}
+        alt={page.data.title}
+        width="1200"
+        height="451"
+        class="mb-8 aspect-[16/6] w-full rounded-xl"
+      />
+    ) : null
+  }
+  <h1 class="max-w-[650px] text-2xl font-bold tracking-tighter">
+    {page.data.title}
+  </h1>
+  <div
+    class="mb-8 mt-2 flex max-w-[650px] items-center justify-between text-sm"
+  >
+    <p class="text-sm text-neutral-600 dark:text-neutral-400">
+      {
+        page.data.date.toLocaleDateString(lang, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      }
+    </p>
+    <p class="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
+      <Icon name="tabler:clock" class="h-4 w-4 pb-0.5" />
+      {readingTime(page.body)}&nbsp;{t("generic.reading-time")}
+    </p>
+  </div>
+  <article class="prose-quoteless prose prose-neutral dark:prose-invert">
+    <Content />
+  </article>
+</Layout>

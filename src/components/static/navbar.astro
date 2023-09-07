@@ -44,15 +44,18 @@ const isActive = (type: "home" | "blog") => {
       </div>
       <div class="ml-auto flex">
         {
-          getStaticPaths().map((path) => (
-            <NavbarLink
-              title={path.params.lang}
-              href={`/${path.params.lang}${
-                pagePath.length === 0 ? "" : "/" + pagePath
-              }`}
-              active={lang === path.params.lang}
-            />
-          ))
+          getStaticPaths().map((path) => {
+            const newPath = `/${path.params.lang}${
+              pagePath.length === 0 ? "" : "/" + pagePath
+            }`;
+            return newPath.split("/").length <= 3 ? (
+              <NavbarLink
+                title={path.params.lang}
+                href={newPath}
+                active={lang === path.params.lang}
+              />
+            ) : null;
+          })
         }
       </div>
     </nav>

@@ -27,3 +27,8 @@ export function useTranslations(lang: keyof typeof Language) {
 export function getStaticPaths() {
   return Object.keys(Language).map((lang) => ({ params: { lang } }));
 }
+
+export const getLocalisedBlogLink = (slug: string) => {
+  const [lang, ..._slug] = slug.split("/");
+  return `/${lang}/blog/${_slug.join("/")}`;
+};
