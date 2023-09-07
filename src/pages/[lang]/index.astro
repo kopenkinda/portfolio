@@ -4,6 +4,10 @@ import Layout from "../../components/static/layout.astro";
 import TechLink from "../../components/static/tech-link.astro";
 import Project from "../../components/static/homepage/project.astro";
 import { getLangFromUrl, useTranslations } from "../../i18n/utils";
+
+import TodoAppImage from "../../assets/projects/todo-app-icon.png";
+import GamedleAssistantImage from "../../assets/projects/gamedle-assistant-icon.png";
+
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
@@ -38,13 +42,13 @@ const t = useTranslations(lang);
           title={t("projects.1.title")}
           description={t("projects.1.description")}
           href="https://todos.kopenkin.tech/"
-          image="/images/projects/todos.png"
+          image={TodoAppImage}
           blank
         />
         <Project
           title={t("projects.2.title")}
           description={t("projects.2.description")}
-          image="/images/projects/todos.png"
+          image={GamedleAssistantImage}
           href="/gamedle-assistant"
         />
       </div>
