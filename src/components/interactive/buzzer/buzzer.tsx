@@ -69,7 +69,7 @@ const map: Record<string, string | undefined> = {
   z: "Zúlu",
 };
 
-function buzzer(input: string): string {
+function buzzer(input: string) {
   return input
     .toLocaleLowerCase()
     .split("")

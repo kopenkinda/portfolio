@@ -20,7 +20,7 @@ import {
 export const Filters = () => {
   const filters = useFilters();
   return (
-    <div className="grid w-full grid-cols-1 gap-2 rounded-md sm:grid-cols-2 md:grid-cols-3">
+    <div className="grid w-full grid-cols-1 gap-2 rounded-md sm:grid-cols-2">
       <ReleaseDateFilters />
       <MultiFilter
         icon={<IconDeviceNintendo stroke={1} />}
