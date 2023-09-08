@@ -2,6 +2,7 @@
 import Layout from "~/components/static/layout.astro";
 import GamedleList from "~/components/interactive/gamedle/gamedle-list";
 import { Gamedle } from "../utils/gamedle/get-game-info";
+import Alert from "~/components/static/alert.astro";
 const list = await Gamedle.getGames();
 const updatedAt = new Date().toLocaleDateString("en-US", {
   year: "numeric",
@@ -11,8 +12,8 @@ const updatedAt = new Date().toLocaleDateString("en-US", {
 ---
 
 <Layout title="Gamedle Assistant">
-  <div class="mt-2 border-l-2 border-green-400 pl-4">
+  <Alert type="info" class="mb-8">
     Last updated on <span class="font-bold">{updatedAt}</span>
-  </div>
+  </Alert>
   <GamedleList initial={list} client:load />
 </Layout>

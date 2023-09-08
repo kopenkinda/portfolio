@@ -1,0 +1,19 @@
+---
+import ArrowExternalSvg from "./arrow-external-svg.astro";
+
+export interface Props {
+  title: string;
+  href: string;
+}
+const { href, title } = Astro.props;
+---
+
+<a
+  class="flex items-center transition-all hover:text-neutral-800 dark:hover:text-neutral-100"
+  rel="noopener noreferrer"
+  target="_blank"
+  {href}
+>
+  <ArrowExternalSvg />
+  <p class="ml-2 h-7">{title}</p>
+</a>

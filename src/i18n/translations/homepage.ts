@@ -18,6 +18,7 @@ export const homepageTranslations = {
     "homepage.projects.2.title": "Gamedle.wtf assistant",
     "homepage.projects.2.description":
       'helps you find a game that you have to guess in the "guess" gamemode',
+    "homepage.socials": "If you want to contact me, you can find me here",
   },
   [Language.fr]: {
     "homepage.welcome": "salut, je suis dmitrii 👋",
@@ -37,6 +38,8 @@ export const homepageTranslations = {
     "homepage.projects.2.title": "Gamedle.wtf assistant",
     "homepage.projects.2.description":
       'vous aide à trouver un jeu que vous devez deviner dans le mode "guess".',
+    "homepage.socials":
+      "Si vous voulez me contacter, vous pouvez me trouver ici",
   },
   [Language.ru]: {
     "homepage.welcome": "привет, я дмитрий 👋",
@@ -56,5 +59,7 @@ export const homepageTranslations = {
     "homepage.projects.2.title": "Gamedle.wtf помошник",
     "homepage.projects.2.description":
       'помогает найти игру, которую нужно угадать в режиме "guess".',
+    "homepage.socials":
+      "Если вы хотите связаться со мной, вы можете найти меня здесь",
   },
 } as const;

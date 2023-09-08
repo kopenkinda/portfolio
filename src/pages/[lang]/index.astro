@@ -15,6 +15,8 @@ import GamedleAssistantImage from "~/assets/projects/gamedle-assistant-icon.png"
 import { getLastNPostsByLanguage } from "~/utils/get-posts-by-language";
 import { readingTime } from "~/utils/reading-time";
 import Icon from "astro-icon";
+import SocialLink from "~/components/static/social-link.astro";
+import Alert from "~/components/static/alert.astro";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -23,9 +25,10 @@ const lastPosts = await getLastNPostsByLanguage(3);
 ---
 
 <Layout title={t("ui.name")}>
-  <div class="mb-4 border-l-2 border-red-400 pl-4">
+  <Alert class="mb-4" type="error">
     {t("ui.work-in-progress")}
-  </div>
+  </Alert>
+
   <h1
     class="mb-8 animate-fade-up text-2xl font-bold tracking-tight animate-delay-200"
   >
@@ -114,6 +117,25 @@ const lastPosts = await getLastNPostsByLanguage(3);
     }
 
     <!-- Socials -->
-    <div class="my-8">Socials</div>
+    <p class="prose prose-neutral dark:prose-invert">
+      {t("homepage.socials")}
+    </p>
+
+    <ul
+      class="font-sm mt-8 flex flex-col space-x-0 space-y-2 text-neutral-600 dark:text-neutral-300 md:flex-row md:space-x-4 md:space-y-0"
+    >
+      <li>
+        <SocialLink title="github" href="https://github.com/kopenkinda" />
+      </li>
+      <li>
+        <SocialLink title="telegram" href="https://t.me/leroifrancais" />
+      </li>
+      <li>
+        <SocialLink
+          title="linked in"
+          href="https://www.linkedin.com/in/dmitrii-kopenkin/"
+        />
+      </li>
+    </ul>
   </div>
 </Layout>
