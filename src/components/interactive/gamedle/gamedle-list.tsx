@@ -76,9 +76,13 @@ const GamedleList = ({
             <IconArrowRight stroke={1} />
           </Button>
         ) : null}
-        {(filters.rev === showingRev ? filtered : []).map((game) => (
-          <GameItem game={game} key={game.label} />
-        ))}
+        {filters.rev === showingRev ? (
+          <div className="animate-fade-up">
+            {filtered.map((game) => (
+              <GameItem game={game} key={game.label} />
+            ))}
+          </div>
+        ) : null}
       </div>
     </div>
   );
