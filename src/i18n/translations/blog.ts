@@ -19,3 +19,5 @@ export const blogTranslations = {
     "blog.other-languages": "читать на других языках:",
   },
 } as const;
+
+export type BlogTranslations = typeof blogTranslations;

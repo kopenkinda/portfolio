@@ -63,3 +63,5 @@ export const homepageTranslations = {
       "Если вы хотите связаться со мной, вы можете найти меня здесь",
   },
 } as const;
+
+export type HomepageTranslations = typeof homepageTranslations;

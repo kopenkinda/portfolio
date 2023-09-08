@@ -23,3 +23,5 @@ export const uiElementsTranslations = {
     "ui.nav.blog": "блог",
   },
 } as const;
+
+export type UiElementsTranslations = typeof uiElementsTranslations;

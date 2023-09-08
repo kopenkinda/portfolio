@@ -11,3 +11,5 @@ export const miscTranslations = {
     "misc.telegram-channel": "telegram канал",
   },
 } as const;
+
+export type MiscTranslations = typeof miscTranslations;

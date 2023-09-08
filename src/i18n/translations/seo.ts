@@ -11,3 +11,5 @@ export const seoTranslations = {
     "seo.default-description": "Эта веб-страница не имеет описания",
   },
 } as const;
+
+export type SeoTranslations = typeof seoTranslations;
