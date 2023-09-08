@@ -68,7 +68,7 @@ const GamedleList = ({
                   filters.set(() => setDefaultFilters(initial));
                 }}
               >
-                Reset
+                Reset filters
                 <IconRotate stroke={1} className="-m-1 ml-1 rotate-180 p-1" />
               </Button>
             )}
