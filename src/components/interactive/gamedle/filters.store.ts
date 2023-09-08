@@ -13,11 +13,12 @@ export type IFilters = {
   gameModes: Record<string, TripleFilter>;
   perspectives: Record<string, TripleFilter>;
   gameEngines: Record<string, TripleFilter>;
+  modified: () => boolean;
   set: StoreApi<Omit<IFilters, "set" | "rev">>["setState"];
   rev: number;
 };
 
-export const useFilters = create<IFilters>((set) => ({
+export const useFilters = create<IFilters>((set, get) => ({
   yearAfter: "",
   yearBefore: "",
   yearExact: "",
@@ -28,6 +29,26 @@ export const useFilters = create<IFilters>((set) => ({
   gameModes: {},
   perspectives: {},
   gameEngines: {},
+  modified: () => {
+    const state = get();
+    const values = (item: Record<string, TripleFilter>) => Object.values(item);
+    const modified = (values: TripleFilter[]) =>
+      values.some((v) => v !== "non-selected");
+    const valuesModified = (item: Record<string, TripleFilter>) =>
+      modified(values(item));
+    return (
+      valuesModified(state.gameEngines) ||
+      valuesModified(state.gameModes) ||
+      valuesModified(state.perspectives) ||
+      valuesModified(state.platforms) ||
+      valuesModified(state.publisher) ||
+      valuesModified(state.themes) ||
+      valuesModified(state.genres) ||
+      state.yearAfter !== "" ||
+      state.yearBefore !== "" ||
+      state.yearExact !== ""
+    );
+  },
   set: (arg) => {
     if (typeof arg === "function") {
       set((state) => ({

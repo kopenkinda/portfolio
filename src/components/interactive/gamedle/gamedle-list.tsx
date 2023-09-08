@@ -57,7 +57,7 @@ const GamedleList = ({
                 <IconArrowRight stroke={1} />
               )}
             </Button>
-            {filters.rev !== 0 && (
+            {filters.modified() && (
               <Button
                 className="p-2"
                 onClick={() => {
