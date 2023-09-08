@@ -49,14 +49,16 @@ const GamedleList = ({
         </p>
         {filters.rev !== showingRev ? (
           <div className="mt-2 flex items-center justify-center gap-2">
-            <Button className="px-2 pl-3" onClick={showList}>
-              Show results
-              {loading ? (
-                <IconLoader stroke={1} className="animate-spin" />
-              ) : (
-                <IconArrowRight stroke={1} />
-              )}
-            </Button>
+            {filtered.length !== 0 && (
+              <Button className="px-2 pl-3" onClick={showList}>
+                Show results
+                {loading ? (
+                  <IconLoader stroke={1} className="animate-spin" />
+                ) : (
+                  <IconArrowRight stroke={1} />
+                )}
+              </Button>
+            )}
             {filters.modified() && (
               <Button
                 className="p-2"
