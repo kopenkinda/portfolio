@@ -3,13 +3,23 @@ export { getStaticPaths } from "~/i18n/utils";
 import Layout from "~/components/static/layout.astro";
 import TechLink from "~/components/static/tech-link.astro";
 import Project from "~/components/static/homepage/project.astro";
-import { getLangFromUrl, useTranslations } from "~/i18n/utils";
+import ArrowExternalSvg from "~/components/static/arrow-external-svg.astro";
+import {
+  getLangFromUrl,
+  useTranslations,
+  getLocalisedBlogLink,
+} from "~/i18n/utils";
 
 import TodoAppImage from "~/assets/projects/todo-app-icon.png";
 import GamedleAssistantImage from "~/assets/projects/gamedle-assistant-icon.png";
+import { getLastNPostsByLanguage } from "~/utils/get-posts-by-language";
+import { readingTime } from "~/utils/reading-time";
+import Icon from "astro-icon";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+
+const lastPosts = await getLastNPostsByLanguage(3);
 ---
 
 <Layout title={t("ui.name")}>
@@ -36,28 +46,74 @@ const t = useTranslations(lang);
 
     <div class="my-8">photo gallery</div>
 
+    <!-- Highlight 2 Projects -->
     <p class="prose prose-neutral dark:prose-invert">
       {t("homepage.projects")}
-      <div
-        class="my-8 flex w-full flex-col space-x-0 space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
-      >
-        <Project
-          title={t("homepage.projects.1.title")}
-          description={t("homepage.projects.1.description")}
-          href="https://todos.kopenkin.tech/"
-          image={TodoAppImage}
-          blank
-        />
-        <Project
-          title={t("homepage.projects.2.title")}
-          description={t("homepage.projects.2.description")}
-          image={GamedleAssistantImage}
-          href="/gamedle-assistant"
-        />
-      </div>
     </p>
 
-    <div class="my-8">Few posts</div>
+    <div
+      class="my-8 flex w-full flex-col space-x-0 space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
+    >
+      <Project
+        title={t("homepage.projects.1.title")}
+        description={t("homepage.projects.1.description")}
+        href="https://todos.kopenkin.tech/"
+        image={TodoAppImage}
+        blank
+      />
+      <Project
+        title={t("homepage.projects.2.title")}
+        description={t("homepage.projects.2.description")}
+        image={GamedleAssistantImage}
+        href="/gamedle-assistant"
+      />
+    </div>
+
+    <!-- Last 3 posts -->
+    {
+      lastPosts.length > 0 && (
+        <p class="prose prose-neutral dark:prose-invert">
+          {t("homepage.blog.0")}
+          <TechLink
+            href="https://t.me/unicorn_dev"
+            title={t("misc.telegram-channel")}
+            blank
+            icon="telegram"
+          />
+          {t("homepage.blog.1")}
+        </p>
+      )
+    }
+    {
+      lastPosts.length > 0 && (
+        <div class="my-8 flex w-full flex-col space-y-4">
+          {lastPosts.map(({ post, lang: postLang }) => (
+            <a
+              href={getLocalisedBlogLink(post.slug)}
+              class="flex w-full items-center justify-between  rounded border border-neutral-200 bg-neutral-50 px-3 py-4 dark:border-neutral-700 dark:bg-neutral-800"
+            >
+              <div class="flex flex-col">
+                <p class="flex items-start font-bold text-neutral-900 dark:text-neutral-100 sm:items-center">
+                  <span class="mr-1 rounded border border-neutral-200 px-1 text-sm dark:border-neutral-700 dark:bg-neutral-900">
+                    {postLang.toLocaleLowerCase()}
+                  </span>
+                  {post.data.title}
+                </p>
+                <p class="flex items-center gap-1 text-neutral-600 dark:text-neutral-400">
+                  <Icon name="tabler:clock" class="h-4 w-4 pb-0.5" />
+                  {readingTime(post.body)}&nbsp;{t("ui.reading-time")}
+                </p>
+              </div>
+              <div class="text-neutral-700 dark:text-neutral-300">
+                <ArrowExternalSvg />
+              </div>
+            </a>
+          ))}
+        </div>
+      )
+    }
+
+    <!-- Socials -->
     <div class="my-8">Socials</div>
   </div>
 </Layout>

@@ -9,7 +9,7 @@ export const homepageTranslations = {
     "homepage.projects":
       "In my free time, I like to work on side projects. Most of them are just for fun, but some of them are actually useful.",
     "homepage.blog.0":
-      "I also write a blog about web development and other stuff. I rarely post, because most of the time I'll just post a link on my",
+      "I also write a blog about web development and other stuff. I rarely post, because most of the time I'll just post a link on my ",
     "homepage.blog.1":
       ", but if I have something to say, I'll write a full article.",
     "homepage.projects.1.title": "Personal todo",
@@ -28,7 +28,7 @@ export const homepageTranslations = {
     "homepage.projects":
       "Pendant mon temps libre, j'aime travailler sur des projets secondaires. La plupart d'entre eux sont juste pour le plaisir, mais certains sont réellement utiles.",
     "homepage.blog.0":
-      "J'écris également un blog sur le développement web et d'autres sujets. Je poste rarement, car la plupart du temps je me contente de poster un lien sur ma",
+      "J'écris également un blog sur le développement web et d'autres sujets. Je poste rarement, car la plupart du temps je me contente de poster un lien sur ma ",
     "homepage.blog.1":
       ", mais si j'ai quelque chose à dire, j'écrirai un article complet.",
     "homepage.projects.1.title": "Personal todo",
@@ -47,7 +47,7 @@ export const homepageTranslations = {
     "homepage.projects":
       'В свободное время я люблю работать над "pet-проектами". Большинство из них - это просто развлечение, но некоторые из них действительно полезны.',
     "homepage.blog.0":
-      "Я также пишу блог о веб-разработке и других вещах. Я редко публикую, потому что большую часть времени я просто публикую ссылку на свой",
+      "Я также пишу блог о веб-разработке и других вещах. Я редко публикую, потому что большую часть времени я просто публикую ссылку на свой ",
     "homepage.blog.1":
       ", но если у меня есть что сказать, я напишу полную статью.",
     "homepage.projects.1.title": "Персональная тудушка",

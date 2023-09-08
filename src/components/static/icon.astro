@@ -1,15 +1,18 @@
 ---
-export type TechLinkIcon = "digikare";
+export type TechLinkIcon = "digikare" | "telegram";
+import AstroIcon from "astro-icon";
 export interface Props {
   icon: TechLinkIcon;
 }
+
+const { icon } = Astro.props;
 ---
 
 {
-  Astro.props.icon === "digikare" && (
+  icon === "digikare" && (
     <svg
-      width={78 * 0.17}
-      height={67 * 0.17}
+      width={13.26}
+      height={11.39}
       viewBox="0 0 78 67"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -23,5 +26,10 @@ export interface Props {
         class="fill-[#30C5A7]"
       />
     </svg>
+  )
+}
+{
+  icon === "telegram" && (
+    <AstroIcon name="tabler:brand-telegram" width="15" class="text-[#0088cc]" />
   )
 }

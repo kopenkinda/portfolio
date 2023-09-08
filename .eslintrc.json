@@ -30,7 +30,8 @@
       },
       "rules": {
         "astro/prefer-object-class-list": "error",
-        "react/no-unknown-property": "off"
+        "react/no-unknown-property": "off",
+        "react/jsx-key": "off"
       }
     }
   ]

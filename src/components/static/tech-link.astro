@@ -11,6 +11,7 @@ export interface Props {
 <span class="not-prose">
   <a
     href={Astro.props.href}
+    rel={Astro.props.blank ? "noopener noreferrer" : "noopener"}
     target={Astro.props.blank ? "_blank" : undefined}
     class="inline-flex items-center rounded border border-neutral-200 bg-neutral-50 p-1 text-sm leading-4 text-neutral-900 no-underline dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
   >

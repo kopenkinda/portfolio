@@ -2,12 +2,12 @@ import { Language } from "../language";
 
 export const miscTranslations = {
   [Language.en]: {
-    "misc.telegram-channel": "Telegram channel",
+    "misc.telegram-channel": "telegram channel",
   },
   [Language.fr]: {
-    "misc.telegram-channel": "chaîne Telegram",
+    "misc.telegram-channel": "chaîne telegram",
   },
   [Language.ru]: {
-    "misc.telegram-channel": "Telegram канал",
+    "misc.telegram-channel": "telegram канал",
   },
 } as const;
