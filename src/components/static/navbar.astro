@@ -32,12 +32,12 @@ const isActive = (type: "home" | "blog") => {
     >
       <div class="flex flex-row space-x-0 pr-10">
         <NavbarLink
-          title={t("nav.home")}
+          title={t("ui.nav.home")}
           href={"/" + lang}
           active={isActive("home")}
         />
         <NavbarLink
-          title={t("nav.about")}
+          title={t("ui.nav.blog")}
           href={`/${lang}/blog`}
           active={isActive("blog")}
         />

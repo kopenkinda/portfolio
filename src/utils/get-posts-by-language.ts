@@ -1,5 +1,5 @@
 import { getCollection } from "astro:content";
-import { Language } from "~/i18n/ui";
+import { Language } from "~/i18n/language";
 
 export type BlogPosts = Awaited<ReturnType<typeof getCollection>>;
 

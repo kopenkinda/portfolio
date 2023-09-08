@@ -12,9 +12,9 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
 
-<Layout title={t("name")}>
+<Layout title={t("ui.name")}>
   <div class="mb-4 border-l-2 border-red-400 pl-4">
-    {t("WIP")}
+    {t("ui.work-in-progress")}
   </div>
   <h1
     class="mb-8 animate-fade-up text-2xl font-bold tracking-tight animate-delay-200"
@@ -42,15 +42,15 @@ const t = useTranslations(lang);
         class="my-8 flex w-full flex-col space-x-0 space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
       >
         <Project
-          title={t("projects.1.title")}
-          description={t("projects.1.description")}
+          title={t("homepage.projects.1.title")}
+          description={t("homepage.projects.1.description")}
           href="https://todos.kopenkin.tech/"
           image={TodoAppImage}
           blank
         />
         <Project
-          title={t("projects.2.title")}
-          description={t("projects.2.description")}
+          title={t("homepage.projects.2.title")}
+          description={t("homepage.projects.2.description")}
           image={GamedleAssistantImage}
           href="/gamedle-assistant"
         />
