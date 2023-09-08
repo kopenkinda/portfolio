@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { type IFilters, type TripleFilter, useFilters } from "./filters.store";
 import {
   IconSquare,
@@ -13,9 +13,13 @@ import { cn } from "~/utils/clsx";
 export const MultiFilter = ({
   _key,
   list,
+  icon,
+  iconOff,
 }: {
   _key: keyof IFilters;
   list: Record<string, TripleFilter>;
+  icon: ReactNode;
+  iconOff?: ReactNode;
 }) => {
   const [set] = useFilters((draft) => [draft.set]);
   const [visible, setVisible] = useState(false);
@@ -25,7 +29,7 @@ export const MultiFilter = ({
         onClick={() => setVisible((v) => !v)}
         className="flex w-full items-center justify-center gap-0.5"
       >
-        {visible ? <IconEyeOff stroke={1} /> : <IconEye stroke={1} />}
+        {visible ? iconOff || <IconEyeOff stroke={1} /> : icon}
         <span>
           {_key[0]?.toLocaleUpperCase()}
           {_key.slice(1).toLocaleLowerCase()}

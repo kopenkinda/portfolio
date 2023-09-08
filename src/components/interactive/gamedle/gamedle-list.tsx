@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import { IconArrowRight } from "@tabler/icons-react";
-import { applyFilters } from "~/utils/gamedle/apply-filters";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { IconArrowRight, IconLoader } from "@tabler/icons-react";
+import { applyFilters, setDefaultFilters } from "~/utils/gamedle/apply-filters";
 import type { Game } from "~/utils/gamedle/get-game-info";
 import { Filters } from "./filters";
-import { useFilters, type TripleFilter } from "./filters.store";
+import { useFilters } from "./filters.store";
 import GameItem from "./game-item";
 import { Button } from "../Button";
 
@@ -16,40 +16,27 @@ const GamedleList = ({
 }) => {
   const filters = useFilters();
   const [showingRev, setShowingRev] = useState(-1);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
-    const genres = new Set<string>();
-    const publishers = new Set<string>();
-    const themes = new Set<string>();
-    for (const game of initial) {
-      for (const genre of game.genres) {
-        genres.add(genre.name);
-      }
-      for (const publisher of game.involved_companies) {
-        publishers.add(publisher.name);
-      }
-      for (const theme of game.themes) {
-        themes.add(theme.name);
-      }
-    }
-    const finalGenres: Record<string, TripleFilter> = {};
-    const finalPublishers: Record<string, TripleFilter> = {};
-    const finalThemes: Record<string, TripleFilter> = {};
-    for (const genre of genres) {
-      finalGenres[genre] = "non-selected";
-    }
-    for (const publisher of publishers) {
-      finalPublishers[publisher] = "non-selected";
-    }
-    for (const theme of themes) {
-      finalThemes[theme] = "non-selected";
-    }
+    const { finalGenres, finalPublishers, finalThemes } =
+      setDefaultFilters(initial);
     filters.set(() => ({
       genres: finalGenres,
       publisher: finalPublishers,
       themes: finalThemes,
     }));
   }, []);
+
   const filtered = useMemo(() => applyFilters(initial, filters), [filters]);
+
+  const showList = useCallback(() => {
+    setLoading(true);
+    setTimeout(() => {
+      setShowingRev(filters.rev);
+      setLoading(false);
+    }, 200);
+  }, [filters]);
+
   return (
     <div className="my-4 w-full space-y-2">
       <Filters />
@@ -68,12 +55,14 @@ const GamedleList = ({
         {filters.rev !== showingRev ? (
           <Button
             className="mx-auto mt-2 flex items-center justify-center gap-0.5 px-2 pl-3"
-            onClick={() => {
-              setShowingRev(filters.rev);
-            }}
+            onClick={showList}
           >
             Show results
-            <IconArrowRight stroke={1} />
+            {loading ? (
+              <IconLoader stroke={1} className="animate-spin" />
+            ) : (
+              <IconArrowRight stroke={1} />
+            )}
           </Button>
         ) : null}
         {filters.rev === showingRev ? (

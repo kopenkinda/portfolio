@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IconEye, IconEyeOff } from "@tabler/icons-react";
+import { IconCalendar, IconCalendarOff } from "@tabler/icons-react";
 
 import { useFilters } from "./filters.store";
 import { Button } from "../Button";
@@ -19,7 +19,7 @@ export const ReleaseDateFilters = () => {
         onClick={() => setVisible((v) => !v)}
         className="flex w-full items-center justify-center gap-0.5"
       >
-        {visible ? <IconEyeOff stroke={1} /> : <IconEye stroke={1} />}
+        {visible ? <IconCalendarOff stroke={1} /> : <IconCalendar stroke={1} />}
         Release year
       </Button>
 

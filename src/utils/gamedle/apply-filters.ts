@@ -118,3 +118,33 @@ export const applyFilters = (list: Game[], filters: Omit<IFilters, "set">) => {
     return true;
   });
 };
+
+export const setDefaultFilters = (initial: Game[]) => {
+  const genres = new Set<string>();
+  const publishers = new Set<string>();
+  const themes = new Set<string>();
+  for (const game of initial) {
+    for (const genre of game.genres) {
+      genres.add(genre.name);
+    }
+    for (const publisher of game.involved_companies) {
+      publishers.add(publisher.name);
+    }
+    for (const theme of game.themes) {
+      themes.add(theme.name);
+    }
+  }
+  const finalGenres: Record<string, TripleFilter> = {};
+  const finalPublishers: Record<string, TripleFilter> = {};
+  const finalThemes: Record<string, TripleFilter> = {};
+  for (const genre of genres) {
+    finalGenres[genre] = "non-selected";
+  }
+  for (const publisher of publishers) {
+    finalPublishers[publisher] = "non-selected";
+  }
+  for (const theme of themes) {
+    finalThemes[theme] = "non-selected";
+  }
+  return { finalGenres, finalPublishers, finalThemes };
+};
