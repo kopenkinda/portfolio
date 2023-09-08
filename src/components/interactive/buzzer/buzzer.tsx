@@ -121,7 +121,7 @@ export default function Buzzer() {
               }, 1000);
             }}
             disabled={copied}
-            className="dar bg-neutral-200k:border-neutral-700 absolute right-0 top-0 rounded-bl-md border border-r-0 border-t-0 border-neutral-200 p-2 transition-all disabled:cursor-not-allowed disabled:dark:bg-neutral-800"
+            className="absolute right-0 top-0 rounded-bl-md border border-r-0 border-t-0 border-neutral-200 bg-neutral-200 p-2 transition-all disabled:cursor-not-allowed dark:border-neutral-700 disabled:dark:bg-neutral-800"
           >
             {copied ? (
               <IconCopyOff stroke={1} size={18} />
