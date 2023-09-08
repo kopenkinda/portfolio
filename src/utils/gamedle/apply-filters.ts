@@ -190,11 +190,12 @@ export const setDefaultFilters = (initial: Game[]) => {
   for (const engine of engines) {
     finalEngines[engine] = "non-selected";
   }
-  return {
+  const result: Partial<Omit<IFilters, "set">> = {
     genres: finalGenres,
-    publishers: finalPublishers,
+    publisher: finalPublishers,
     themes: finalThemes,
     platforms: finalPlatforms,
     gameEngines: finalEngines,
-  } as Partial<Omit<IFilters, "set">>;
+  };
+  return result;
 };
