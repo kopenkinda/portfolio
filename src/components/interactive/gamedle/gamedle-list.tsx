@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IconArrowRight, IconLoader } from "@tabler/icons-react";
+import { IconArrowRight, IconLoader, IconRotate } from "@tabler/icons-react";
 import { applyFilters, setDefaultFilters } from "~/utils/gamedle/apply-filters";
 import type { Game } from "~/utils/gamedle/get-game-info";
 import { Filters } from "./filters";
@@ -48,17 +48,31 @@ const GamedleList = ({
           </span>
         </p>
         {filters.rev !== showingRev ? (
-          <Button
-            className="mx-auto mt-2 flex items-center justify-center gap-0.5 px-2 pl-3"
-            onClick={showList}
-          >
-            Show results
-            {loading ? (
-              <IconLoader stroke={1} className="animate-spin" />
-            ) : (
-              <IconArrowRight stroke={1} />
+          <div className="mt-2 flex items-center justify-center gap-2">
+            <Button className="px-2 pl-3" onClick={showList}>
+              Show results
+              {loading ? (
+                <IconLoader stroke={1} className="animate-spin" />
+              ) : (
+                <IconArrowRight stroke={1} />
+              )}
+            </Button>
+            {filters.rev !== 0 && (
+              <Button
+                className="p-2"
+                onClick={() => {
+                  const sure = window.confirm(
+                    "Are you sure you want to reset all filters?",
+                  );
+                  if (!sure) return;
+                  filters.set(() => setDefaultFilters(initial));
+                }}
+              >
+                Reset
+                <IconRotate stroke={1} className="-m-1 ml-1 rotate-180 p-1" />
+              </Button>
             )}
-          </Button>
+          </div>
         ) : null}
         {filters.rev === showingRev ? (
           <div className="animate-fade-up">
