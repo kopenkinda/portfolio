@@ -14,7 +14,7 @@ export type IFilters = {
   perspectives: Record<string, TripleFilter>;
   gameEngines: Record<string, TripleFilter>;
   modified: () => boolean;
-  set: StoreApi<Omit<IFilters, "set" | "rev">>["setState"];
+  set: StoreApi<Omit<IFilters, "set" | "rev" | "modified">>["setState"];
   rev: number;
 };
 

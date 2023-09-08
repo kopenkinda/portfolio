@@ -22,6 +22,17 @@ export const ReleaseDateFilters = () => {
     const parsed = parseInt(value);
     return (isNaN(parsed) ? "" : parsed) + "";
   };
+
+  const set = (
+    key: Omit<keyof typeof filters, "set">,
+    value: string,
+    oldValue: string,
+  ) => {
+    const newValue = parseValue(value);
+    if (newValue === oldValue) return;
+    filters.set(() => ({ [key as string]: newValue }));
+  };
+
   return (
     <div>
       <Button
@@ -52,9 +63,7 @@ export const ReleaseDateFilters = () => {
               pattern="[0-9]+"
               max={new Date().getFullYear() + 50}
               onChange={(e) =>
-                filters.set(() => ({
-                  yearBefore: parseValue(e.currentTarget.value),
-                }))
+                set("yearBefore", e.currentTarget.value, filters.yearBefore)
               }
             />
           </div>
@@ -73,9 +82,7 @@ export const ReleaseDateFilters = () => {
               pattern="[0-9]+"
               max={new Date().getFullYear() + 50}
               onChange={(e) =>
-                filters.set(() => ({
-                  yearAfter: parseValue(e.currentTarget.value),
-                }))
+                set("yearAfter", e.currentTarget.value, filters.yearAfter)
               }
             />
           </div>
@@ -94,9 +101,7 @@ export const ReleaseDateFilters = () => {
               pattern="[0-9]+"
               max={new Date().getFullYear() + 50}
               onChange={(e) =>
-                filters.set(() => ({
-                  yearExact: parseValue(e.currentTarget.value),
-                }))
+                set("yearExact", e.currentTarget.value, filters.yearExact)
               }
             />
           </div>
