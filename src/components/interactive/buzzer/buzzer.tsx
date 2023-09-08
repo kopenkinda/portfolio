@@ -69,19 +69,18 @@ const map: Record<string, string | undefined> = {
   z: "Zúlu",
 };
 
-function buzzer(input: string, inline = false): string {
+function buzzer(input: string): string {
   return input
     .toLocaleLowerCase()
     .split("")
-    .map((item) => map[item] ?? item)
-    .join(inline ? " " : "\n");
+    .map((item) => map[item] ?? item);
 }
 
 export default function Buzzer() {
   const [value, setValue] = useState("");
   const [inline, setInline] = useState(false);
-  const result = useMemo(() => buzzer(value, inline), [value, inline]);
-  const [copied, copy, setCopied] = useCopy(result);
+  const result = useMemo(() => buzzer(value), [value]);
+  const [copied, copy, setCopied] = useCopy(result.join(inline ? "" : "\n"));
   return (
     <div className="flex w-full flex-col">
       <div className="mb-2 flex gap-2">
@@ -121,7 +120,7 @@ export default function Buzzer() {
               }, 1000);
             }}
             disabled={copied}
-            className="absolute right-0 top-0 rounded-bl-md border border-r-0 border-t-0 border-neutral-200 bg-neutral-200 p-2 transition-all disabled:cursor-not-allowed dark:border-neutral-700 disabled:dark:bg-neutral-800"
+            className="absolute right-0 top-0 rounded-bl-md border border-r-0 border-t-0 border-neutral-200 p-2 transition-all disabled:cursor-not-allowed dark:border-neutral-700 disabled:dark:bg-neutral-800"
           >
             {copied ? (
               <IconCopyOff stroke={1} size={18} />
@@ -131,7 +130,17 @@ export default function Buzzer() {
           </button>
         ) : null}
         {result.length === 0 ? "The result will be here" : null}
-        {result}
+        {result.map((item, index) => (
+          <span
+            key={index}
+            className={`${
+              inline ? "inline-block" : "block"
+            } mr-[1ch] whitespace-nowrap`}
+          >
+            <span className="text-lg font-bold text-green-600">{item[0]}</span>
+            {item.slice(1)}
+          </span>
+        ))}
       </pre>
     </div>
   );
