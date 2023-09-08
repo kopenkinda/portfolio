@@ -11,12 +11,23 @@ import {
   IconBuildingSkyscraper,
   IconPerspective,
   IconPerspectiveOff,
+  IconDeviceNintendo,
+  IconDeviceNintendoOff,
+  IconEngine,
+  IconEngineOff,
 } from "@tabler/icons-react";
 
 export const Filters = () => {
   const filters = useFilters();
   return (
     <div className="grid w-full grid-cols-1 gap-2 rounded-md sm:grid-cols-2 md:grid-cols-3">
+      <ReleaseDateFilters />
+      <MultiFilter
+        icon={<IconDeviceNintendo stroke={1} />}
+        iconOff={<IconDeviceNintendoOff stroke={1} />}
+        _key="platforms"
+        list={filters.platforms}
+      />
       <MultiFilter
         icon={<IconBooks stroke={1} />}
         iconOff={<IconBooksOff stroke={1} />}
@@ -29,11 +40,16 @@ export const Filters = () => {
         _key="themes"
         list={filters.themes}
       />
-      <ReleaseDateFilters />
       <MultiFilter
         icon={<IconBrandAppleArcade stroke={1} />}
         _key="gameModes"
         list={filters.gameModes}
+      />
+      <MultiFilter
+        icon={<IconEngine stroke={1} />}
+        iconOff={<IconEngineOff stroke={1} />}
+        _key="gameEngines"
+        list={filters.gameEngines}
       />
       <MultiFilter
         icon={<IconBuildingSkyscraper stroke={1} />}

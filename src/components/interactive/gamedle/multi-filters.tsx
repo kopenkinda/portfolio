@@ -18,22 +18,26 @@ export const MultiFilter = ({
 }: {
   _key: keyof IFilters;
   list: Record<string, TripleFilter>;
-  icon: ReactNode;
+  icon?: ReactNode;
   iconOff?: ReactNode;
 }) => {
   const [set] = useFilters((draft) => [draft.set]);
   const [visible, setVisible] = useState(false);
+  const label = _key.split("").reduce((acc, v, idx) => {
+    if (idx === 0) return v.toLocaleUpperCase();
+    if (v.toLocaleUpperCase() === v) return acc + " " + v;
+    return acc + v;
+  }, "");
   return (
     <div className="flex flex-col items-start gap-0.5">
       <Button
         onClick={() => setVisible((v) => !v)}
         className="flex w-full items-center justify-center gap-0.5"
       >
-        {visible ? iconOff || <IconEyeOff stroke={1} /> : icon}
-        <span>
-          {_key[0]?.toLocaleUpperCase()}
-          {_key.slice(1).toLocaleLowerCase()}
-        </span>
+        {visible
+          ? iconOff || <IconEyeOff stroke={1} />
+          : icon || <IconEye stroke={1} />}
+        <span>{label}</span>
       </Button>
       {visible ? (
         <>

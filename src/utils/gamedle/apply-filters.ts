@@ -19,18 +19,24 @@ export const applyFilters = (list: Game[], filters: Omit<IFilters, "set">) => {
   const themes = Object.entries(filters.themes);
   const perspectives = Object.entries(filters.perspectives);
   const gameModes = Object.entries(filters.gameModes);
+  const platforms = Object.entries(filters.platforms);
+  const engines = Object.entries(filters.gameEngines);
 
   const doNotShowGenres = selectDisabled(genres);
   const doNotShowPublishers = selectDisabled(publishers);
   const doNotShowThemes = selectDisabled(themes);
   const doNotShowPerspectives = selectDisabled(perspectives);
   const doNotShowGameModes = selectDisabled(gameModes);
+  const doNotShowPlatforms = selectDisabled(platforms);
+  const doNotShowEngines = selectDisabled(engines);
 
   const hasToIncludeGenres = selectEnabled(genres);
   const hasToIncludePublishers = selectEnabled(publishers);
   const hasToIncludeThemes = selectEnabled(themes);
   const hasToIncludePerspectives = selectEnabled(perspectives);
   const hasToIncludeGameModes = selectEnabled(gameModes);
+  const hasToIncludePlatforms = selectEnabled(platforms);
+  const hasToIncludeEngines = selectEnabled(engines);
 
   return list.filter((game) => {
     // Year filter
@@ -115,6 +121,28 @@ export const applyFilters = (list: Game[], filters: Omit<IFilters, "set">) => {
         return false;
       }
     }
+    // Platforms
+    for (const platform of game.platforms) {
+      if (doNotShowPlatforms.includes(platform.name)) {
+        return false;
+      }
+    }
+    for (const platform of hasToIncludePlatforms) {
+      if (!game.platforms.map((p) => p.name).includes(platform)) {
+        return false;
+      }
+    }
+    // Engines
+    for (const engine of game.game_engines) {
+      if (doNotShowEngines.includes(engine.name)) {
+        return false;
+      }
+    }
+    for (const engine of hasToIncludeEngines) {
+      if (!game.game_engines.map((p) => p.name).includes(engine)) {
+        return false;
+      }
+    }
     return true;
   });
 };
@@ -123,6 +151,8 @@ export const setDefaultFilters = (initial: Game[]) => {
   const genres = new Set<string>();
   const publishers = new Set<string>();
   const themes = new Set<string>();
+  const platforms = new Set<string>();
+  const engines = new Set<string>();
   for (const game of initial) {
     for (const genre of game.genres) {
       genres.add(genre.name);
@@ -133,10 +163,18 @@ export const setDefaultFilters = (initial: Game[]) => {
     for (const theme of game.themes) {
       themes.add(theme.name);
     }
+    for (const platform of game.platforms) {
+      platforms.add(platform.name);
+    }
+    for (const engine of game.game_engines) {
+      engines.add(engine.name);
+    }
   }
   const finalGenres: Record<string, TripleFilter> = {};
   const finalPublishers: Record<string, TripleFilter> = {};
   const finalThemes: Record<string, TripleFilter> = {};
+  const finalPlatforms: Record<string, TripleFilter> = {};
+  const finalEngines: Record<string, TripleFilter> = {};
   for (const genre of genres) {
     finalGenres[genre] = "non-selected";
   }
@@ -146,5 +184,17 @@ export const setDefaultFilters = (initial: Game[]) => {
   for (const theme of themes) {
     finalThemes[theme] = "non-selected";
   }
-  return { finalGenres, finalPublishers, finalThemes };
+  for (const platform of platforms) {
+    finalPlatforms[platform] = "non-selected";
+  }
+  for (const engine of engines) {
+    finalEngines[engine] = "non-selected";
+  }
+  return {
+    genres: finalGenres,
+    publishers: finalPublishers,
+    themes: finalThemes,
+    platforms: finalPlatforms,
+    gameEngines: finalEngines,
+  } as Partial<Omit<IFilters, "set">>;
 };

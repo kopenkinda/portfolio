@@ -8,7 +8,7 @@ const modeMap = {
   4: "Split-screen",
   5: "MMO",
   6: "Battle-Royale",
-};
+} as Record<number, string | undefined>;
 
 const perspectiveMap = {
   0: "No data",
@@ -19,7 +19,7 @@ const perspectiveMap = {
   5: "Text",
   6: "Auditory",
   7: "Virtual Reality",
-};
+} as Record<number, string | undefined>;
 
 export const modeToLabel = (x: number) => {
   return modeMap[x] ?? `Not implemented ${x}`;
@@ -35,14 +35,21 @@ export type IFilters = {
   yearBefore: string;
   yearAfter: string;
   yearExact: string;
+  platforms: Record<string, TripleFilter>;
   genres: Record<string, TripleFilter>;
   themes: Record<string, TripleFilter>;
   publisher: Record<string, TripleFilter>;
   gameModes: Record<string, TripleFilter>;
   perspectives: Record<string, TripleFilter>;
+  gameEngines: Record<string, TripleFilter>;
   set: StoreApi<Omit<IFilters, "set" | "rev">>["setState"];
   rev: number;
 };
+
+const labelFilters = (map: Record<number, string | undefined>) =>
+  Object.fromEntries(
+    Object.values(map).map((value) => [value, "non-selected"]),
+  );
 
 export const useFilters = create<IFilters>((set) => ({
   yearAfter: "",
@@ -51,15 +58,10 @@ export const useFilters = create<IFilters>((set) => ({
   genres: {},
   themes: {},
   publisher: {},
-  gameModes: Object.fromEntries(
-    Object.values(modeMap).map((mode) => [mode, "non-selected"]),
-  ),
-  perspectives: Object.fromEntries(
-    Object.values(perspectiveMap).map((perspective) => [
-      perspective,
-      "non-selected",
-    ]),
-  ),
+  platforms: {},
+  gameModes: labelFilters(modeMap),
+  perspectives: labelFilters(perspectiveMap),
+  gameEngines: {},
   set: (arg) => {
     if (typeof arg === "function") {
       set((state) => ({

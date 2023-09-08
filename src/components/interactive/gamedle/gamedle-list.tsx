@@ -17,14 +17,9 @@ const GamedleList = ({
   const filters = useFilters();
   const [showingRev, setShowingRev] = useState(-1);
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    const { finalGenres, finalPublishers, finalThemes } =
-      setDefaultFilters(initial);
-    filters.set(() => ({
-      genres: finalGenres,
-      publisher: finalPublishers,
-      themes: finalThemes,
-    }));
+    filters.set(() => setDefaultFilters(initial));
   }, []);
 
   const filtered = useMemo(() => applyFilters(initial, filters), [filters]);
