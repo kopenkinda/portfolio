@@ -137,6 +137,7 @@ export default function Buzzer() {
               inline ? "inline-block" : "block"
             } mr-[1ch] whitespace-nowrap`}
           >
+            {item === " " ? <>&nbsp;</> : null}
             <span className="text-lg font-bold text-green-600">{item[0]}</span>
             {item.slice(1)}
           </span>
