@@ -1,10 +1,42 @@
 import {
   type IFilters,
   type TripleFilter,
-  modeToLabel,
-  perspectiveToLabel,
 } from "~/components/interactive/gamedle/filters.store";
 import { type Game } from "./get-game-info";
+
+const labelFilters = (map: Record<number, string | undefined>) =>
+  Object.fromEntries(
+    Object.values(map).map((value) => [value, "non-selected"]),
+  );
+
+const modeMap: Record<number, string | undefined> = {
+  0: "No data",
+  1: "Singleplayer",
+  2: "Multiplayer",
+  3: "Co-operative",
+  4: "Split-screen",
+  5: "MMO",
+  6: "Battle-Royale",
+};
+
+const perspectiveMap: Record<number, string | undefined> = {
+  0: "No data",
+  1: "First person",
+  2: "Third person",
+  3: "Isometric",
+  4: "Side view",
+  5: "Text",
+  6: "Auditory",
+  7: "Virtual Reality",
+};
+
+export const modeToLabel = (x: number) => {
+  return modeMap[x] ?? `Not implemented ${x}`;
+};
+
+export const perspectiveToLabel = (x: number) => {
+  return perspectiveMap[x] ?? `Not implemented ${x}`;
+};
 
 const validNumber = (x: string) => x !== "" && !Number.isNaN(+x);
 
@@ -196,6 +228,12 @@ export const setDefaultFilters = (initial: Game[]) => {
     themes: finalThemes,
     platforms: finalPlatforms,
     gameEngines: finalEngines,
+    gameModes: labelFilters(modeMap),
+    perspectives: labelFilters(perspectiveMap),
+    rev: 0,
+    yearAfter: "",
+    yearBefore: "",
+    yearExact: "",
   };
   return result;
 };

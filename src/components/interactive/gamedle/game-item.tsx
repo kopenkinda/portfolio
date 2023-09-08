@@ -1,5 +1,5 @@
 import { type Game } from "~/utils/gamedle/get-game-info";
-import { modeToLabel, perspectiveToLabel } from "./filters.store";
+import { modeToLabel, perspectiveToLabel } from "~/utils/gamedle/apply-filters";
 import { IconList } from "./icon-list";
 import {
   IconDevicesPc,

@@ -13,14 +13,26 @@ export const ReleaseDateFilters = () => {
     set: draft.set,
   }));
 
+  const modified =
+    filters.yearBefore !== "" ||
+    filters.yearAfter !== "" ||
+    filters.yearExact !== "";
+
+  const parseValue = (value: string) => {
+    const parsed = parseInt(value);
+    return (isNaN(parsed) ? "" : parsed) + "";
+  };
   return (
     <div>
       <Button
         onClick={() => setVisible((v) => !v)}
-        className="flex w-full items-center justify-center gap-0.5"
+        className="relative flex w-full items-center justify-center gap-0.5"
       >
         {visible ? <IconCalendarOff stroke={1} /> : <IconCalendar stroke={1} />}
         Release year
+        {modified && (
+          <span className="absolute right-0 top-0 h-2 w-2 -translate-y-1/2 translate-x-1/2 place-items-center rounded-full bg-violet-400 dark:bg-violet-600" />
+        )}
       </Button>
 
       {visible ? (
@@ -37,12 +49,11 @@ export const ReleaseDateFilters = () => {
               className="w-full rounded-md border border-neutral-400 bg-transparent px-2 py-0.5 dark:border-neutral-600"
               type="text"
               value={filters.yearBefore}
-              min={-1}
-              step={1}
+              pattern="[0-9]+"
               max={new Date().getFullYear() + 50}
               onChange={(e) =>
                 filters.set(() => ({
-                  yearBefore: e.currentTarget.value,
+                  yearBefore: parseValue(e.currentTarget.value),
                 }))
               }
             />
@@ -59,12 +70,11 @@ export const ReleaseDateFilters = () => {
               className="w-full rounded-md border border-neutral-400 bg-transparent px-2 py-0.5 dark:border-neutral-600"
               type="text"
               value={filters.yearAfter}
-              min={-1}
-              step={1}
+              pattern="[0-9]+"
               max={new Date().getFullYear() + 50}
               onChange={(e) =>
                 filters.set(() => ({
-                  yearAfter: e.currentTarget.value,
+                  yearAfter: parseValue(e.currentTarget.value),
                 }))
               }
             />
@@ -81,12 +91,11 @@ export const ReleaseDateFilters = () => {
               className="w-full rounded-md border border-neutral-400 bg-transparent px-2 py-0.5 dark:border-neutral-600"
               type="text"
               value={filters.yearExact}
-              min={-1}
-              step={1}
+              pattern="[0-9]+"
               max={new Date().getFullYear() + 50}
               onChange={(e) =>
                 filters.set(() => ({
-                  yearExact: e.currentTarget.value,
+                  yearExact: parseValue(e.currentTarget.value),
                 }))
               }
             />

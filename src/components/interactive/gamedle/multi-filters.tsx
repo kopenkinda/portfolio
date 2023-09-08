@@ -56,16 +56,14 @@ export const MultiFilter = ({
     <div className="flex flex-col items-start gap-0.5">
       <Button
         onClick={() => setVisible((v) => !v)}
-        className="flex w-full items-center justify-center gap-0.5"
+        className="relative flex w-full items-center justify-center gap-0.5"
       >
         {visible
           ? iconOff || <IconEyeOff stroke={1} />
           : icon || <IconEye stroke={1} />}
         <span>{label}</span>
         {modifiedCount > 0 && (
-          <span className="ml-1 inline-grid h-4 min-w-[1rem] place-items-center rounded-full bg-violet-400 p-[2px] text-xs font-bold leading-none text-white dark:bg-violet-600">
-            {modifiedCount}
-          </span>
+          <span className="absolute right-0 top-0 h-2 w-2 -translate-y-1/2 translate-x-1/2 place-items-center rounded-full bg-violet-400 dark:bg-violet-600" />
         )}
       </Button>
       {visible ? (
