@@ -32,7 +32,8 @@
         "extraFileExtensions": [".astro"]
       },
       "rules": {
-        "astro/prefer-object-class-list": "error"
+        "astro/prefer-object-class-list": "error",
+        "react/no-unknown-property": "off"
       }
     }
   ]
