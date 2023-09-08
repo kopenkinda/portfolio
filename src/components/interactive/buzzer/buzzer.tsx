@@ -80,7 +80,7 @@ export default function Buzzer() {
   const [value, setValue] = useState("");
   const [inline, setInline] = useState(false);
   const result = useMemo(() => buzzer(value), [value]);
-  const [copied, copy, setCopied] = useCopy(result.join(inline ? "" : "\n"));
+  const [copied, copy, setCopied] = useCopy(result.join(inline ? " " : "\n"));
   return (
     <div className="flex w-full flex-col">
       <div className="mb-2 flex gap-2">
