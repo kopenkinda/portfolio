@@ -26,13 +26,21 @@ const GamedleList = ({ initial }: { initial: Game[] }) => {
     }, 200);
   }, [filters]);
 
+  const resetFilters = () => {
+    const sure = window.confirm("Are you sure you want to reset all filters?");
+    if (!sure) return;
+    filters.set(() => setDefaultFilters(initial));
+  };
+  const showingCurrentRev = showingRev === filters.rev;
+  const modified = filters.modified();
+
   return (
     <div className="my-4 w-full space-y-2">
       <Filters />
-      <div className="w-full pt-8">
-        {filters.rev !== showingRev ? (
-          <div className="mt-2 flex items-center justify-center gap-2">
-            {filtered.length !== 0 && (
+      <div className="w-full">
+        {(!showingCurrentRev || modified) && (
+          <div className="my-8 flex items-center justify-center gap-2">
+            {!showingCurrentRev && (
               <Button className="px-2 pl-3" onClick={showList}>
                 Show {filtered.length} results
                 {loading ? (
@@ -42,23 +50,14 @@ const GamedleList = ({ initial }: { initial: Game[] }) => {
                 )}
               </Button>
             )}
-            {filters.modified() && (
-              <Button
-                className="p-2"
-                onClick={() => {
-                  const sure = window.confirm(
-                    "Are you sure you want to reset all filters?",
-                  );
-                  if (!sure) return;
-                  filters.set(() => setDefaultFilters(initial));
-                }}
-              >
+            {modified && (
+              <Button className="p-2" onClick={resetFilters}>
                 Reset filters
                 <IconRotate stroke={1} className="-m-1 ml-1 rotate-180 p-1" />
               </Button>
             )}
           </div>
-        ) : null}
+        )}
         {filters.rev === showingRev ? (
           <div className="animate-fade-up">
             {filtered.map((game) => (
