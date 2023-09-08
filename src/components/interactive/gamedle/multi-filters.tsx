@@ -38,6 +38,10 @@ export const MultiFilter = ({
 
   const _list = Object.entries(list);
 
+  const modifiedCount = _list.filter(
+    ([, filter]) => filter !== "non-selected",
+  ).length;
+
   const allFiltersChecked = _list.every(
     ([, filter]) => filter !== "non-selected",
   );
@@ -58,6 +62,11 @@ export const MultiFilter = ({
           ? iconOff || <IconEyeOff stroke={1} />
           : icon || <IconEye stroke={1} />}
         <span>{label}</span>
+        {modifiedCount > 0 && (
+          <span className="ml-1 inline-grid h-4 min-w-[1rem] place-items-center rounded-full bg-violet-400 p-[2px] text-xs font-bold leading-none text-white dark:bg-violet-600">
+            {modifiedCount}
+          </span>
+        )}
       </Button>
       {visible ? (
         <>
