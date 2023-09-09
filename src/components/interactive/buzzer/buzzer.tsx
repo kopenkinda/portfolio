@@ -6,7 +6,7 @@ import {
   IconLineDashed,
 } from "@tabler/icons-react";
 import useCopy from "~/hooks/use-copy";
-import { type BuzzerTranslations } from "~/i18n/translations/buzzer";
+import { type BuzzerTranslations } from "~/i18n/translations/projects/buzzer";
 
 const map: Record<string, string | undefined> = {
   а: "А́нна",

@@ -8,7 +8,7 @@ import {
   useAllTranslations,
   useTranslations,
 } from "~/i18n/utils";
-import type { BuzzerTranslations } from "~/i18n/translations/buzzer";
+import type { BuzzerTranslations } from "~/i18n/translations/projects/buzzer";
 import Alert from "~/components/static/alert.astro";
 const lang = getLangFromUrl(Astro.url);
 const translations = useAllTranslations<BuzzerTranslations>(lang);

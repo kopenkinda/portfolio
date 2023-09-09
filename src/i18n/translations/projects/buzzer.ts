@@ -1,4 +1,4 @@
-import { Language, type DefaultLanguage } from "../language";
+import { Language, type DefaultLanguage } from "../../language";
 
 export const buzzerTranslations = {
   [Language.en]: {

@@ -5,7 +5,7 @@ import { blogTranslations } from "./translations/blog";
 import { homepageTranslations } from "./translations/homepage";
 import { miscTranslations } from "./translations/misc";
 import { seoTranslations } from "./translations/seo";
-import { buzzerTranslations } from "./translations/buzzer";
+import { buzzerTranslations } from "./translations/projects/buzzer";
 
 export const ui = {
   [Language.en]: {
