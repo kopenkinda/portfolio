@@ -48,7 +48,10 @@ const isActive = (type: "home" | "blog") => {
             const newPath = `/${path.params.lang}${
               pagePath.length === 0 ? "" : "/" + pagePath
             }`;
-            return newPath.split("/").length <= 3 ? (
+            const parts = newPath
+              .split("/")
+              .filter((part) => part.trim() !== "");
+            return parts.length <= 2 ? (
               <NavbarLink
                 title={path.params.lang}
                 href={newPath}
