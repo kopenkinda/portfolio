@@ -36,7 +36,7 @@ export const gamedleTranslations = {
     "gamedle.reset-filter.0":
       "Êtes-vous sûr de vouloir réinitialiser le filtre de ",
     "gamedle.reset-filter.1": " ?",
-    "gamedle.search": "Rechercher ",
+    "gamedle.search": "Rechercher les ",
     "gamedle.show-results.0": "Afficher ",
     "gamedle.show-results.1": " résultats",
     "gamedle.diselect-other-filter-options":

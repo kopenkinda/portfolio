@@ -83,7 +83,9 @@ export const MultiFilter = ({
                 value={search}
                 className="w-full rounded-md border border-neutral-200 bg-transparent p-1 pl-6 dark:border-neutral-700"
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder={t("gamedle.search") + label.toLocaleLowerCase()}
+                placeholder={
+                  t("gamedle.search") + `"${label.toLocaleLowerCase()}"`
+                }
               />
             </div>
             {!hasSearched && !allFiltersChecked && (
