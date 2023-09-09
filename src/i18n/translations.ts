@@ -6,6 +6,7 @@ import { homepageTranslations } from "./translations/homepage";
 import { miscTranslations } from "./translations/misc";
 import { seoTranslations } from "./translations/seo";
 import { buzzerTranslations } from "./translations/projects/buzzer";
+import { gamedleTranslations } from "./translations/projects/gamedle";
 
 export const ui = {
   [Language.en]: {
@@ -15,6 +16,7 @@ export const ui = {
     ...miscTranslations.en,
     ...seoTranslations.en,
     ...buzzerTranslations.en,
+    ...gamedleTranslations.en,
   },
   [Language.fr]: {
     ...uiElementsTranslations.fr,
@@ -23,6 +25,7 @@ export const ui = {
     ...miscTranslations.fr,
     ...seoTranslations.fr,
     ...buzzerTranslations.fr,
+    ...gamedleTranslations.fr,
   },
   [Language.ru]: {
     ...uiElementsTranslations.ru,
@@ -31,5 +34,6 @@ export const ui = {
     ...miscTranslations.ru,
     ...seoTranslations.ru,
     ...buzzerTranslations.ru,
+    ...gamedleTranslations.ru,
   },
 } as const;

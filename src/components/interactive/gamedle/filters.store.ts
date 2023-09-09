@@ -1,4 +1,5 @@
 import { type StoreApi, create } from "zustand";
+import type { GamedleTranslations } from "~/i18n/translations/projects/gamedle";
 
 export type TripleFilter = "enabled" | "disabled" | "non-selected";
 
@@ -16,6 +17,30 @@ export type IFilters = {
   modified: () => boolean;
   set: StoreApi<Omit<IFilters, "set" | "rev" | "modified">>["setState"];
   rev: number;
+};
+
+export const filterKeyToTranslationKey = (
+  filterKey: keyof IFilters,
+): keyof GamedleTranslations => {
+  switch (filterKey) {
+    case "gameEngines":
+      return "gamedle.game-engines";
+    case "gameModes":
+      return "gamedle.game-modes";
+    case "genres":
+      return "gamedle.genres";
+    case "perspectives":
+      return "gamedle.game-perspectives";
+    case "platforms":
+      return "gamedle.platforms";
+    case "publisher":
+      return "gamedle.game-publisher";
+    case "themes":
+      return "gamedle.themes";
+    default: {
+      throw new Error("How did we get here?");
+    }
+  }
 };
 
 export const useFilters = create<IFilters>((set, get) => ({

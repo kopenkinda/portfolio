@@ -1,19 +1,8 @@
 ---
-import Layout from "~/components/static/layout.astro";
-import GamedleList from "~/components/interactive/gamedle/gamedle-list";
-import { Gamedle } from "../utils/gamedle/get-game-info";
-import Alert from "~/components/static/alert.astro";
-const list = await Gamedle.getGames();
-const updatedAt = new Date().toLocaleDateString("en-US", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
+import { defaultLang } from "~/i18n/language";
 ---
 
-<Layout title="Gamedle Assistant">
-  <Alert type="info" class="mb-8">
-    Last updated on <span class="font-bold">{updatedAt}</span>
-  </Alert>
-  <GamedleList initial={list} client:load />
-</Layout>
+<meta
+  http-equiv="refresh"
+  content={`0;url=/${defaultLang}/gamedle-assistant/`}
+/>

@@ -3,8 +3,10 @@ import { IconCalendar, IconCalendarOff } from "@tabler/icons-react";
 
 import { useFilters } from "./filters.store";
 import { Button } from "../Button";
+import { useI18n } from "./use-gamedle-i18n";
 
 export const ReleaseDateFilters = () => {
+  const t = useI18n();
   const [visible, setVisible] = useState(false);
   const filters = useFilters((draft) => ({
     yearBefore: draft.yearBefore,
@@ -40,7 +42,7 @@ export const ReleaseDateFilters = () => {
         className="relative flex w-full items-center justify-center gap-0.5"
       >
         {visible ? <IconCalendarOff stroke={1} /> : <IconCalendar stroke={1} />}
-        Release year
+        {t("gamedle.filters.release-year")}
         {modified && (
           <span className="absolute right-0 top-0 h-2 w-2 -translate-y-1/2 translate-x-1/2 place-items-center rounded-full bg-violet-400 dark:bg-violet-600" />
         )}
@@ -53,7 +55,7 @@ export const ReleaseDateFilters = () => {
               htmlFor="input-yearBefore"
               className="text-sm text-neutral-600 dark:text-neutral-400"
             >
-              Released before
+              {t("gamedle.filters.released-before")}
             </label>
             <input
               id="input-yearBefore"
@@ -72,7 +74,7 @@ export const ReleaseDateFilters = () => {
               htmlFor="input-yearAfter"
               className="text-sm text-neutral-600 dark:text-neutral-400"
             >
-              Released after
+              {t("gamedle.filters.released-after")}
             </label>
             <input
               id="input-yearAfter"
@@ -91,7 +93,7 @@ export const ReleaseDateFilters = () => {
               htmlFor="input-yearExact"
               className="text-sm text-neutral-600 dark:text-neutral-400"
             >
-              Released exact
+              {t("gamedle.filters.released-exact")}
             </label>
             <input
               id="input-yearExact"

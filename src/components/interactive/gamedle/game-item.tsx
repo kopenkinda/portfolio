@@ -10,8 +10,10 @@ import {
   IconBuildingSkyscraper,
   IconPerspective,
 } from "@tabler/icons-react";
+import { useI18n } from "./use-gamedle-i18n";
 
 const GameItem = function ({ game }: { game: Game }) {
+  const t = useI18n();
   const imgSrc = `https://d2c6c3qulxklrf.cloudfront.net/covers/webp/${game.s3_id}.webp`;
   const platforms = game.platforms.map((gamePlatform) => gamePlatform.name);
   const genres = game.genres.map((gameGenre) => gameGenre.name);
@@ -47,37 +49,37 @@ const GameItem = function ({ game }: { game: Game }) {
         </div>
         <div className="mt-1 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
           <IconList
-            label="Platforms"
+            label={t("gamedle.platforms")}
             icon={<IconDevicesPc stroke={1} size={18} />}
             elements={platforms}
           />
           <IconList
-            label="Genres"
+            label={t("gamedle.genres")}
             icon={<IconBooks stroke={1} size={18} />}
             elements={genres}
           />
           <IconList
-            label="Themes"
+            label={t("gamedle.themes")}
             icon={<IconBrush stroke={1} size={18} />}
             elements={themes}
           />
           <IconList
-            label="Game Modes"
+            label={t("gamedle.game-modes")}
             icon={<IconBrandAppleArcade stroke={1} size={18} />}
             elements={gameModes}
           />
           <IconList
-            label="Game Engines"
+            label={t("gamedle.game-engines")}
             icon={<IconEngine stroke={1} size={18} />}
             elements={gameEngines}
           />
           <IconList
-            label="Involved Companies"
+            label={t("gamedle.game-publisher")}
             icon={<IconBuildingSkyscraper stroke={1} size={18} />}
             elements={involvedCompanies}
           />
           <IconList
-            label="Player Perspectives"
+            label={t("gamedle.game-perspectives")}
             icon={<IconPerspective stroke={1} size={18} />}
             elements={playerPerspectives}
           />

@@ -1,5 +1,10 @@
 import { useState, type ReactNode } from "react";
-import { type IFilters, type TripleFilter, useFilters } from "./filters.store";
+import {
+  type IFilters,
+  type TripleFilter,
+  useFilters,
+  filterKeyToTranslationKey,
+} from "./filters.store";
 import {
   IconSquare,
   IconSquareCheck,
@@ -12,6 +17,7 @@ import {
 } from "@tabler/icons-react";
 import { Button } from "../Button";
 import { cn } from "~/utils/clsx";
+import { useI18n } from "./use-gamedle-i18n";
 
 export const MultiFilter = ({
   _key,
@@ -24,15 +30,12 @@ export const MultiFilter = ({
   icon?: ReactNode;
   iconOff?: ReactNode;
 }) => {
+  const t = useI18n();
   const [search, setSearch] = useState("");
   const [set] = useFilters((draft) => [draft.set]);
   const [visible, setVisible] = useState(false);
 
-  const label = _key.split("").reduce((acc, v, idx) => {
-    if (idx === 0) return v.toLocaleUpperCase();
-    if (v.toLocaleUpperCase() === v) return acc + " " + v;
-    return acc + v;
-  }, "");
+  const label = t(filterKeyToTranslationKey(_key));
 
   const hasSearched = search !== "";
 
@@ -80,13 +83,13 @@ export const MultiFilter = ({
                 value={search}
                 className="w-full rounded-md border border-neutral-200 bg-transparent p-1 pl-6 dark:border-neutral-700"
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder={`Search ${label.toLocaleLowerCase()}`}
+                placeholder={t("gamedle.search") + label.toLocaleLowerCase()}
               />
             </div>
             {!hasSearched && !allFiltersChecked && (
               <Button
                 className="aspect-square p-2"
-                title="diselect all not selected"
+                title={t("gamedle.diselect-other-filter-options")}
                 onClick={() => {
                   set({
                     [_key]: _list
@@ -111,10 +114,12 @@ export const MultiFilter = ({
             {!hasSearched && allFiltersChecked && (
               <Button
                 className="aspect-square p-2"
-                title="Reset"
+                title={t("gamedle.reset-filter.title")}
                 onClick={() => {
                   const sure = window.confirm(
-                    `Are you sure you want to reset the "${label}" filter?`,
+                    t("gamedle.reset-filter.0") +
+                      `"${label}"` +
+                      t("gamedle.reset-filter.1"),
                   );
                   if (!sure) return;
                   set({
