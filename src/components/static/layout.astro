@@ -9,6 +9,7 @@ export interface Props {
   title: string;
   description?: string;
   keywords?: string[];
+  transitions?: boolean;
 }
 
 const lang = getLangFromUrl(Astro.url);
@@ -37,7 +38,7 @@ const keywords =
     <link rel="canonical" href={Astro.url} />
     <meta name="theme-color" content="#111010" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <ViewTransitions />
+    {Astro.props.transitions === true && <ViewTransitions />}
   </head>
   <body
     class="mx-4 mb-40 mt-8 flex max-w-2xl flex-col antialiased md:flex-row lg:mx-auto"
