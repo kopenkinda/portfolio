@@ -1,4 +1,4 @@
-import { Language } from "../language";
+import { Language, type DefaultLanguage } from "../language";
 
 export const uiElementsTranslations = {
   [Language.en]: {
@@ -24,4 +24,5 @@ export const uiElementsTranslations = {
   },
 } as const;
 
-export type UiElementsTranslations = typeof uiElementsTranslations;
+export type UiElementsTranslations =
+  (typeof uiElementsTranslations)[DefaultLanguage];

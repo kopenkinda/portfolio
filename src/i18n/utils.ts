@@ -14,14 +14,23 @@ export function getPathWithoutLangFromUrl(url: URL) {
 }
 
 type DefaultTranslations = (typeof ui)[Language.en];
+type TranslationsObject = Record<
+  keyof typeof Language,
+  Record<keyof DefaultTranslations, string>
+>;
+
+export function useAllTranslations<Cast = DefaultTranslations>(
+  lang: keyof typeof Language,
+) {
+  const _ui = ui as TranslationsObject;
+  return _ui[lang] as Cast;
+}
 
 export function useTranslations(lang: keyof typeof Language) {
-  const _ui = ui as Record<
-    keyof typeof Language,
-    Record<keyof DefaultTranslations, string>
-  >;
+  const _ui = ui as TranslationsObject;
   return function t(key: keyof DefaultTranslations) {
-    return _ui[lang][key] || _ui[defaultLang][key];
+    const result = _ui[lang][key] || _ui[defaultLang][key];
+    return result || "This key is missing from all the translations";
   };
 }
 

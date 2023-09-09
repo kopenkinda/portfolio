@@ -6,6 +6,7 @@ import {
   IconLineDashed,
 } from "@tabler/icons-react";
 import useCopy from "~/hooks/use-copy";
+import { type BuzzerTranslations } from "~/i18n/translations/buzzer";
 
 const map: Record<string, string | undefined> = {
   а: "А́нна",
@@ -76,7 +77,11 @@ function buzzer(input: string) {
     .map((item) => map[item] ?? item);
 }
 
-export default function Buzzer() {
+export default function Buzzer({
+  translations,
+}: {
+  translations: BuzzerTranslations;
+}) {
   const [value, setValue] = useState("");
   const [inline, setInline] = useState(false);
   const result = useMemo(() => buzzer(value), [value]);
@@ -89,7 +94,7 @@ export default function Buzzer() {
           className="w-full rounded-md border border-neutral-200 p-4 dark:border-neutral-700 dark:bg-neutral-800"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Put your text here"
+          placeholder={translations["buzzer.placeholder"]}
         />
         <div className="flex rounded-md border border-neutral-200 dark:border-neutral-700">
           <button
@@ -129,7 +134,7 @@ export default function Buzzer() {
             )}
           </button>
         ) : null}
-        {result.length === 0 ? "The result will be here" : null}
+        {result.length === 0 ? translations["buzzer.result"] : null}
         {result.map((item, index) => (
           <span
             key={index}

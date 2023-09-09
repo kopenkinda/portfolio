@@ -1,4 +1,4 @@
-import { Language } from "../language";
+import { Language, type DefaultLanguage } from "../language";
 
 export const seoTranslations = {
   [Language.en]: {
@@ -12,4 +12,4 @@ export const seoTranslations = {
   },
 } as const;
 
-export type SeoTranslations = typeof seoTranslations;
+export type SeoTranslations = (typeof seoTranslations)[DefaultLanguage];

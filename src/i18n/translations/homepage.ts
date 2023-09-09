@@ -1,4 +1,4 @@
-import { Language } from "../language";
+import { Language, type DefaultLanguage } from "../language";
 
 export const homepageTranslations = {
   [Language.en]: {
@@ -64,4 +64,5 @@ export const homepageTranslations = {
   },
 } as const;
 
-export type HomepageTranslations = typeof homepageTranslations;
+export type HomepageTranslations =
+  (typeof homepageTranslations)[DefaultLanguage];
