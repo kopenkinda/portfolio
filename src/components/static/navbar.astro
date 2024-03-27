@@ -1,11 +1,12 @@
 ---
 import {
   getLangFromUrl,
-  useTranslations,
   getPathWithoutLangFromUrl,
   getStaticPaths,
+  useTranslations,
 } from "~/i18n/utils";
 import NavbarLink from "./navbar-link.astro";
+import { HireButton } from "../interactive/hire-button";
 
 const lang = getLangFromUrl(Astro.url);
 const pagePath = getPathWithoutLangFromUrl(Astro.url);
@@ -61,6 +62,7 @@ const isActive = (type: "home" | "blog") => {
           })
         }
       </div>
+      <HireButton {lang} client:load className="ml-4" />
     </nav>
   </div>
 </aside>

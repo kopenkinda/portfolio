@@ -1,22 +1,21 @@
 ---
 export { getStaticPaths } from "~/i18n/utils";
+import ArrowExternalSvg from "~/components/static/arrow-external-svg.astro";
+import Project from "~/components/static/homepage/project.astro";
 import Layout from "~/components/static/layout.astro";
 import TechLink from "~/components/static/tech-link.astro";
-import Project from "~/components/static/homepage/project.astro";
-import ArrowExternalSvg from "~/components/static/arrow-external-svg.astro";
 import {
   getLangFromUrl,
-  useTranslations,
   getLocalisedBlogLink,
+  useTranslations,
 } from "~/i18n/utils";
 
-import TodoAppImage from "~/assets/projects/todo-app-icon.png";
+import Icon from "astro-icon";
 import GamedleAssistantImage from "~/assets/projects/gamedle-assistant-icon.png";
+import TodoAppImage from "~/assets/projects/todo-app-icon.png";
+import SocialLink from "~/components/static/social-link.astro";
 import { getLastNPostsByLanguage } from "~/utils/get-posts-by-language";
 import { readingTime } from "~/utils/reading-time";
-import Icon from "astro-icon";
-import SocialLink from "~/components/static/social-link.astro";
-import Alert from "~/components/static/alert.astro";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -25,10 +24,6 @@ const lastPosts = await getLastNPostsByLanguage(3);
 ---
 
 <Layout title={t("ui.name")}>
-  <Alert class="mb-4" type="error">
-    {t("ui.work-in-progress")}
-  </Alert>
-
   <h1
     class="mb-8 animate-fade-up text-2xl font-bold tracking-tight animate-delay-200"
   >
@@ -46,8 +41,6 @@ const lastPosts = await getLastNPostsByLanguage(3);
       />
       {t("homepage.description.1")}
     </p>
-
-    <div class="my-8">photo gallery</div>
 
     <!-- Highlight 2 Projects -->
     <p class="prose prose-neutral dark:prose-invert">
@@ -96,7 +89,7 @@ const lastPosts = await getLastNPostsByLanguage(3);
               class="flex w-full items-center justify-between  rounded border border-neutral-200 bg-neutral-50 px-3 py-4 dark:border-neutral-700 dark:bg-neutral-800"
             >
               <div class="flex flex-col">
-                <p class="flex items-start font-bold text-neutral-900 dark:text-neutral-100 sm:items-center">
+                <p class="flex items-start font-bold text-neutral-900 sm:items-center dark:text-neutral-100">
                   <span class="mr-1 rounded border border-neutral-200 px-1 text-sm dark:border-neutral-700 dark:bg-neutral-900">
                     {postLang.toLocaleLowerCase()}
                   </span>
@@ -122,7 +115,7 @@ const lastPosts = await getLastNPostsByLanguage(3);
     </p>
 
     <ul
-      class="font-sm mt-8 flex flex-col space-x-0 space-y-2 text-neutral-600 dark:text-neutral-300 md:flex-row md:space-x-4 md:space-y-0"
+      class="font-sm mt-8 flex flex-col space-x-0 space-y-2 text-neutral-600 md:flex-row md:space-x-4 md:space-y-0 dark:text-neutral-300"
     >
       <li>
         <SocialLink title="github" href="https://github.com/kopenkinda" />
@@ -132,7 +125,7 @@ const lastPosts = await getLastNPostsByLanguage(3);
       </li>
       <li>
         <SocialLink
-          title="linked in"
+          title="linkedin"
           href="https://www.linkedin.com/in/dmitrii-kopenkin/"
         />
       </li>

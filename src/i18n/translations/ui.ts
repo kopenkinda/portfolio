@@ -8,11 +8,13 @@ export const uiElementsTranslations = {
     "ui.reading-time": "min",
     "ui.nav.home": "home",
     "ui.nav.blog": "blog",
+    "ui.nav.hire": "hire",
   },
   [Language.fr]: {
     "ui.work-in-progress":
       "Le site web est en cours de refonte, il se peut que certains contenus soient manquants.",
     "ui.nav.home": "accueil",
+    "ui.nav.hire": "embaucher",
   },
   [Language.ru]: {
     "ui.name": "Дмитрий Копенкин",
@@ -21,6 +23,7 @@ export const uiElementsTranslations = {
     "ui.reading-time": "мин",
     "ui.nav.home": "главная",
     "ui.nav.blog": "блог",
+    "ui.nav.hire": "нанять",
   },
 } as const;
 
