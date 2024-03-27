@@ -8,6 +8,7 @@ export type GameMeta = {
   collection: number;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Gamedle {
   const path = "./public/gamedle-games.json";
   export const getGames = async () => {
@@ -15,7 +16,9 @@ export namespace Gamedle {
       const cached = fs.readFileSync(path, "utf-8");
       const parsed = JSON.parse(cached);
       return parsed as Game[];
-    } catch (e) {}
+    } catch (e) {
+      console.log("No cache found");
+    }
     const initialList = await fetch("https://www.gamedle.wtf/search2").then(
       (data) => data.json() as Promise<GameMeta[]>,
     );
@@ -50,7 +53,10 @@ export namespace Gamedle {
         .then((_try) => _try.attemps.at(0)),
     );
     for await (const gamePromise of toFetch) {
-      results.push(gamePromise!);
+      if (gamePromise === undefined) {
+        continue;
+      }
+      results.push(gamePromise);
     }
     fs.writeFileSync(path, JSON.stringify(results));
     return results;

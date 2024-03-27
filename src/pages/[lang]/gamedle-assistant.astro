@@ -1,32 +1,35 @@
 ---
 export { getStaticPaths } from "~/i18n/utils";
 import Layout from "~/components/static/layout.astro";
-import GamedleList from "~/components/interactive/gamedle/gamedle-list";
-import { Gamedle } from "~/utils/gamedle/get-game-info";
+// import GamedleList from "~/components/interactive/gamedle/gamedle-list";
+// import { Gamedle } from "~/utils/gamedle/get-game-info";
 import Alert from "~/components/static/alert.astro";
 import {
   getLangFromUrl,
-  useAllTranslations,
+  // useAllTranslations,
   useTranslations,
 } from "~/i18n/utils";
-import { type GamedleTranslations } from "~/i18n/translations/projects/gamedle";
+// import { type GamedleTranslations } from "~/i18n/translations/projects/gamedle";
 
-const list = await Gamedle.getGames();
+// const list = await Gamedle.getGames();
 const lang = getLangFromUrl(Astro.url);
 
-const translations = useAllTranslations<GamedleTranslations>(lang);
+// const translations = useAllTranslations<GamedleTranslations>(lang);
 const t = useTranslations(lang);
 
-const updatedAt = new Date().toLocaleDateString(lang, {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
+// const updatedAt = new Date().toLocaleDateString(lang, {
+//   year: "numeric",
+//   month: "long",
+//   day: "numeric",
+// });
 ---
 
 <Layout title="Gamedle Assistant">
-  <Alert type="info" class="mb-8">
-    {t("gamedle.last-updated")}<span class="font-bold">{updatedAt}</span>
+  <Alert type="error" class="mb-8">
+    {t("gamedle.not-availabe")}
   </Alert>
-  <GamedleList initial={list} {translations} client:load />
+  <!-- <Alert type="info" class="mb-8">
+    {t("gamedle.last-updated")}<span class="font-bold">{updatedAt}</span>
+  </Alert> -->
+  <!-- <GamedleList initial={list} {translations} client:load /> -->
 </Layout>

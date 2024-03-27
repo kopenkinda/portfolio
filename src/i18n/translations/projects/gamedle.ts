@@ -2,6 +2,7 @@ import { Language, type DefaultLanguage } from "../../language";
 
 export const gamedleTranslations = {
   [Language.en]: {
+    "gamedle.not-availabe": "Broken after the gamedle site update, sorry!",
     "gamedle.last-updated": "Last updated on ",
     "gamedle.reset-all-filters": "Reset filters",
     "gamedle.confirm.reset-all-filters":
@@ -28,6 +29,8 @@ export const gamedleTranslations = {
     "gamedle.game-perspectives": "Player Perspectives",
   },
   [Language.fr]: {
+    "gamedle.not-availabe":
+      "Cassé après la mise à jour du site gamedle, désolé !",
     "gamedle.last-updated": "Dernière mise à jour le ",
     "gamedle.reset-all-filters": "Réinitialiser filters",
     "gamedle.confirm.reset-all-filters":
@@ -56,6 +59,7 @@ export const gamedleTranslations = {
     "gamedle.game-perspectives": "Perspectives",
   },
   [Language.ru]: {
+    "gamedle.not-availabe": "Сломано после обновления сайта gamedle, извините!",
     "gamedle.last-updated": "Последнее обновление: ",
     "gamedle.reset-all-filters": "Сбросить фильтры",
     "gamedle.confirm.reset-all-filters":
