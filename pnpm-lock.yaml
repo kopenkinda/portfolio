@@ -32,6 +32,15 @@ dependencies:
   astro:
     specifier: ^3.0.10
     version: 3.0.10
+  class-variance-authority:
+    specifier: ^0.7.0
+    version: 0.7.0
+  framer-motion:
+    specifier: ^11.2.6
+    version: 11.2.6(react-dom@18.2.0)(react@18.2.0)
+  input-otp:
+    specifier: ^1.2.4
+    version: 1.2.4(react-dom@18.2.0)(react@18.2.0)
   react:
     specifier: ^18.2.0
     version: 18.2.0
@@ -3238,6 +3247,15 @@ packages:
     engines: { node: ">=8" }
     dev: false
 
+  /class-variance-authority@0.7.0:
+    resolution:
+      {
+        integrity: sha512-jFI8IQw4hczaL4ALINxqLEXQbWcNjoSkloa4IaufXCJr6QawJyw7tuRysRsrE8w2p/4gGaxKIt/hX3qz/IbD1A==,
+      }
+    dependencies:
+      clsx: 2.0.0
+    dev: false
+
   /cli-boxes@3.0.0:
     resolution:
       {
@@ -3273,6 +3291,14 @@ packages:
       slice-ansi: 5.0.0
       string-width: 5.1.2
     dev: true
+
+  /clsx@2.0.0:
+    resolution:
+      {
+        integrity: sha512-rQ1+kcj+ttHG0MKVGBUXwayCCF1oh39BF5COIpRzuCEv8Mwjv0XucrI2ExNTOn9IlLifGClWQcU9BrZORvtw6Q==,
+      }
+    engines: { node: ">=6" }
+    dev: false
 
   /clsx@2.1.0:
     resolution:
@@ -4677,6 +4703,28 @@ packages:
       }
     dev: false
 
+  /framer-motion@11.2.6(react-dom@18.2.0)(react@18.2.0):
+    resolution:
+      {
+        integrity: sha512-XUrjjBt57e5YoHQtjwc3eNchFBuHvIgN/cS8SC4oIaAn2J/0+bLanUxXizidJKZVeHJam/JrmMnPRjYMglVn5g==,
+      }
+    peerDependencies:
+      "@emotion/is-prop-valid": "*"
+      react: ^18.0.0
+      react-dom: ^18.0.0
+    peerDependenciesMeta:
+      "@emotion/is-prop-valid":
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      tslib: 2.6.2
+    dev: false
+
   /fs-constants@1.0.0:
     resolution:
       {
@@ -5252,6 +5300,19 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
+
+  /input-otp@1.2.4(react-dom@18.2.0)(react@18.2.0):
+    resolution:
+      {
+        integrity: sha512-md6rhmD+zmMnUh5crQNSQxq3keBRYvE3odbr4Qb9g2NWzQv9azi+t1a3X4TBTbh98fsGHgEEJlzbe1q860uGCA==,
+      }
+    peerDependencies:
+      react: ^16.8 || ^17.0 || ^18.0
+      react-dom: ^16.8 || ^17.0 || ^18.0
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
 
   /internal-slot@1.0.5:
     resolution:
@@ -8909,7 +8970,6 @@ packages:
       {
         integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==,
       }
-    dev: true
 
   /tunnel-agent@0.6.0:
     resolution:

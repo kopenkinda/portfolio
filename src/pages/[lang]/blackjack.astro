@@ -1,0 +1,10 @@
+---
+export { getStaticPaths } from "~/i18n/utils";
+
+import { BlackJackTable } from "~/components/interactive/blackjack/blackjack-table";
+import Layout from "~/components/static/layout.astro";
+---
+
+<Layout title={""}>
+  <BlackJackTable client:only="react" />
+</Layout>

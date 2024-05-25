@@ -1,0 +1,28 @@
+---
+import "@fontsource/nunito";
+import { ViewTransitions } from "astro:transitions";
+import "~/base.css";
+import { GiftScene } from "~/components/_gift/gift-scene";
+---
+
+<!doctype html>
+<html lang="en" class="bg-white text-black dark:bg-dark dark:text-white">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Happy birthday 🎉</title>
+    <meta name="description" content="A gift to my father" />
+    <link rel="canonical" href={Astro.url} />
+    <meta name="theme-color" content="#111010" />
+    <ViewTransitions />
+  </head>
+  <body class="flex h-screen w-screen bg-black [&>div]:h-full [&>div]:w-full">
+    <GiftScene client:only={true} />
+  </body>
+</html>
