@@ -22,7 +22,9 @@ import { GiftScene } from "~/components/_gift/gift-scene";
     <meta name="theme-color" content="#111010" />
     <ViewTransitions />
   </head>
-  <body class="flex h-screen w-screen bg-black [&>div]:h-full [&>div]:w-full">
+  <body
+    class="flex h-screen w-screen overflow-hidden bg-black [&>div]:h-full [&>div]:w-full"
+  >
     <GiftScene client:only={true} />
   </body>
 </html>
