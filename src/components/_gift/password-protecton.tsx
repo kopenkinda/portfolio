@@ -9,7 +9,7 @@ function Slot(props: SlotProps) {
   return (
     <div
       className={cn(
-        "relative h-14 w-10 border-gray-700 text-3xl leading-none text-white",
+        "relative h-12 w-8 border-gray-700 text-2xl leading-none text-white",
         "flex items-center justify-center",
         "transition-all duration-300",
         "border-y border-r first:rounded-l-md first:border-l last:rounded-r-md",
@@ -35,7 +35,7 @@ function FakeCaret() {
 function FakeDash() {
   return (
     <div className="flex w-10 items-center justify-center">
-      <div className="h-1 w-3 rounded-full bg-gray-600" />
+      <div className="h-1 w-1 rounded-full bg-gray-600" />
     </div>
   );
 }
