@@ -25,7 +25,7 @@ export const RevealCard = () => {
                 Github Copilot
               </span>
               <span className="mb-2 text-sm text-white/50">1 year access</span>
-              <p className="mb-0.5 text-center">
+              <p className="mb-0.5 text-center text-white">
                 Небольшой ассистент, который поможет тогда, когда я недоступен
               </p>
               <p className="text-sm text-white/50">PS: меня он не заменит ❤️</p>
