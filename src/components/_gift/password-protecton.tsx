@@ -4,10 +4,12 @@ import { cn } from "~/utils/clsx";
 
 const PASSWORD = "26051979";
 const UNLOCK_AFTER_MS = 2500;
+const MAX_TRIES = 3;
 
-function Slot(props: SlotProps) {
+function Slot(props: SlotProps & { autofocus?: boolean }) {
   return (
     <div
+      autoFocus={props.autofocus}
       className={cn(
         "relative h-12 w-8 border-gray-700 text-2xl leading-none text-white",
         "flex items-center justify-center",
@@ -41,6 +43,7 @@ function FakeDash() {
 }
 
 export const PassportProtection = ({ children }: PropsWithChildren) => {
+  const [tries, setTries] = useState(0);
   const [value, setValue] = useState("");
   const [isValidPassword, setIsValidPassword] = useState<boolean | undefined>(
     undefined,
@@ -59,6 +62,7 @@ export const PassportProtection = ({ children }: PropsWithChildren) => {
       setIsValidPassword(isValid);
       setTimeout(() => {
         setIsValidPassword(undefined);
+        setTries((prev) => prev + 1);
         if (!isValid) {
           setValue("");
         } else {
@@ -66,7 +70,7 @@ export const PassportProtection = ({ children }: PropsWithChildren) => {
         }
       }, UNLOCK_AFTER_MS);
     },
-    [setValue, setIsValidPassword],
+    [setValue, setIsValidPassword, setTries, setLocked],
   );
   return (
     <>
@@ -85,9 +89,8 @@ export const PassportProtection = ({ children }: PropsWithChildren) => {
           render={({ slots }) => (
             <>
               <div className="flex">
-                {slots.slice(0, 2).map((slot, idx) => (
-                  <Slot key={idx} {...slot} />
-                ))}
+                <Slot {...slots[0]!} autofocus />
+                <Slot {...slots[1]!} />
               </div>
               <FakeDash />
               <div className="flex">
@@ -104,14 +107,17 @@ export const PassportProtection = ({ children }: PropsWithChildren) => {
             </>
           )}
         />
-        {isValidPassword === undefined && (
-          <div className="pt-8 text-gray-500">
+        {isValidPassword === undefined && tries >= MAX_TRIES && (
+          <div className="animate-jump-in pt-8 text-gray-500">
             hint: what&apos;s today - 45 years
           </div>
         )}
         {isValidPassword === false && (
           <div className="animate-fade-down pt-8 text-red-500">
-            Invalid password
+            Nope, try again!{" "}
+            {tries < MAX_TRIES && (
+              <span>(hint in {MAX_TRIES - tries - 1})</span>
+            )}
           </div>
         )}
         {isValidPassword === true && (
