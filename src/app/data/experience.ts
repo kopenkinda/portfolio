@@ -23,13 +23,30 @@ const id = () => counter++;
 export const experiences: ExperienceEntry[] = [
   {
     id: id(),
+    title: "Software Engineer",
+    startDate: new Date("2024-12-15"),
+    company: {
+      location: "Remote",
+      name: "MoveWorkForward",
+      shortname: "MWF",
+      href: "https://moveworkforward.com",
+    },
+    bulletpoints: [
+      "Prototyped PoC's to data security and privacy solutions for AI features in multi-tenant environments.",
+      "Maintained multiple applications using React, Typescript, Node.js, and AWS.",
+      "Participated in mutiple conferences/workshops leading to the creation and ownership of a new product.",
+    ],
+    technologies: ["react", "typescript", "openai", "aws", "nodejs"],
+  },
+  {
+    id: id(),
     title: "Fullstack developer",
     startDate: new Date("2024-10-31"),
+    endDate: new Date("2024-12-15"),
     company: {
       location: "Remote / Andorra",
       name: "Freelance",
       shortname: "Freelance",
-      href: undefined,
     },
     bulletpoints: [
       "Created a custom trading bot for a client, integrated into QUIK, with a dashboard for monitoring and managing trades.",
