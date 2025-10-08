@@ -81,4 +81,35 @@ body {
       opacity: 0.25;
     }
   }
+
+  ::view-transition-group(root) {
+    animation-timing-function: var(--expo-in);
+  }
+
+  ::view-transition-new(root) {
+    mask: url('https://media.tenor.com/gaPw1Ktec3MAAAAi/blaze-a-trail-asteroid.gif') center / 0 no-repeat;
+    animation: scale 1.2s;
+    animation-fill-mode: both;
+  }
+
+  ::view-transition-old(root),
+  .dark::view-transition-old(root) {
+    animation: scale 1.2s;
+    animation-fill-mode: both;
+  }
+
+  @keyframes scale {
+    0% {
+      mask-size: 0;
+    }
+    10% {
+      mask-size: 50vmax;
+    }
+    90% {
+      mask-size: 50vmax;
+    }
+    100% {
+      mask-size: 2000vmax;
+    }
+  }
 }

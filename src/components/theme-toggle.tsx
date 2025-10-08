@@ -13,7 +13,12 @@ export function ThemeToggle() {
     <Button
       variant="ghost"
       size="icon-sm"
-      onClick={toggleTheme}
+      onClick={() => {
+        if (!document.startViewTransition) {
+          toggleTheme();
+        }
+        document.startViewTransition(toggleTheme);
+      }}
       className="print:hidden"
     >
       <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 text-yellow-500 transition-all dark:-rotate-90 dark:scale-0" />
