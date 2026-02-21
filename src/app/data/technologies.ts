@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PrinterIcon } from "lucide-react";
 import {
   BiLogoMongodb,
   BiLogoNodejs,
@@ -11,6 +12,7 @@ import {
   SiAngular,
   SiAstro,
   SiExpress,
+  SiFastapi,
   SiGithubactions,
   SiGulp,
   SiHono,
@@ -22,9 +24,11 @@ import {
   SiNextdotjs,
   SiOpenai,
   SiPhp,
+  SiPython,
   SiSanity,
   SiSass,
   SiSqlite,
+  SiSupabase,
   SiTailwindcss,
   SiWordpress,
 } from "react-icons/si";
@@ -65,6 +69,10 @@ export const technologies = [
   { id: "openai",       label: "OpenAI",        icon: SiOpenai,            href: "https://www.openai.com" },
   { id: "langchain",    label: "LangChain",     icon: SiLangchain,         href: "https://www.langchain.com" },
   { id: "aws",          label: "AWS",           icon: SiAmazonwebservices, href: "https://aws.amazon.com" },
+  { id: "supabase",     label: "Supabase",      icon: SiSupabase,          href: "https://supabase.com" },
+  { id: "python",       label: "Python",        icon: SiPython,            href: "https://www.python.org" },
+  { id: "fastapi",      label: "FastAPI",       icon: SiFastapi,           href: "https://fastapi.tiangolo.com" },
+  { id: "escpos",       label: "ESC/POS",       icon: PrinterIcon,         href: "https://en.wikipedia.org/wiki/ESC/P" },
 ] as const satisfies TechnologyEntry[];
 
 type TechnologyItem = (typeof technologies)[number];

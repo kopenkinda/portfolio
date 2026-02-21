@@ -1,8 +1,10 @@
 "use client";
 
+import { GamepadIcon } from "lucide-react";
 import Link from "next/link";
 import { Box } from "./box";
 import { ThemeToggle } from "./theme-toggle";
+import { Button } from "./ui/button";
 
 export function Navbar() {
   return (
@@ -20,9 +22,16 @@ export function Navbar() {
           <b>Kopenkin Dmitrii</b>
         </Link>
         <div className="flex items-center gap-1">
-          {/* <Button asChild variant="link" size="icon-sm" disabled>
-            <Link href="/blog">Blog</Link>
-          </Button> */}
+          <Button
+            asChild
+            variant="outline"
+            className="flex h-8 items-center gap-1 px-2"
+          >
+            <Link href="/fun">
+              <GamepadIcon className="size-4" />
+              Fun
+            </Link>
+          </Button>
           <ThemeToggle />
         </div>
       </Box>

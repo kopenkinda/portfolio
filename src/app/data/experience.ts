@@ -6,13 +6,13 @@ export interface ExperienceEntry {
   endDate?: Date;
   title: string;
   company:
-    | { location: string; name: string; shortname: string; href?: string }
-    | {
-        location: string;
-        name: undefined;
-        shortname: undefined;
-        href: undefined;
-      };
+  | { location: string; name: string; shortname: string; href?: string }
+  | {
+    location: string;
+    name: undefined;
+    shortname: undefined;
+    href: undefined;
+  };
   bulletpoints: [string] | [string, string] | [string, string, string];
   technologies?: TechId[];
 }
@@ -23,8 +23,24 @@ const id = () => counter++;
 export const experiences: ExperienceEntry[] = [
   {
     id: id(),
+    title: "CTO",
+    startDate: new Date("2026-01-01"),
+    company: {
+      location: "Remote / Spain",
+      name: "Salut Mercado",
+      shortname: "Salut",
+      href: "https://salutmercado.com",
+    },
+    bulletpoints: [
+      "Lead the development of a new product from scratch.",
+    ],
+    technologies: ["openai", "typescript", "react", "supabase", "python", "fastapi", "escpos"],
+  },
+  {
+    id: id(),
     title: "Software Engineer",
     startDate: new Date("2024-12-15"),
+    endDate: new Date("2025-12-21"),
     company: {
       location: "Remote",
       name: "MoveWorkForward",
