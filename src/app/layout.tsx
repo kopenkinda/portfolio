@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
+import { AppConvexProvider } from "@/components/providers/convex-provider";
+import { MedialistAuthProvider } from "@/components/providers/medialist-auth-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import localFont from "next/font/local";
@@ -37,11 +39,15 @@ export default function RootLayout({
         )}
         suppressHydrationWarning
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Navbar />
-          {children}
-          <Footer />
-        </ThemeProvider>
+        <AppConvexProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <MedialistAuthProvider>
+              <Navbar />
+              {children}
+              <Footer />
+            </MedialistAuthProvider>
+          </ThemeProvider>
+        </AppConvexProvider>
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { GamepadIcon } from "lucide-react";
+import { ClapperboardIcon } from "lucide-react";
 import Link from "next/link";
 import { Box } from "./box";
 import { ThemeToggle } from "./theme-toggle";
@@ -27,9 +27,9 @@ export function Navbar() {
             variant="outline"
             className="flex h-8 items-center gap-1 px-2"
           >
-            <Link href="/fun">
-              <GamepadIcon className="size-4" />
-              Fun
+            <Link href="/medialist">
+              <ClapperboardIcon className="size-4" />
+              Medialist
             </Link>
           </Button>
           <ThemeToggle />

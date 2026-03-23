@@ -1,0 +1,7 @@
+{
+  "functions": "convex/",
+  "schema": "convex/schema.ts",
+  "codegen": {
+    "fileType": "ts"
+  }
+}
