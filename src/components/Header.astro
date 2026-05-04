@@ -2,6 +2,7 @@
 const pathname = Astro.url.pathname;
 const isBlogActive = pathname === "/blog/" || pathname.startsWith("/blog/");
 import Button from "./Button.astro";
+import { FileIcon } from "@lucide/astro";
 ---
 
 <header
@@ -17,16 +18,13 @@ import Button from "./Button.astro";
 
     <div class="flex items-center gap-2">
       <Button
-        href="/blog/"
+        href={isBlogActive ? "/" : "/blog/"}
         data-astro-prefetch
-        aria-current={isBlogActive ? "page" : undefined}
-        variant={isBlogActive ? "accent" : "ghost"}
+        variant="ghost"
         size="sm"
       >
-        Blog
+        {isBlogActive ? "Home" : "Blog"}
       </Button>
-
-      <Button href="/resume.pdf" variant="primary" size="sm"> Resume </Button>
     </div>
   </nav>
 </header>
