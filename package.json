@@ -18,11 +18,16 @@
     "@lucide/astro": "^1.14.0",
     "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.2.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "sharp": "^0.34.3",
+    "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.4"
   },
   "devDependencies": {
+    "eslint": "^10.3.0",
     "prettier": "^3.8.3",
+    "prettier-plugin-astro": "0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.0"
   }
 }

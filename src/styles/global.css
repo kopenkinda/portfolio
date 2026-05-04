@@ -1,70 +1,70 @@
 @import "tailwindcss";
 
 @theme inline {
-    --font-headline: var(--font-doto);
+  --font-headline: var(--font-doto);
 
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --color-muted: var(--muted);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-card: var(--card);
-    --color-card-foreground: var(--card-foreground);
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-accent: var(--accent-color);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-border: var(--border);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent-color);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-    color-scheme: light;
-    --background: var(--color-stone-50);
-    --foreground: var(--color-stone-900);
-    --muted: var(--color-stone-100);
-    --muted-foreground: var(--color-stone-600);
-    --card: var(--color-white);
-    --card-foreground: var(--color-stone-900);
-    --primary: var(--color-stone-800);
-    --primary-foreground: var(--color-stone-50);
-    --accent-color: var(--color-teal-700);
-    --accent-foreground: var(--color-white);
-    --border: var(--color-stone-200);
+  color-scheme: light;
+  --background: var(--color-stone-50);
+  --foreground: var(--color-stone-900);
+  --muted: var(--color-stone-100);
+  --muted-foreground: var(--color-stone-600);
+  --card: var(--color-white);
+  --card-foreground: var(--color-stone-900);
+  --primary: var(--color-stone-800);
+  --primary-foreground: var(--color-stone-50);
+  --accent-color: var(--color-teal-700);
+  --accent-foreground: var(--color-white);
+  --border: var(--color-stone-200);
 
-    --black: 15 23 42;
-    --gray-dark: 51 65 85;
-    --gray: 100 116 139;
-    --accent: 15 118 110;
+  --black: 15 23 42;
+  --gray-dark: 51 65 85;
+  --gray: 100 116 139;
+  --accent: 15 118 110;
 }
 
 .dark {
-    color-scheme: dark;
-    --background: var(--color-stone-950);
-    --foreground: var(--color-stone-100);
-    --muted: var(--color-stone-900);
-    --muted-foreground: var(--color-stone-400);
-    --card: var(--color-stone-900);
-    --card-foreground: var(--color-stone-100);
-    --primary: var(--color-stone-200);
-    --primary-foreground: var(--color-stone-950);
-    --accent-color: var(--color-teal-300);
-    --accent-foreground: var(--color-stone-950);
-    --border: var(--color-stone-800);
+  color-scheme: dark;
+  --background: var(--color-stone-950);
+  --foreground: var(--color-stone-100);
+  --muted: var(--color-stone-900);
+  --muted-foreground: var(--color-stone-400);
+  --card: var(--color-stone-900);
+  --card-foreground: var(--color-stone-100);
+  --primary: var(--color-stone-200);
+  --primary-foreground: var(--color-stone-950);
+  --accent-color: var(--color-teal-300);
+  --accent-foreground: var(--color-stone-950);
+  --border: var(--color-stone-800);
 
-    --black: 241 245 249;
-    --gray-dark: 203 213 225;
-    --gray: 148 163 184;
-    --accent: 94 234 212;
+  --black: 241 245 249;
+  --gray-dark: 203 213 225;
+  --gray: 148 163 184;
+  --accent: 94 234 212;
 }
 
 html {
-    background-color: var(--background);
+  background-color: var(--background);
 }
 
 body {
-    min-height: 100vh;
-    margin: 0;
-    background-color: var(--background);
-    color: var(--foreground);
+  min-height: 100vh;
+  margin: 0;
+  background-color: var(--background);
+  color: var(--foreground);
 }
