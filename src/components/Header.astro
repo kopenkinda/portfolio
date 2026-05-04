@@ -16,21 +16,17 @@ import Button from "./Button.astro";
     <a class="font-headline text-xl font-bold text-foreground" href="/"> DK </a>
 
     <div class="flex items-center gap-2">
-      <a
+      <Button
         href="/blog/"
         data-astro-prefetch
         aria-current={isBlogActive ? "page" : undefined}
-        class:list={[
-          "rounded-md px-3 py-2 text-sm font-medium transition-colors",
-          isBlogActive
-            ? "bg-accent text-accent-foreground"
-            : "text-muted-foreground hover:text-foreground",
-        ]}
+        variant={isBlogActive ? "accent" : "ghost"}
+        size="sm"
       >
         Blog
-      </a>
+      </Button>
 
-      <Button href="/resume.pdf"> Resume </Button>
+      <Button href="/resume.pdf" variant="primary" size="sm"> Resume </Button>
     </div>
   </nav>
 </header>
