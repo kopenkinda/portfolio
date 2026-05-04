@@ -1,5 +1,5 @@
 ---
-
+import Header from "./Header.astro";
 ---
 
 <!doctype html>
@@ -8,6 +8,7 @@
         <slot name="head" />
     </head>
     <body>
+        <Header />
         <slot />
     </body>
 </html>
