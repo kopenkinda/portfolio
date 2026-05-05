@@ -1,0 +1,408 @@
+---
+const andorra = {
+  lat: 42.5063,
+  lng: 1.5218,
+};
+
+const yekaterinburg = {
+  lat: 56.8389,
+  lng: 60.6057,
+};
+
+const barcelona = {
+  lat: 41.3874,
+  lng: 2.1686,
+};
+---
+
+<div
+  class="progressive-globe"
+  data-progressive-globe
+  data-lat={andorra.lat}
+  data-lng={andorra.lng}
+  data-yekaterinburg-lat={yekaterinburg.lat}
+  data-yekaterinburg-lng={yekaterinburg.lng}
+  data-barcelona-lat={barcelona.lat}
+  data-barcelona-lng={barcelona.lng}
+  aria-label="Globe highlighting Andorra"
+>
+  <div class="globe-stage" data-globe-stage>
+    <img
+      class="globe-fallback"
+      src="/globe-fallback.svg"
+      alt=""
+      width="640"
+      height="640"
+      loading="eager"
+      decoding="async"
+    />
+    <canvas class="globe-canvas" aria-hidden="true"></canvas>
+    <span class="globe-label" aria-hidden="true">Andorra</span>
+    <span class="globe-label globe-label-yekaterinburg" aria-hidden="true"
+      >Yekaterinburg</span
+    >
+    <span class="globe-label globe-label-barcelona" aria-hidden="true"
+      >Barcelona</span
+    >
+    <span class="globe-arc-label" aria-hidden="true">moved in 2016</span>
+  </div>
+</div>
+
+<style>
+  .progressive-globe {
+    width: min(100%, 36rem);
+    aspect-ratio: 1;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+  }
+
+  .progressive-globe.is-dragging {
+    cursor: grabbing;
+  }
+
+  .globe-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    isolation: isolate;
+  }
+
+  .globe-stage::before {
+    position: absolute;
+    inset: 12%;
+    z-index: -1;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent-color) 18%, transparent);
+    filter: blur(48px);
+    opacity: 0.55;
+    content: "";
+  }
+
+  .globe-fallback,
+  .globe-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .globe-fallback {
+    object-fit: contain;
+    opacity: 0.9;
+    transition: opacity 280ms ease;
+  }
+
+  .globe-canvas {
+    opacity: 0;
+    transition: opacity 360ms ease;
+  }
+
+  .progressive-globe.is-loaded .globe-fallback {
+    opacity: 0;
+  }
+
+  .progressive-globe.is-loaded .globe-canvas {
+    opacity: 1;
+  }
+
+  .globe-label {
+    position: absolute;
+    bottom: anchor(top);
+    left: anchor(center);
+    z-index: 2;
+    position-anchor: --cobe-andorra;
+    margin-bottom: 0.55rem;
+    border: 1px solid color-mix(in srgb, var(--accent-color) 66%, transparent);
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--background) 88%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--background) 78%, transparent),
+      0 0 18px color-mix(in srgb, var(--accent-color) 24%, transparent);
+    padding: 0.22rem 0.48rem;
+    color: var(--accent-color);
+    font-family: var(--font-doto);
+    font-size: clamp(0.72rem, 1.4vw, 0.9rem);
+    font-weight: 800;
+    font-variation-settings: "ROND" 100;
+    line-height: 1;
+    opacity: 0;
+    translate: -50% 0;
+    white-space: nowrap;
+    transition:
+      opacity 220ms ease,
+      filter 220ms ease;
+  }
+
+  .progressive-globe.is-loaded .globe-label {
+    opacity: var(--cobe-visible-andorra, 0);
+    filter: blur(calc((1 - var(--cobe-visible-andorra, 1)) * 5px));
+  }
+
+  .globe-label-yekaterinburg {
+    position-anchor: --cobe-yekaterinburg;
+  }
+
+  .progressive-globe.is-loaded .globe-label-yekaterinburg {
+    opacity: var(--cobe-visible-yekaterinburg, 0);
+    filter: blur(calc((1 - var(--cobe-visible-yekaterinburg, 1)) * 5px));
+  }
+
+  .globe-label-barcelona {
+    position-anchor: --cobe-barcelona;
+  }
+
+  .progressive-globe.is-loaded .globe-label-barcelona {
+    opacity: var(--cobe-visible-barcelona, 0);
+    filter: blur(calc((1 - var(--cobe-visible-barcelona, 1)) * 5px));
+  }
+
+  .globe-arc-label {
+    position: absolute;
+    bottom: anchor(top);
+    left: anchor(center);
+    z-index: 2;
+    position-anchor: --cobe-arc-yekaterinburg-andorra;
+    margin-bottom: 0.45rem;
+    border: 1px solid color-mix(in srgb, var(--foreground) 22%, transparent);
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--background) 90%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--background) 78%, transparent),
+      0 0 18px color-mix(in srgb, var(--accent-color) 18%, transparent);
+    padding: 0.2rem 0.46rem;
+    color: var(--foreground);
+    font-family: var(--font-doto);
+    font-size: clamp(0.7rem, 1.25vw, 0.84rem);
+    font-weight: 800;
+    font-variation-settings: "ROND" 100;
+    line-height: 1;
+    opacity: 0;
+    translate: -50% 0;
+    white-space: nowrap;
+    transition:
+      opacity 220ms ease,
+      filter 220ms ease;
+  }
+
+  .progressive-globe.is-loaded .globe-arc-label {
+    opacity: var(--cobe-visible-arc-yekaterinburg-andorra, 0);
+    filter: blur(
+      calc((1 - var(--cobe-visible-arc-yekaterinburg-andorra, 1)) * 5px)
+    );
+  }
+</style>
+
+<script>
+  import createGlobe from "cobe";
+
+  const roots = document.querySelectorAll("[data-progressive-globe]");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  const getTheme = () => document.documentElement.dataset.theme || "light";
+
+  const getPalette = () => {
+    const dark = getTheme() === "dark";
+
+    return {
+      dark: dark ? 1 : 0,
+      baseColor: dark ? [0.1, 0.1, 0.1] : [0.86, 0.84, 0.78],
+      markerColor: dark ? [0.18, 1, 0.9] : [0, 0.48, 0.43],
+      glowColor: dark ? [0.05, 0.86, 0.78] : [0.95, 0.9, 0.82],
+      mapBrightness: dark ? 6 : 4.8,
+    };
+  };
+
+  roots.forEach((root) => {
+    if (!(root instanceof HTMLElement) || root.dataset.mounted) return;
+
+    const canvas = root.querySelector("canvas");
+    const stage = root.querySelector("[data-globe-stage]");
+
+    if (
+      !(canvas instanceof HTMLCanvasElement) ||
+      !(stage instanceof HTMLElement)
+    ) {
+      return;
+    }
+
+    root.dataset.mounted = "true";
+
+    const probe = document.createElement("canvas");
+    if (!probe.getContext("webgl2") && !probe.getContext("webgl")) {
+      return;
+    }
+
+    const andorraLocation = [
+      Number(root.dataset.lat),
+      Number(root.dataset.lng),
+    ];
+    const yekaterinburgLocation = [
+      Number(root.dataset.yekaterinburgLat),
+      Number(root.dataset.yekaterinburgLng),
+    ];
+    const barcelonaLocation = [
+      Number(root.dataset.barcelonaLat),
+      Number(root.dataset.barcelonaLng),
+    ];
+    const markers = [
+      { location: andorraLocation, size: 0.045, id: "andorra" },
+      {
+        location: yekaterinburgLocation,
+        size: 0.035,
+        id: "yekaterinburg",
+        color: [1, 0.74, 0.32],
+      },
+      { location: barcelonaLocation, size: 0.035, id: "barcelona" },
+    ];
+    const arcs = [
+      {
+        from: yekaterinburgLocation,
+        to: andorraLocation,
+        id: "yekaterinburg-andorra",
+        color: [0.18, 1, 0.9],
+      },
+    ];
+    const rotation = {
+      phi: -1.55,
+      theta: 0.74,
+    };
+
+    let globe;
+    let frame = 0;
+    let size = 0;
+    let isVisible = true;
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let dragStartPhi = rotation.phi;
+    let dragStartTheta = rotation.theta;
+
+    const options = () => ({
+      width: size,
+      height: size,
+      devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+      phi: rotation.phi,
+      theta: rotation.theta,
+      diffuse: 1.2,
+      mapSamples: 60000,
+      mapBaseBrightness: 0,
+      markerElevation: 0.01,
+      arcWidth: 0.9,
+      arcHeight: 0.28,
+      scale: 1,
+      opacity: 1,
+      markers,
+      arcs,
+      ...getPalette(),
+    });
+
+    const resize = () => {
+      const nextSize = Math.max(280, Math.round(stage.clientWidth));
+      if (nextSize === size) return;
+
+      size = nextSize;
+
+      if (globe) {
+        globe.update({
+          width: size,
+          height: size,
+          devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+        });
+      }
+    };
+
+    const render = () => {
+      if (!globe) return;
+
+      globe.update({
+        phi: rotation.phi,
+        theta: rotation.theta,
+      });
+
+      frame = window.requestAnimationFrame(render);
+    };
+
+    const mount = () => {
+      resize();
+
+      globe = createGlobe(canvas, options());
+      frame = window.requestAnimationFrame(render);
+
+      window.setTimeout(() => {
+        root.classList.add("is-loaded");
+      }, 180);
+    };
+
+    const observer =
+      "ResizeObserver" in window ? new ResizeObserver(resize) : undefined;
+    observer?.observe(stage);
+    window.addEventListener("resize", resize, { passive: true });
+
+    const clampTheta = (value) =>
+      Math.max(-Math.PI / 2, Math.min(Math.PI / 2, value));
+
+    const onPointerDown = (event) => {
+      isDragging = true;
+      root.classList.add("is-dragging");
+      root.setPointerCapture(event.pointerId);
+      dragStartX = event.clientX;
+      dragStartY = event.clientY;
+      dragStartPhi = rotation.phi;
+      dragStartTheta = rotation.theta;
+    };
+
+    const onPointerMove = (event) => {
+      if (!isDragging) return;
+
+      const deltaX = event.clientX - dragStartX;
+      const deltaY = event.clientY - dragStartY;
+
+      rotation.phi = dragStartPhi + deltaX / 220;
+      rotation.theta = clampTheta(dragStartTheta - deltaY / 280);
+    };
+
+    const onPointerUp = (event) => {
+      isDragging = false;
+      root.classList.remove("is-dragging");
+
+      if (root.hasPointerCapture(event.pointerId)) {
+        root.releasePointerCapture(event.pointerId);
+      }
+    };
+
+    root.addEventListener("pointerdown", onPointerDown);
+    root.addEventListener("pointermove", onPointerMove);
+    root.addEventListener("pointerup", onPointerUp);
+    root.addEventListener("pointercancel", onPointerUp);
+
+    const intersection = new IntersectionObserver(([entry]) => {
+      isVisible = entry?.isIntersecting ?? true;
+    });
+    intersection.observe(root);
+
+    const themeObserver = new MutationObserver(() => {
+      globe?.update(getPalette());
+    });
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme"],
+    });
+
+    mount();
+
+    document.addEventListener("astro:before-swap", () => {
+      window.cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener("resize", resize);
+      root.removeEventListener("pointerdown", onPointerDown);
+      root.removeEventListener("pointermove", onPointerMove);
+      root.removeEventListener("pointerup", onPointerUp);
+      root.removeEventListener("pointercancel", onPointerUp);
+      intersection.disconnect();
+      themeObserver.disconnect();
+      globe?.destroy();
+    });
+  });
+</script>
