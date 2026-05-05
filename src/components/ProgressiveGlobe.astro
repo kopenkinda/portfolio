@@ -1,4 +1,7 @@
 ---
+import andorraPhoto from "../assets/globe/andorra.jpg";
+import yekaterinburgPhoto from "../assets/globe/yekaterinburg.jpg";
+
 const andorra = {
   lat: 42.5063,
   lng: 1.5218,
@@ -7,11 +10,6 @@ const andorra = {
 const yekaterinburg = {
   lat: 56.8389,
   lng: 60.6057,
-};
-
-const barcelona = {
-  lat: 41.3874,
-  lng: 2.1686,
 };
 ---
 
@@ -22,8 +20,6 @@ const barcelona = {
   data-lng={andorra.lng}
   data-yekaterinburg-lat={yekaterinburg.lat}
   data-yekaterinburg-lng={yekaterinburg.lng}
-  data-barcelona-lat={barcelona.lat}
-  data-barcelona-lng={barcelona.lng}
   aria-label="Globe highlighting Andorra"
 >
   <div class="globe-stage" data-globe-stage>
@@ -37,13 +33,22 @@ const barcelona = {
       decoding="async"
     />
     <canvas class="globe-canvas" aria-hidden="true"></canvas>
-    <span class="globe-label" aria-hidden="true">Andorra</span>
-    <span class="globe-label globe-label-yekaterinburg" aria-hidden="true"
-      >Yekaterinburg</span
+    <span class="globe-polaroid globe-polaroid-andorra" aria-hidden="true">
+      <img src={andorraPhoto.src} alt="" loading="eager" decoding="async" />
+      <span>Andorra</span>
+    </span>
+    <span
+      class="globe-polaroid globe-polaroid-yekaterinburg"
+      aria-hidden="true"
     >
-    <span class="globe-label globe-label-barcelona" aria-hidden="true"
-      >Barcelona</span
-    >
+      <img
+        src={yekaterinburgPhoto.src}
+        alt=""
+        loading="eager"
+        decoding="async"
+      />
+      <span>Yekaterinburg</span>
+    </span>
     <span class="globe-arc-label" aria-hidden="true">moved in 2016</span>
   </div>
 </div>
@@ -73,7 +78,7 @@ const barcelona = {
     inset: 12%;
     z-index: -1;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--accent-color) 18%, transparent);
+    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
     filter: blur(48px);
     opacity: 0.55;
     content: "";
@@ -107,55 +112,78 @@ const barcelona = {
     opacity: 1;
   }
 
-  .globe-label {
+  .globe-polaroid {
     position: absolute;
-    bottom: anchor(top);
+    top: anchor(center);
     left: anchor(center);
     z-index: 2;
     position-anchor: --cobe-andorra;
-    margin-bottom: 0.55rem;
-    border: 1px solid color-mix(in srgb, var(--accent-color) 66%, transparent);
-    border-radius: 3px;
-    background: color-mix(in srgb, var(--background) 88%, transparent);
+    width: clamp(4.9rem, 8.8vw, 6rem);
+    border: 1px solid rgb(0 0 0 / 0.08);
+    border-radius: 2px;
+    background: rgb(255 255 255);
     box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--background) 78%, transparent),
-      0 0 18px color-mix(in srgb, var(--accent-color) 24%, transparent);
-    padding: 0.22rem 0.48rem;
-    color: var(--accent-color);
+      0 7px 18px rgb(0 0 0 / 0.13),
+      0 1px 2px rgb(0 0 0 / 0.12);
+    padding: 0.34rem 0.34rem 0.44rem;
+    color: rgb(39 39 42);
     font-family: var(--font-doto);
-    font-size: clamp(0.72rem, 1.4vw, 0.9rem);
+    font-size: clamp(0.52rem, 0.9vw, 0.62rem);
     font-weight: 800;
     font-variation-settings: "ROND" 100;
     line-height: 1;
     opacity: 0;
-    translate: -50% 0;
+    rotate: var(--polaroid-rotate, -3deg);
+    translate: -50% -88%;
     white-space: nowrap;
     transition:
       opacity 220ms ease,
-      filter 220ms ease;
+      filter 220ms ease,
+      transform 220ms ease;
   }
 
-  .progressive-globe.is-loaded .globe-label {
+  .globe-polaroid::after {
+    position: absolute;
+    top: calc(100% + 0.2rem);
+    left: 50%;
+    width: 0.45rem;
+    height: 0.45rem;
+    translate: -50% 0;
+    border-radius: 999px;
+    background: var(--accent-color);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--background) 76%, transparent);
+    content: "";
+  }
+
+  .globe-polaroid img {
+    width: 100%;
+    aspect-ratio: 1.1;
+    display: block;
+    object-fit: cover;
+    filter: saturate(0.92) contrast(1.04);
+  }
+
+  .globe-polaroid span {
+    display: block;
+    overflow: hidden;
+    margin-top: 0.32rem;
+    text-align: center;
+    text-overflow: ellipsis;
+  }
+
+  .progressive-globe.is-loaded .globe-polaroid-andorra {
     opacity: var(--cobe-visible-andorra, 0);
     filter: blur(calc((1 - var(--cobe-visible-andorra, 1)) * 5px));
   }
 
-  .globe-label-yekaterinburg {
+  .globe-polaroid-yekaterinburg {
     position-anchor: --cobe-yekaterinburg;
+    --polaroid-rotate: 3deg;
   }
 
-  .progressive-globe.is-loaded .globe-label-yekaterinburg {
+  .progressive-globe.is-loaded .globe-polaroid-yekaterinburg {
     opacity: var(--cobe-visible-yekaterinburg, 0);
     filter: blur(calc((1 - var(--cobe-visible-yekaterinburg, 1)) * 5px));
-  }
-
-  .globe-label-barcelona {
-    position-anchor: --cobe-barcelona;
-  }
-
-  .progressive-globe.is-loaded .globe-label-barcelona {
-    opacity: var(--cobe-visible-barcelona, 0);
-    filter: blur(calc((1 - var(--cobe-visible-barcelona, 1)) * 5px));
   }
 
   .globe-arc-label {
@@ -167,12 +195,12 @@ const barcelona = {
     margin-bottom: 0.45rem;
     border: 1px solid color-mix(in srgb, var(--foreground) 22%, transparent);
     border-radius: 3px;
-    background: color-mix(in srgb, var(--background) 90%, transparent);
+    background: rgb(255 255 255 / 0.92);
     box-shadow:
       0 0 0 1px color-mix(in srgb, var(--background) 78%, transparent),
       0 0 18px color-mix(in srgb, var(--accent-color) 18%, transparent);
     padding: 0.2rem 0.46rem;
-    color: var(--foreground);
+    color: rgb(39 39 42);
     font-family: var(--font-doto);
     font-size: clamp(0.7rem, 1.25vw, 0.84rem);
     font-weight: 800;
@@ -207,10 +235,10 @@ const barcelona = {
 
     return {
       dark: dark ? 1 : 0,
-      baseColor: dark ? [0.1, 0.1, 0.1] : [0.86, 0.84, 0.78],
+      baseColor: dark ? [0.13, 0.13, 0.12] : [1, 1, 1],
       markerColor: dark ? [0.18, 1, 0.9] : [0, 0.48, 0.43],
-      glowColor: dark ? [0.05, 0.86, 0.78] : [0.95, 0.9, 0.82],
-      mapBrightness: dark ? 6 : 4.8,
+      glowColor: dark ? [0.05, 0.86, 0.78] : [0.96, 0.97, 0.98],
+      mapBrightness: dark ? 2.8 : 1.45,
     };
   };
 
@@ -242,10 +270,6 @@ const barcelona = {
       Number(root.dataset.yekaterinburgLat),
       Number(root.dataset.yekaterinburgLng),
     ];
-    const barcelonaLocation = [
-      Number(root.dataset.barcelonaLat),
-      Number(root.dataset.barcelonaLng),
-    ];
     const markers = [
       { location: andorraLocation, size: 0.045, id: "andorra" },
       {
@@ -254,7 +278,6 @@ const barcelona = {
         id: "yekaterinburg",
         color: [1, 0.74, 0.32],
       },
-      { location: barcelonaLocation, size: 0.035, id: "barcelona" },
     ];
     const arcs = [
       {
@@ -265,8 +288,8 @@ const barcelona = {
       },
     ];
     const rotation = {
-      phi: -1.55,
-      theta: 0.74,
+      phi: -2.259,
+      theta: 0.485,
     };
 
     let globe;
@@ -286,7 +309,7 @@ const barcelona = {
       phi: rotation.phi,
       theta: rotation.theta,
       diffuse: 1.2,
-      mapSamples: 60000,
+      mapSamples: 14000,
       mapBaseBrightness: 0,
       markerElevation: 0.01,
       arcWidth: 0.9,
