@@ -1,6 +1,8 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
 import BasePage from "../components/BasePage.astro";
+import Button from "../components/Button.astro";
+import PixelIcon from "../components/PixelIcon.astro";
 import { SITE_DESCRIPTION, SITE_TITLE, USER } from "../consts";
 ---
 
@@ -11,16 +13,44 @@ import { SITE_DESCRIPTION, SITE_TITLE, USER } from "../consts";
   <main>
     <section
       id="about-me"
-      class="container mx-auto p-4 transition-all duration-300"
+      class="container mx-auto grid p-4 transition-all duration-300 md:grid-cols-2"
     >
-      <h2 class="mt-36 font-headline text-4xl">
-        Hi, my name is <span class="inline-block font-bold text-accent"
-          >{USER.name}</span
+      <div>
+        <h2 class="mt-36 font-headline text-4xl font-bold dark:font-normal">
+          Hi, my name is <span
+            class="inline-block font-black text-accent dark:font-bold"
+            >{USER.name}</span
+          >
+        </h2>
+        <span
+          class="mt-4 inline-block max-w-[60ch] leading-relaxed text-balance"
+          >{USER.headline}</span
         >
-      </h2>
-      <span class="mt-4 inline-block max-w-[60ch] leading-relaxed text-balance"
-        >{USER.headline}</span
-      >
+        <div class="mt-4 space-y-3 space-x-2">
+          <Button class="font-headline font-black" variant="secondary">
+            <PixelIcon slot="icon" name="file" />cv
+          </Button>
+          <Button class="font-headline font-black" variant="secondary">
+            <PixelIcon slot="icon" name="github" />github
+          </Button>
+          <Button class="font-headline font-black" variant="secondary">
+            <PixelIcon slot="icon" name="telegram" />telegram
+          </Button>
+          <Button class="font-headline font-black" variant="secondary">
+            <PixelIcon slot="icon" name="mail" />mail
+          </Button>
+          <Button class="font-headline font-black" variant="secondary">
+            <PixelIcon slot="icon" name="linkedin" />linkedin
+          </Button>
+        </div>
+        <div class="mt-12 w-full">
+          <span
+            class="animate-pulse text-center font-headline font-bold text-muted-foreground dark:font-normal"
+            >Scroll down for more</span
+          >
+        </div>
+      </div>
+      <div></div>
     </section>
   </main>
 </BasePage>

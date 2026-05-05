@@ -2,7 +2,7 @@
 const pathname = Astro.url.pathname;
 const isBlogActive = pathname === "/blog/" || pathname.startsWith("/blog/");
 import Button from "./Button.astro";
-import { FileIcon } from "@lucide/astro";
+import ThemeToggle from "./ThemeToggle.astro";
 ---
 
 <header
@@ -17,6 +17,7 @@ import { FileIcon } from "@lucide/astro";
     <a class="font-headline text-xl font-bold text-foreground" href="/"> DK </a>
 
     <div class="flex items-center gap-2">
+      <ThemeToggle />
       <Button
         href={isBlogActive ? "/" : "/blog/"}
         data-astro-prefetch

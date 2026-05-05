@@ -1,10 +1,12 @@
 ---
 import Header from "./Header.astro";
+import ThemeInit from "./ThemeInit.astro";
 ---
 
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
+    <ThemeInit />
     <slot name="head" />
   </head>
   <body>

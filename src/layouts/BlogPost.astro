@@ -4,6 +4,7 @@ import type { CollectionEntry } from "astro:content";
 import BaseHead from "../components/BaseHead.astro";
 import FormattedDate from "../components/FormattedDate.astro";
 import Header from "../components/Header.astro";
+import ThemeInit from "../components/ThemeInit.astro";
 
 type Props = CollectionEntry<"blog">["data"];
 
@@ -12,6 +13,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 
 <html lang="en">
   <head>
+    <ThemeInit />
     <BaseHead title={title} description={description} />
     <style>
       main {

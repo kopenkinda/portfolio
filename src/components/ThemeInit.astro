@@ -1,0 +1,14 @@
+<script is:inline>
+  (() => {
+    const storageKey = "theme";
+    const savedTheme = localStorage.getItem(storageKey);
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+      .matches
+      ? "dark"
+      : "light";
+    const theme = savedTheme || systemTheme;
+
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.dataset.theme = theme;
+  })();
+</script>
