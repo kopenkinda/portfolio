@@ -1,8 +1,8 @@
 ---
-type IconName = "file" | "github" | "telegram" | "mail" | "linkedin";
+import type { AllowedPixelIconType } from "./pixel-icon.types";
 
 type Props = {
-  name: IconName;
+  name: AllowedPixelIconType;
 };
 
 const { name } = Astro.props;

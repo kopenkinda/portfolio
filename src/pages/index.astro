@@ -27,21 +27,19 @@ import { SITE_DESCRIPTION, SITE_TITLE, USER } from "../consts";
           >{USER.headline}</span
         >
         <div class="mt-4 space-y-3 space-x-2">
-          <Button class="font-headline font-black" variant="secondary">
-            <PixelIcon slot="icon" name="file" />cv
-          </Button>
-          <Button class="font-headline font-black" variant="secondary">
-            <PixelIcon slot="icon" name="github" />github
-          </Button>
-          <Button class="font-headline font-black" variant="secondary">
-            <PixelIcon slot="icon" name="telegram" />telegram
-          </Button>
-          <Button class="font-headline font-black" variant="secondary">
-            <PixelIcon slot="icon" name="mail" />mail
-          </Button>
-          <Button class="font-headline font-black" variant="secondary">
-            <PixelIcon slot="icon" name="linkedin" />linkedin
-          </Button>
+          {
+            USER.socials.map(({ icon, label, href, notracking }) => (
+              <Button
+                class="font-headline font-black"
+                variant="secondary"
+                href={href}
+                rel={notracking ? "noreferrer noopener" : undefined}
+              >
+                <PixelIcon slot="icon" name={icon} />
+                {label}
+              </Button>
+            ))
+          }
         </div>
         <div class="mt-12 w-full">
           <span
