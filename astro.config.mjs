@@ -42,6 +42,13 @@ export default defineConfig({
       styles: ["normal"],
       subsets: ["latin"],
       fallbacks: ["sans-serif"],
+      options: {
+        experimental: {
+          variableAxis: {
+            ROND: [["0", "100"]],
+          },
+        },
+      },
     },
   ],
 

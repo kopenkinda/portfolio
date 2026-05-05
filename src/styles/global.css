@@ -16,6 +16,11 @@
   --color-border: var(--border);
 }
 
+@utility font-headline {
+  font-family: var(--font-doto);
+  font-variation-settings: "ROND" 100;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
