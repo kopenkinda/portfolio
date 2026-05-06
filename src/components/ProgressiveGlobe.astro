@@ -1,28 +1,51 @@
 ---
-import andorraPhoto from "../assets/globe/andorra.jpg";
+import type { Arc, Marker } from "cobe";
 import globePreviewDark from "../assets/globe/globe-preview-dark.webp";
 import globePreviewLight from "../assets/globe/globe-preview-light.webp";
-import yekaterinburgPhoto from "../assets/globe/yekaterinburg.jpg";
+import { USER } from "../consts";
 
-const andorra = {
-  lat: 42.5063,
-  lng: 1.5218,
-};
+const globe = USER.globe;
+const name = USER.name;
 
-const yekaterinburg = {
-  lat: 56.8389,
-  lng: 60.6057,
-};
+const toAnchorId = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+const locations = globe.locations.map((location, idx) => ({
+  ...location,
+  markerId: toAnchorId(location.id ?? location.label),
+  rotate: idx % 2 === 0 ? "-3deg" : "3deg",
+}));
+
+const markers: Marker[] = locations.map(({ lat, lng, markerId }) => ({
+  location: [lat, lng] as [number, number],
+  size: 0.045,
+  id: markerId,
+}));
+
+const connections = globe.connections.map((connection) => ({
+  ...connection,
+  arcId: toAnchorId(connection.id),
+}));
+
+const arcs: Arc[] = connections.map(({ from, to, arcId, color }) => ({
+  from: [from.lat, from.lng] as [number, number],
+  to: [to.lat, to.lng] as [number, number],
+  id: arcId,
+  color,
+}));
+
+const rotation = { phi: globe.intial.phi, theta: globe.intial.theta };
+const globeData = JSON.stringify({ arcs, markers, rotation });
 ---
 
-<div
+<progressive-globe
   class="progressive-globe"
   data-progressive-globe
-  data-lat={andorra.lat}
-  data-lng={andorra.lng}
-  data-yekaterinburg-lat={yekaterinburg.lat}
-  data-yekaterinburg-lng={yekaterinburg.lng}
-  aria-label="Globe highlighting Andorra"
+  data-globe={globeData}
+  aria-label={`Globe with ${name}'s highlights`}
 >
   <div class="globe-stage" data-globe-stage>
     <img
@@ -44,25 +67,36 @@ const yekaterinburg = {
       decoding="async"
     />
     <canvas class="globe-canvas" aria-hidden="true"></canvas>
-    <span class="globe-polaroid globe-polaroid-andorra" aria-hidden="true">
-      <img src={andorraPhoto.src} alt="" loading="eager" decoding="async" />
-      <span>Andorra</span>
-    </span>
-    <span
-      class="globe-polaroid globe-polaroid-yekaterinburg"
-      aria-hidden="true"
-    >
-      <img
-        src={yekaterinburgPhoto.src}
-        alt=""
-        loading="eager"
-        decoding="async"
-      />
-      <span>Yekaterinburg</span>
-    </span>
-    <span class="globe-arc-label" aria-hidden="true">moved in 2016</span>
+    {
+      locations.map(({ label, image, markerId, rotate }) => (
+        <span
+          class="globe-polaroid"
+          style={`position-anchor: --cobe-${markerId}; --cobe-visible: var(--cobe-visible-${markerId}, 0); --polaroid-rotate: ${rotate};`}
+          aria-hidden="true"
+        >
+          {image && (
+            <img src={image.src} alt="" loading="eager" decoding="async" />
+          )}
+          <span>{label}</span>
+        </span>
+      ))
+    }
+    {
+      connections.map(
+        ({ label, arcId }) =>
+          label && (
+            <span
+              class="globe-arc-label"
+              style={`position-anchor: --cobe-arc-${arcId}; --cobe-visible: var(--cobe-visible-arc-${arcId}, 0);`}
+              aria-hidden="true"
+            >
+              {label}
+            </span>
+          ),
+      )
+    }
   </div>
-</div>
+</progressive-globe>
 
 <style>
   .progressive-globe {
@@ -140,7 +174,6 @@ const yekaterinburg = {
     top: anchor(center);
     left: anchor(center);
     z-index: 2;
-    position-anchor: --cobe-andorra;
     width: clamp(4.9rem, 8.8vw, 6rem);
     border: 1px solid rgb(0 0 0 / 0.08);
     border-radius: 2px;
@@ -194,19 +227,9 @@ const yekaterinburg = {
     text-overflow: ellipsis;
   }
 
-  .progressive-globe.is-loaded .globe-polaroid-andorra {
-    opacity: var(--cobe-visible-andorra, 0);
-    filter: blur(calc((1 - var(--cobe-visible-andorra, 1)) * 5px));
-  }
-
-  .globe-polaroid-yekaterinburg {
-    position-anchor: --cobe-yekaterinburg;
-    --polaroid-rotate: 3deg;
-  }
-
-  .progressive-globe.is-loaded .globe-polaroid-yekaterinburg {
-    opacity: var(--cobe-visible-yekaterinburg, 0);
-    filter: blur(calc((1 - var(--cobe-visible-yekaterinburg, 1)) * 5px));
+  .progressive-globe.is-loaded .globe-polaroid {
+    opacity: var(--cobe-visible, 0);
+    filter: blur(calc((1 - var(--cobe-visible, 1)) * 5px));
   }
 
   .globe-arc-label {
@@ -214,7 +237,6 @@ const yekaterinburg = {
     bottom: anchor(top);
     left: anchor(center);
     z-index: 2;
-    position-anchor: --cobe-arc-yekaterinburg-andorra;
     margin-bottom: 0.45rem;
     border: 1px solid color-mix(in srgb, var(--foreground) 22%, transparent);
     border-radius: 3px;
@@ -238,230 +260,208 @@ const yekaterinburg = {
   }
 
   .progressive-globe.is-loaded .globe-arc-label {
-    opacity: var(--cobe-visible-arc-yekaterinburg-andorra, 0);
-    filter: blur(
-      calc((1 - var(--cobe-visible-arc-yekaterinburg-andorra, 1)) * 5px)
-    );
+    opacity: var(--cobe-visible, 0);
+    filter: blur(calc((1 - var(--cobe-visible, 1)) * 5px));
   }
 </style>
 
 <script>
-  import createGlobe, {
-    type Arc,
-    type COBEOptions,
-    type Globe,
-    type Marker,
-  } from "cobe";
-
-  const roots = document.querySelectorAll("[data-progressive-globe]");
+  import createGlobe, { type COBEOptions, type Globe } from "cobe";
 
   const getTheme = () => document.documentElement.dataset.theme || "light";
 
-  const getPalette = () => {
+  const rgb = (
+    red: number,
+    green: number,
+    blue: number,
+  ): [number, number, number] => [red, green, blue];
+
+  const getPalette = (): Pick<
+    COBEOptions,
+    "baseColor" | "dark" | "glowColor" | "mapBrightness" | "markerColor"
+  > => {
     const dark = getTheme() === "dark";
 
     return {
       dark: dark ? 1 : 0,
-      baseColor: (dark ? [0.13, 0.13, 0.12] : [1, 1, 1]) as [
-        number,
-        number,
-        number,
-      ],
-      markerColor: (dark ? [0.18, 1, 0.9] : [0, 0.48, 0.43]) as [
-        number,
-        number,
-        number,
-      ],
-      glowColor: (dark ? [0.05, 0.86, 0.78] : [0.96, 0.97, 0.98]) as [
-        number,
-        number,
-        number,
-      ],
+      baseColor: dark ? rgb(0.13, 0.13, 0.12) : rgb(1, 1, 1),
+      markerColor: dark ? rgb(0.18, 1, 0.9) : rgb(0, 0.48, 0.43),
+      glowColor: dark ? rgb(0.05, 0.86, 0.78) : rgb(0.96, 0.97, 0.98),
       mapBrightness: dark ? 2.8 : 1.45,
     };
   };
 
-  roots.forEach((root) => {
-    if (!(root instanceof HTMLElement) || root.dataset.mounted) return;
+  type GlobeData = Pick<COBEOptions, "arcs" | "markers"> & {
+    rotation: { phi: number; theta: number };
+  };
 
-    const canvas = root.querySelector("canvas");
-    const stage = root.querySelector("[data-globe-stage]");
+  class ProgressiveGlobe extends HTMLElement {
+    private cleanup?: () => void;
 
-    if (
-      !(canvas instanceof HTMLCanvasElement) ||
-      !(stage instanceof HTMLElement)
-    ) {
-      return;
-    }
+    connectedCallback() {
+      if (this.dataset.mounted) return;
 
-    root.dataset.mounted = "true";
+      const canvas = this.querySelector("canvas");
+      const stage = this.querySelector("[data-globe-stage]");
 
-    const probe = document.createElement("canvas");
-    if (!probe.getContext("webgl2") && !probe.getContext("webgl")) {
-      return;
-    }
-
-    const andorraLocation: Marker["location"] = [
-      Number(root.dataset.lat),
-      Number(root.dataset.lng),
-    ];
-    const yekaterinburgLocation: Marker["location"] = [
-      Number(root.dataset.yekaterinburgLat),
-      Number(root.dataset.yekaterinburgLng),
-    ];
-
-    const markers: Marker[] = [
-      { location: andorraLocation, size: 0.045, id: "andorra" },
-      {
-        location: yekaterinburgLocation,
-        size: 0.035,
-        id: "yekaterinburg",
-        color: [1, 0.74, 0.32],
-      },
-    ];
-
-    const arcs: Arc[] = [
-      {
-        from: yekaterinburgLocation,
-        to: andorraLocation,
-        id: "yekaterinburg-andorra",
-        color: [0.18, 1, 0.9],
-      },
-    ];
-
-    const rotation = {
-      phi: -2.259,
-      theta: 0.485,
-    };
-
-    let globe: Globe;
-    let frame = 0;
-    let size = 0;
-    let isDragging = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
-    let dragStartPhi = rotation.phi;
-    let dragStartTheta = rotation.theta;
-
-    const options = (): COBEOptions => ({
-      width: size,
-      height: size,
-      devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
-      phi: rotation.phi,
-      theta: rotation.theta,
-      diffuse: 1.2,
-      mapSamples: 14000,
-      mapBaseBrightness: 0,
-      markerElevation: 0.01,
-      arcWidth: 0.9,
-      arcHeight: 0.28,
-      scale: 1,
-      opacity: 1,
-      markers,
-      arcs,
-      ...getPalette(),
-    });
-
-    const resize = () => {
-      const nextSize = Math.max(280, Math.round(stage.clientWidth));
-      if (nextSize === size) return;
-
-      size = nextSize;
-
-      if (globe) {
-        globe.update({
-          width: size,
-          height: size,
-          devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
-        });
+      if (
+        !(canvas instanceof HTMLCanvasElement) ||
+        !(stage instanceof HTMLElement)
+      ) {
+        return;
       }
-    };
 
-    const render = () => {
-      if (!globe) return;
+      const data = this.dataset.globe;
+      if (!data) return;
 
-      globe.update({
+      const { arcs, markers, rotation } = JSON.parse(data) as GlobeData;
+
+      this.dataset.mounted = "true";
+
+      const probe = document.createElement("canvas");
+      if (!probe.getContext("webgl2") && !probe.getContext("webgl")) {
+        return;
+      }
+
+      let globe: Globe | undefined;
+      let frame = 0;
+      let size = 0;
+      let isDragging = false;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let dragStartPhi = rotation.phi;
+      let dragStartTheta = rotation.theta;
+
+      const options = (): COBEOptions => ({
+        width: size,
+        height: size,
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
         phi: rotation.phi,
         theta: rotation.theta,
+        diffuse: 1.2,
+        mapSamples: 14000,
+        mapBaseBrightness: 0,
+        markerElevation: 0.01,
+        arcWidth: 0.9,
+        arcHeight: 0.28,
+        scale: 1,
+        opacity: 1,
+        markers,
+        arcs,
+        ...getPalette(),
       });
 
-      frame = window.requestAnimationFrame(render);
-    };
+      const resize = () => {
+        const nextSize = Math.max(280, Math.round(stage.clientWidth));
+        if (nextSize === size) return;
 
-    const mount = () => {
-      resize();
+        size = nextSize;
 
-      globe = createGlobe(canvas, options());
-      frame = window.requestAnimationFrame(render);
+        if (globe) {
+          globe.update({
+            width: size,
+            height: size,
+            devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+          });
+        }
+      };
 
-      window.setTimeout(() => {
-        root.classList.add("is-loaded");
-      }, 180);
-    };
+      const render = () => {
+        if (!globe) return;
 
-    const observer =
-      "ResizeObserver" in window ? new ResizeObserver(resize) : undefined;
-    observer?.observe(stage);
-    window.addEventListener("resize", resize, { passive: true });
+        globe.update({
+          phi: rotation.phi,
+          theta: rotation.theta,
+        });
 
-    const clampTheta = (value: number) =>
-      Math.max(-Math.PI / 2, Math.min(Math.PI / 2, value));
+        frame = window.requestAnimationFrame(render);
+      };
 
-    const onPointerDown = (event: PointerEvent) => {
-      isDragging = true;
-      root.classList.add("is-dragging");
-      root.setPointerCapture(event.pointerId);
-      dragStartX = event.clientX;
-      dragStartY = event.clientY;
-      dragStartPhi = rotation.phi;
-      dragStartTheta = rotation.theta;
-    };
+      const mount = () => {
+        resize();
 
-    const onPointerMove = (event: PointerEvent) => {
-      if (!isDragging) return;
+        globe = createGlobe(canvas, options());
+        frame = window.requestAnimationFrame(render);
 
-      const deltaX = event.clientX - dragStartX;
-      const deltaY = event.clientY - dragStartY;
+        window.setTimeout(() => {
+          this.classList.add("is-loaded");
+        }, 180);
+      };
 
-      rotation.phi = dragStartPhi + deltaX / 220;
-      rotation.theta = clampTheta(dragStartTheta + deltaY / 280);
-    };
+      const observer =
+        "ResizeObserver" in window ? new ResizeObserver(resize) : undefined;
+      observer?.observe(stage);
+      window.addEventListener("resize", resize, { passive: true });
 
-    const onPointerUp = (event: PointerEvent) => {
-      isDragging = false;
-      root.classList.remove("is-dragging");
+      const clampTheta = (value: number) =>
+        Math.max(-Math.PI / 2, Math.min(Math.PI / 2, value));
 
-      if (root.hasPointerCapture(event.pointerId)) {
-        root.releasePointerCapture(event.pointerId);
-      }
-    };
+      const onPointerDown = (event: PointerEvent) => {
+        isDragging = true;
+        this.classList.add("is-dragging");
+        this.setPointerCapture(event.pointerId);
+        dragStartX = event.clientX;
+        dragStartY = event.clientY;
+        dragStartPhi = rotation.phi;
+        dragStartTheta = rotation.theta;
+      };
 
-    root.addEventListener("pointerdown", onPointerDown);
-    root.addEventListener("pointermove", onPointerMove);
-    root.addEventListener("pointerup", onPointerUp);
-    root.addEventListener("pointercancel", onPointerUp);
+      const onPointerMove = (event: PointerEvent) => {
+        if (!isDragging) return;
 
-    const themeObserver = new MutationObserver(() => {
-      globe?.update(getPalette());
-    });
+        const deltaX = event.clientX - dragStartX;
+        const deltaY = event.clientY - dragStartY;
 
-    themeObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class", "data-theme"],
-    });
+        rotation.phi = dragStartPhi + deltaX / 220;
+        rotation.theta = clampTheta(dragStartTheta + deltaY / 280);
+      };
 
-    mount();
+      const onPointerUp = (event: PointerEvent) => {
+        isDragging = false;
+        this.classList.remove("is-dragging");
 
-    document.addEventListener("astro:before-swap", () => {
-      window.cancelAnimationFrame(frame);
-      observer?.disconnect();
-      window.removeEventListener("resize", resize);
-      root.removeEventListener("pointerdown", onPointerDown);
-      root.removeEventListener("pointermove", onPointerMove);
-      root.removeEventListener("pointerup", onPointerUp);
-      root.removeEventListener("pointercancel", onPointerUp);
-      themeObserver.disconnect();
-      globe?.destroy();
-    });
-  });
+        if (this.hasPointerCapture(event.pointerId)) {
+          this.releasePointerCapture(event.pointerId);
+        }
+      };
+
+      this.addEventListener("pointerdown", onPointerDown);
+      this.addEventListener("pointermove", onPointerMove);
+      this.addEventListener("pointerup", onPointerUp);
+      this.addEventListener("pointercancel", onPointerUp);
+
+      const themeObserver = new MutationObserver(() => {
+        globe?.update(getPalette());
+      });
+
+      themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class", "data-theme"],
+      });
+
+      this.cleanup = () => {
+        window.cancelAnimationFrame(frame);
+        observer?.disconnect();
+        window.removeEventListener("resize", resize);
+        this.removeEventListener("pointerdown", onPointerDown);
+        this.removeEventListener("pointermove", onPointerMove);
+        this.removeEventListener("pointerup", onPointerUp);
+        this.removeEventListener("pointercancel", onPointerUp);
+        themeObserver.disconnect();
+        globe?.destroy();
+        delete this.dataset.mounted;
+      };
+
+      mount();
+    }
+
+    disconnectedCallback() {
+      this.cleanup?.();
+      this.cleanup = undefined;
+    }
+  }
+
+  if (!customElements.get("progressive-globe")) {
+    customElements.define("progressive-globe", ProgressiveGlobe);
+  }
 </script>

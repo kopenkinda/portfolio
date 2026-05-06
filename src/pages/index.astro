@@ -49,8 +49,11 @@ import { SITE_DESCRIPTION, SITE_TITLE, USER } from "../consts";
           >
         </div>
       </div>
-      <div class="flex justify-center pt-6 md:justify-end md:pt-28">
-        <ProgressiveGlobe />
+      <div class="flex flex-col justify-center pt-6 md:justify-end md:pt-28">
+        <ProgressiveGlobe globe={USER.globe} name={USER.name} />
+        <p class="text-center text-xs text-muted-foreground">
+          {USER.globe.intial.srDescription}
+        </p>
       </div>
     </section>
   </main>
