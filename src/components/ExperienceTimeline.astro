@@ -1,6 +1,7 @@
 ---
-import { experiences } from "../data/experiences";
-import type { ExperienceEntry } from "../data/experiences";
+import { USER } from "../consts";
+
+const experiences = USER.experiences;
 
 const monthFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
@@ -9,7 +10,10 @@ const monthFormatter = new Intl.DateTimeFormat("en", {
 
 const formatDate = (date: Date) => monthFormatter.format(date);
 
-const formatRange = ({ startDate, endDate }: ExperienceEntry) =>
+const formatRange = ({
+  startDate,
+  endDate,
+}: (typeof experiences)["entries"][number]) =>
   `${formatDate(startDate)} - ${endDate ? formatDate(endDate) : "Present"}`;
 ---
 
@@ -34,11 +38,11 @@ const formatRange = ({ startDate, endDate }: ExperienceEntry) =>
       aria-label="Scrollable work timeline"
     >
       <ol
-        class="relative flex min-w-max items-stretch before:pointer-events-none before:absolute before:top-[19px] before:right-[29rem] before:left-0 before:h-0.5 before:bg-border before:content-[''] sm:before:right-[34rem]"
+        class="relative flex min-w-max items-stretch before:pointer-events-none before:absolute before:top-4.75 before:right-116 before:left-0 before:h-0.5 before:bg-border before:content-[''] sm:before:right-136"
       >
         {
-          experiences.map((experience, index) => (
-            <li class="relative flex w-[19rem] shrink-0 flex-col pr-5 sm:w-[23rem]">
+          experiences.entries.map((experience, index) => (
+            <li class="relative flex w-76 shrink-0 flex-col pr-5 sm:w-92">
               <div class="relative mb-6 flex h-10 items-center">
                 <span
                   class:list={[
@@ -92,7 +96,7 @@ const formatRange = ({ startDate, endDate }: ExperienceEntry) =>
             </li>
           ))
         }
-        <li class="relative w-[29rem] shrink-0 pl-0 sm:w-[34rem]">
+        <li class="relative w-116 shrink-0 pl-0 sm:w-136">
           <div class="relative h-full min-h-72 text-border">
             <svg
               class="absolute top-0 left-0 h-56 w-full overflow-visible"
@@ -113,10 +117,9 @@ const formatRange = ({ startDate, endDate }: ExperienceEntry) =>
                 stroke-linecap="round"></path>
             </svg>
             <p
-              class="absolute top-40 left-18 max-w-[32ch] font-headline text-sm leading-relaxed font-black text-foreground dark:font-bold"
+              class="absolute top-40 left-18 max-w-[32ch] font-headline text-sm leading-relaxed font-black text-balance text-foreground dark:font-bold"
             >
-              Born in Russia. Built websites, wired restaurants into ordering
-              systems, kept pulling the thread. Eventually it became a career.
+              {experiences.theBeginning}
             </p>
           </div>
         </li>
