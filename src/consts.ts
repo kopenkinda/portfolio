@@ -19,8 +19,8 @@ export const CONFIG: PortfolioConfig = {
     options: {
       type: "contribution-drawer",
       options: {
-        cols: 28,
-        rows: 7,
+        cols: 16,
+        rows: 8,
         prefilledCells: [],
         includeAttribution: true,
       },
@@ -301,7 +301,7 @@ export type AutobattlerGame = {
 export type ContributionDrawerGame = {
   type: "contribution-drawer";
   options: {
-    prefilledCells: number[];
+    prefilledCells: [col: number, row: number][];
     rows: number;
     cols: number;
     includeAttribution: boolean;

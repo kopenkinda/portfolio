@@ -7,6 +7,8 @@ const config = CONFIG.game.options as ContributionDrawerGame;
 
 const rows = config.options.rows;
 const columns = config.options.cols;
+const prefilledCells = JSON.stringify(config.options.prefilledCells);
+const includeAttribution = String(config.options.includeAttribution);
 const cells = Array.from({ length: rows * columns }, (_, index) => index);
 ---
 
@@ -14,6 +16,8 @@ const cells = Array.from({ length: rows * columns }, (_, index) => index);
   class="block space-y-5"
   data-rows={rows}
   data-columns={columns}
+  data-prefilled-cells={prefilledCells}
+  data-include-attribution={includeAttribution}
 >
   <div
     class="overflow-hidden border border-dashed border-border bg-muted/35 p-3 sm:p-4"
@@ -65,6 +69,7 @@ const cells = Array.from({ length: rows * columns }, (_, index) => index);
 
     connectedCallback() {
       this.cells = this.$$<HTMLButtonElement>("[data-cell]");
+      this.prefillCells();
       this.bindEvents();
     }
 
@@ -142,8 +147,15 @@ const cells = Array.from({ length: rows * columns }, (_, index) => index);
       const cellSize = 24;
       const gap = 4;
       const padding = 16;
+      const attributionGap = 14;
+      const attributionFontSize = 13;
+      const includeAttribution = this.dataset.includeAttribution === "true";
       const width = columns * cellSize + (columns - 1) * gap + padding * 2;
-      const height = rows * cellSize + (rows - 1) * gap + padding * 2;
+      const gridHeight = rows * cellSize + (rows - 1) * gap;
+      const attributionHeight = includeAttribution
+        ? attributionGap + attributionFontSize
+        : 0;
+      const height = gridHeight + padding * 2 + attributionHeight;
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
@@ -168,6 +180,10 @@ const cells = Array.from({ length: rows * columns }, (_, index) => index);
         "--muted",
         isDark ? "#1c1917" : "#f5f5f4",
       );
+      const attributionColor = this.resolveThemeColor(
+        "--muted-foreground",
+        isDark ? "#a8a29e" : "#57534e",
+      );
 
       context.fillStyle = surfaceColor;
       context.fillRect(0, 0, width, height);
@@ -184,10 +200,72 @@ const cells = Array.from({ length: rows * columns }, (_, index) => index);
         context.strokeRect(x + 0.5, y + 0.5, cellSize - 1, cellSize - 1);
       });
 
+      if (includeAttribution) {
+        context.fillStyle = attributionColor;
+        context.font = `700 ${attributionFontSize}px ${this.resolveHeadlineFontFamily()}`;
+        context.textAlign = "center";
+        context.textBaseline = "top";
+        context.fillText(
+          `Scribbled on ${window.location.origin}`,
+          width / 2,
+          padding + gridHeight + attributionGap,
+        );
+      }
+
       const link = document.createElement("a");
       link.download = "contribution-drawing.png";
       link.href = canvas.toDataURL("image/png");
       link.click();
+    }
+
+    private resolveHeadlineFontFamily(): string {
+      const probe = document.createElement("span");
+      probe.className = "font-headline";
+      probe.style.position = "fixed";
+      probe.style.pointerEvents = "none";
+      probe.style.visibility = "hidden";
+      document.body.append(probe);
+      const fontFamily = getComputedStyle(probe).fontFamily;
+      probe.remove();
+      return fontFamily || "ui-sans-serif, system-ui, sans-serif";
+    }
+
+    private prefillCells() {
+      const rows = Number(this.dataset.rows ?? 7);
+      const columns = Number(this.dataset.columns ?? 28);
+      const cells = this.parsePrefilledCells();
+
+      cells.forEach(([column, row]) => {
+        if (
+          !Number.isInteger(column) ||
+          !Number.isInteger(row) ||
+          column < 0 ||
+          row < 0 ||
+          column >= columns ||
+          row >= rows
+        ) {
+          return;
+        }
+
+        const cell = this.cells[row * columns + column];
+        if (cell) this.paint(cell, true);
+      });
+      this.lastPaintedCell = null;
+    }
+
+    private parsePrefilledCells(): [number, number][] {
+      try {
+        const cells = JSON.parse(this.dataset.prefilledCells ?? "[]");
+        if (!Array.isArray(cells)) return [];
+        return cells.filter(
+          (cell): cell is [number, number] =>
+            Array.isArray(cell) &&
+            cell.length === 2 &&
+            cell.every((value) => typeof value === "number"),
+        );
+      } catch {
+        return [];
+      }
     }
 
     private resolveThemeColor(property: string, fallback: string): string {

@@ -6,9 +6,7 @@ import ContributionDrawer from "./games/ContributionDrawer.astro";
 
 <section id="games" class="bg-background py-14 md:py-18">
   <div class="container mx-auto px-4 sm:px-6">
-    <div
-      class="grid gap-8 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:items-start"
-    >
+    <div class="grid gap-8 md:grid-cols-3 md:items-start">
       <div>
         <h2 class="font-headline text-3xl font-bold dark:font-normal">
           {CONFIG.game.title}
@@ -19,13 +17,14 @@ import ContributionDrawer from "./games/ContributionDrawer.astro";
           {CONFIG.game.description}
         </p>
       </div>
-
-      {CONFIG.game.options.type === "autobattler" && <Autobattler />}
-      {
-        CONFIG.game.options.type === "contribution-drawer" && (
-          <ContributionDrawer />
-        )
-      }
+      <div class="md:col-span-2">
+        {CONFIG.game.options.type === "autobattler" && <Autobattler />}
+        {
+          CONFIG.game.options.type === "contribution-drawer" && (
+            <ContributionDrawer />
+          )
+        }
+      </div>
     </div>
   </div>
 </section>
