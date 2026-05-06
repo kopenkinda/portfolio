@@ -1,4 +1,5 @@
 ---
+import { X } from "@lucide/astro";
 import type { Arc, Marker } from "cobe";
 import globePreviewDark from "../assets/globe/globe-preview-dark.webp";
 import globePreviewLight from "../assets/globe/globe-preview-light.webp";
@@ -15,6 +16,7 @@ const toAnchorId = (value: string) =>
 
 const locations = globe.locations.map((location, idx) => ({
   ...location,
+  description: location.description || "",
   markerId: toAnchorId(location.id ?? location.label),
   rotate: idx % 2 === 0 ? "-3deg" : "3deg",
 }));
@@ -69,16 +71,19 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
     <canvas class="globe-canvas" aria-hidden="true"></canvas>
     {
       locations.map(({ label, image, markerId, rotate }) => (
-        <span
+        <button
           class="globe-polaroid"
+          type="button"
+          data-globe-polaroid
+          data-location-id={markerId}
           style={`position-anchor: --cobe-${markerId}; --cobe-visible: var(--cobe-visible-${markerId}, 0); --polaroid-rotate: ${rotate};`}
-          aria-hidden="true"
+          aria-label={`Open ${label}`}
         >
           {image && (
             <img src={image.src} alt="" loading="eager" decoding="async" />
           )}
           <span>{label}</span>
-        </span>
+        </button>
       ))
     }
     {
@@ -95,6 +100,33 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
           ),
       )
     }
+    <div class="globe-detail" data-globe-detail hidden>
+      {
+        locations.map(({ label, description, image, markerId, rotate }) => (
+          <article
+            class="globe-detail-card"
+            data-globe-detail-card
+            data-location-id={markerId}
+            style={`--polaroid-rotate: ${rotate};`}
+            hidden
+          >
+            <button
+              class="globe-detail-close z-10"
+              type="button"
+              data-globe-detail-close
+              aria-label="Close"
+            >
+              <X size={15} strokeWidth={3} aria-hidden="true" />
+            </button>
+            {image && (
+              <img src={image.src} alt="" loading="eager" decoding="async" />
+            )}
+            <h3>{label}</h3>
+            {description && <p>{description}</p>}
+          </article>
+        ))
+      }
+    </div>
   </div>
 </progressive-globe>
 
@@ -170,6 +202,7 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
   }
 
   .globe-polaroid {
+    appearance: none;
     position: absolute;
     top: anchor(center);
     left: anchor(center);
@@ -183,6 +216,7 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
       0 1px 2px rgb(0 0 0 / 0.12);
     padding: 0.34rem 0.34rem 0.44rem;
     color: rgb(39 39 42);
+    cursor: pointer;
     font-family: var(--font-doto);
     font-size: clamp(0.52rem, 0.9vw, 0.62rem);
     font-weight: 800;
@@ -196,6 +230,15 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
       opacity 220ms ease,
       filter 220ms ease,
       transform 220ms ease;
+  }
+
+  .globe-polaroid:hover {
+    transform: translateY(-0.18rem) scale(1.04);
+  }
+
+  .globe-polaroid:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 3px;
   }
 
   .globe-polaroid::after {
@@ -263,6 +306,99 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
     opacity: var(--cobe-visible, 0);
     filter: blur(calc((1 - var(--cobe-visible, 1)) * 5px));
   }
+
+  .globe-detail {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    padding: clamp(1rem, 5vw, 2rem);
+    background: color-mix(in srgb, var(--background) 24%, transparent);
+    backdrop-filter: blur(2px);
+  }
+
+  .globe-detail[hidden],
+  .globe-detail-card[hidden] {
+    display: none;
+  }
+
+  .globe-detail-card {
+    position: relative;
+    width: min(72%, 18rem);
+    border: 1px solid rgb(0 0 0 / 0.08);
+    border-radius: 2px;
+    background: rgb(255 255 255);
+    box-shadow:
+      0 22px 54px rgb(0 0 0 / 0.28),
+      0 2px 6px rgb(0 0 0 / 0.16);
+    padding: 0.62rem 0.62rem 1rem;
+    color: rgb(39 39 42);
+    rotate: var(--polaroid-rotate, -2deg);
+    animation: globe-detail-in 180ms ease-out;
+  }
+
+  .globe-detail-card img {
+    width: 100%;
+    aspect-ratio: 1.08;
+    display: block;
+    object-fit: cover;
+    filter: saturate(0.95) contrast(1.04);
+  }
+
+  .globe-detail-card h3,
+  .globe-detail-card p {
+    margin: 0;
+  }
+
+  .globe-detail-card h3 {
+    margin-top: 0.58rem;
+    font-family: var(--font-doto);
+    font-size: clamp(0.9rem, 2.2vw, 1.2rem);
+    font-weight: 900;
+    font-variation-settings: "ROND" 100;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .globe-detail-card p {
+    margin-top: 0.54rem;
+    font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+    line-height: 1.38;
+  }
+
+  .globe-detail-close {
+    appearance: none;
+    position: absolute;
+    top: -0.9rem;
+    right: -0.9rem;
+    display: grid;
+    width: 1.8rem;
+    height: 1.8rem;
+    place-items: center;
+    border: 1px solid rgb(0 0 0 / 0.1);
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.9);
+    color: rgb(39 39 42);
+    cursor: pointer;
+  }
+
+  .globe-detail-close:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+  }
+
+  @keyframes globe-detail-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.7rem) scale(0.96);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 </style>
 
 <script>
@@ -303,10 +439,12 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
 
       const canvas = this.querySelector("canvas");
       const stage = this.querySelector("[data-globe-stage]");
+      const detail = this.querySelector("[data-globe-detail]");
 
       if (
         !(canvas instanceof HTMLCanvasElement) ||
-        !(stage instanceof HTMLElement)
+        !(stage instanceof HTMLElement) ||
+        !(detail instanceof HTMLElement)
       ) {
         return;
       }
@@ -331,6 +469,31 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
       let dragStartY = 0;
       let dragStartPhi = rotation.phi;
       let dragStartTheta = rotation.theta;
+      const polaroids = Array.from(
+        this.querySelectorAll("[data-globe-polaroid]"),
+      );
+      const detailCards = Array.from(
+        this.querySelectorAll("[data-globe-detail-card]"),
+      );
+      const detailCloseButtons = Array.from(
+        this.querySelectorAll("[data-globe-detail-close]"),
+      );
+
+      const closeDetail = () => {
+        detail.hidden = true;
+        detailCards.forEach((card) => {
+          if (card instanceof HTMLElement) card.hidden = true;
+        });
+      };
+
+      const openDetail = (id: string) => {
+        detail.hidden = false;
+        detailCards.forEach((card) => {
+          if (card instanceof HTMLElement) {
+            card.hidden = card.dataset.locationId !== id;
+          }
+        });
+      };
 
       const options = (): COBEOptions => ({
         width: size,
@@ -397,6 +560,13 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
         Math.max(-Math.PI / 2, Math.min(Math.PI / 2, value));
 
       const onPointerDown = (event: PointerEvent) => {
+        if (
+          event.target instanceof Element &&
+          event.target.closest("[data-globe-polaroid], [data-globe-detail]")
+        ) {
+          return;
+        }
+
         isDragging = true;
         this.classList.add("is-dragging");
         this.setPointerCapture(event.pointerId);
@@ -430,6 +600,30 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
       this.addEventListener("pointerup", onPointerUp);
       this.addEventListener("pointercancel", onPointerUp);
 
+      const onPolaroidClick = (event: Event) => {
+        const target = event.currentTarget;
+        if (target instanceof HTMLElement && target.dataset.locationId) {
+          openDetail(target.dataset.locationId);
+        }
+      };
+
+      const onDetailClick = (event: Event) => {
+        if (event.target === detail) closeDetail();
+      };
+
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") closeDetail();
+      };
+
+      polaroids.forEach((polaroid) => {
+        polaroid.addEventListener("click", onPolaroidClick);
+      });
+      detailCloseButtons.forEach((button) => {
+        button.addEventListener("click", closeDetail);
+      });
+      detail.addEventListener("click", onDetailClick);
+      window.addEventListener("keydown", onKeyDown);
+
       const themeObserver = new MutationObserver(() => {
         globe?.update(getPalette());
       });
@@ -447,6 +641,14 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
         this.removeEventListener("pointermove", onPointerMove);
         this.removeEventListener("pointerup", onPointerUp);
         this.removeEventListener("pointercancel", onPointerUp);
+        polaroids.forEach((polaroid) => {
+          polaroid.removeEventListener("click", onPolaroidClick);
+        });
+        detailCloseButtons.forEach((button) => {
+          button.removeEventListener("click", closeDetail);
+        });
+        detail.removeEventListener("click", onDetailClick);
+        window.removeEventListener("keydown", onKeyDown);
         themeObserver.disconnect();
         globe?.destroy();
         delete this.dataset.mounted;

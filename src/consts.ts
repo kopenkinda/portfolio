@@ -43,6 +43,8 @@ export const USER = {
       {
         id: "andorra",
         label: "andorra",
+        description:
+          "Where I live now: mountains, quiet focus, and the base I build from.",
         lat: 42.5063,
         lng: 1.5218,
         image: andorraPhoto,
@@ -50,6 +52,8 @@ export const USER = {
       {
         id: "yekaterinburg",
         label: "yekaterinburg",
+        description:
+          "Where I started: the city that shaped my engineering habits and early work.",
         lat: 56.8389,
         lng: 60.6057,
         image: yekaterinburgPhoto,
@@ -80,6 +84,7 @@ type SocialLink = {
 type MapLocation = {
   id: string;
   label: string;
+  description?: string;
   subtitle?: string;
   lat: number;
   lng: number;
