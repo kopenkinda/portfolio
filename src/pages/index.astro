@@ -6,12 +6,12 @@ import ExperienceTimeline from "../components/ExperienceTimeline.astro";
 import GameSection from "../components/GameSection.astro";
 import PixelIcon from "../components/PixelIcon.astro";
 import ProgressiveGlobe from "../components/ProgressiveGlobe.astro";
-import { CONFIG, SITE_DESCRIPTION, SITE_TITLE, USER } from "../consts";
+import { CONFIG, USER } from "../consts";
 ---
 
 <BasePage>
   <Fragment slot="head">
-    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <BaseHead title={CONFIG.meta.title} description={CONFIG.meta.description} />
   </Fragment>
   <main>
     <section
@@ -59,6 +59,6 @@ import { CONFIG, SITE_DESCRIPTION, SITE_TITLE, USER } from "../consts";
       </div>
     </section>
     <ExperienceTimeline />
-    {CONFIG.game?.game !== undefined && <GameSection />}
+    {CONFIG.game.enabled && <GameSection />}
   </main>
 </BasePage>

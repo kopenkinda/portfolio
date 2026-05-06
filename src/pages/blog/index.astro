@@ -4,7 +4,7 @@ import { getCollection } from "astro:content";
 import BaseHead from "../../components/BaseHead.astro";
 import FormattedDate from "../../components/FormattedDate.astro";
 import BasePage from "../../components/BasePage.astro";
-import { SITE_DESCRIPTION, SITE_TITLE } from "../../consts";
+import { CONFIG } from "../../consts";
 
 const posts = (await getCollection("blog")).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
@@ -13,7 +13,7 @@ const posts = (await getCollection("blog")).sort(
 
 <BasePage>
   <Fragment slot="head">
-    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <BaseHead title={CONFIG.meta.title} description={CONFIG.meta.description} />
   </Fragment>
   <main>
     <section>

@@ -5,16 +5,26 @@ import type { TechId } from "./data/technologies";
 import andorraPhoto from "./assets/globe/andorra.jpg";
 import yekaterinburgPhoto from "./assets/globe/yekaterinburg.jpg";
 
-export const SITE_TITLE = "Kopenkin Dmitrii | Full-Stack AI Developer";
-export const SITE_DESCRIPTION = "Welcome to my website!";
-export const STARTED_DEVELOPMENT_IN = new Date("2017-01-01");
-
-export const CONFIG = {
+export const CONFIG: PortfolioConfig = {
+  meta: {
+    title: "Kopenkin Dmitrii | Full-Stack AI Developer",
+    description: "Welcome to my website!",
+    experienceStartDate: new Date("2017-01-01"),
+  },
   game: {
-    game: "contribution-drawer" satisfies Game,
     title: "Take a little break",
     description:
       "A quiet contribution-grid drawing board. Click, drag, fill, unfill.",
+    enabled: true,
+    options: {
+      type: "contribution-drawer",
+      options: {
+        cols: 28,
+        rows: 7,
+        prefilledCells: [],
+        includeAttribution: true,
+      },
+    },
   },
 };
 
@@ -23,7 +33,7 @@ const iota = () => id++;
 
 export const USER = {
   name: "Kopenkin Dmitrii",
-  headline: `For ${new Date().getFullYear() - STARTED_DEVELOPMENT_IN.getFullYear()} years I've been stacking TypeScript, React, Next.js, Postgres, and now AI into digital playgrounds - where every click feels inevitable, nothing breaks when you're not looking, and the software sometimes thinks ahead of you.`,
+  headline: `For ${new Date().getFullYear() - CONFIG.meta.experienceStartDate.getFullYear()} years I've been stacking TypeScript, React, Next.js, Postgres, and now AI into digital playgrounds - where every click feels inevitable, nothing breaks when you're not looking, and the software sometimes thinks ahead of you.`,
   socials: [
     { icon: "file", label: "cv", href: "/dmitrii-kopenkin-cv.pdf" },
     {
@@ -284,4 +294,30 @@ type ExperienceEntry = {
   technologies?: TechId[];
 };
 
-export type Game = "autobattler" | "contribution-drawer";
+export type AutobattlerGame = {
+  type: "autobattler";
+};
+
+export type ContributionDrawerGame = {
+  type: "contribution-drawer";
+  options: {
+    prefilledCells: number[];
+    rows: number;
+    cols: number;
+    includeAttribution: boolean;
+  };
+};
+
+export type PortfolioConfig = {
+  meta: {
+    title: string;
+    description: string;
+    experienceStartDate: Date;
+  };
+  game: {
+    enabled: boolean;
+    title: string;
+    description: string;
+    options: AutobattlerGame | ContributionDrawerGame;
+  };
+};

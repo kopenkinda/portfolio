@@ -20,8 +20,12 @@ import ContributionDrawer from "./games/ContributionDrawer.astro";
         </p>
       </div>
 
-      {CONFIG.game.game === "autobattler" && <Autobattler />}
-      {CONFIG.game.game === "contribution-drawer" && <ContributionDrawer />}
+      {CONFIG.game.options.type === "autobattler" && <Autobattler />}
+      {
+        CONFIG.game.options.type === "contribution-drawer" && (
+          <ContributionDrawer />
+        )
+      }
     </div>
   </div>
 </section>

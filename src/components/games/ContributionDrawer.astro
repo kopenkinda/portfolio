@@ -1,9 +1,12 @@
 ---
 import { Download, Eraser, Shuffle } from "@lucide/astro";
 import Button from "../Button.astro";
+import { CONFIG, type ContributionDrawerGame } from "../../consts";
 
-const rows = 7;
-const columns = 28;
+const config = CONFIG.game.options as ContributionDrawerGame;
+
+const rows = config.options.rows;
+const columns = config.options.cols;
 const cells = Array.from({ length: rows * columns }, (_, index) => index);
 ---
 
