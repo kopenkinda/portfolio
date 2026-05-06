@@ -1,5 +1,7 @@
 ---
 import andorraPhoto from "../assets/globe/andorra.jpg";
+import globePreviewDark from "../assets/globe/globe-preview-dark.webp";
+import globePreviewLight from "../assets/globe/globe-preview-light.webp";
 import yekaterinburgPhoto from "../assets/globe/yekaterinburg.jpg";
 
 const andorra = {
@@ -24,8 +26,17 @@ const yekaterinburg = {
 >
   <div class="globe-stage" data-globe-stage>
     <img
-      class="globe-fallback"
-      src="/globe-fallback.svg"
+      class="globe-fallback globe-fallback-light"
+      src={globePreviewLight.src}
+      alt=""
+      width="640"
+      height="640"
+      loading="eager"
+      decoding="async"
+    />
+    <img
+      class="globe-fallback globe-fallback-dark"
+      src={globePreviewDark.src}
       alt=""
       width="640"
       height="640"
@@ -95,8 +106,20 @@ const yekaterinburg = {
 
   .globe-fallback {
     object-fit: contain;
-    opacity: 0.9;
+    opacity: 0;
     transition: opacity 280ms ease;
+  }
+
+  .globe-fallback-light {
+    opacity: 0.9;
+  }
+
+  :global(.dark) .globe-fallback-light {
+    opacity: 0;
+  }
+
+  :global(.dark) .globe-fallback-dark {
+    opacity: 0.9;
   }
 
   .globe-canvas {
@@ -223,10 +246,14 @@ const yekaterinburg = {
 </style>
 
 <script>
-  import createGlobe from "cobe";
+  import createGlobe, {
+    type Arc,
+    type COBEOptions,
+    type Globe,
+    type Marker,
+  } from "cobe";
 
   const roots = document.querySelectorAll("[data-progressive-globe]");
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   const getTheme = () => document.documentElement.dataset.theme || "light";
 
@@ -235,9 +262,21 @@ const yekaterinburg = {
 
     return {
       dark: dark ? 1 : 0,
-      baseColor: dark ? [0.13, 0.13, 0.12] : [1, 1, 1],
-      markerColor: dark ? [0.18, 1, 0.9] : [0, 0.48, 0.43],
-      glowColor: dark ? [0.05, 0.86, 0.78] : [0.96, 0.97, 0.98],
+      baseColor: (dark ? [0.13, 0.13, 0.12] : [1, 1, 1]) as [
+        number,
+        number,
+        number,
+      ],
+      markerColor: (dark ? [0.18, 1, 0.9] : [0, 0.48, 0.43]) as [
+        number,
+        number,
+        number,
+      ],
+      glowColor: (dark ? [0.05, 0.86, 0.78] : [0.96, 0.97, 0.98]) as [
+        number,
+        number,
+        number,
+      ],
       mapBrightness: dark ? 2.8 : 1.45,
     };
   };
@@ -262,15 +301,16 @@ const yekaterinburg = {
       return;
     }
 
-    const andorraLocation = [
+    const andorraLocation: Marker["location"] = [
       Number(root.dataset.lat),
       Number(root.dataset.lng),
     ];
-    const yekaterinburgLocation = [
+    const yekaterinburgLocation: Marker["location"] = [
       Number(root.dataset.yekaterinburgLat),
       Number(root.dataset.yekaterinburgLng),
     ];
-    const markers = [
+
+    const markers: Marker[] = [
       { location: andorraLocation, size: 0.045, id: "andorra" },
       {
         location: yekaterinburgLocation,
@@ -279,7 +319,8 @@ const yekaterinburg = {
         color: [1, 0.74, 0.32],
       },
     ];
-    const arcs = [
+
+    const arcs: Arc[] = [
       {
         from: yekaterinburgLocation,
         to: andorraLocation,
@@ -287,22 +328,22 @@ const yekaterinburg = {
         color: [0.18, 1, 0.9],
       },
     ];
+
     const rotation = {
       phi: -2.259,
       theta: 0.485,
     };
 
-    let globe;
+    let globe: Globe;
     let frame = 0;
     let size = 0;
-    let isVisible = true;
     let isDragging = false;
     let dragStartX = 0;
     let dragStartY = 0;
     let dragStartPhi = rotation.phi;
     let dragStartTheta = rotation.theta;
 
-    const options = () => ({
+    const options = (): COBEOptions => ({
       width: size,
       height: size,
       devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
@@ -363,10 +404,10 @@ const yekaterinburg = {
     observer?.observe(stage);
     window.addEventListener("resize", resize, { passive: true });
 
-    const clampTheta = (value) =>
+    const clampTheta = (value: number) =>
       Math.max(-Math.PI / 2, Math.min(Math.PI / 2, value));
 
-    const onPointerDown = (event) => {
+    const onPointerDown = (event: PointerEvent) => {
       isDragging = true;
       root.classList.add("is-dragging");
       root.setPointerCapture(event.pointerId);
@@ -376,17 +417,17 @@ const yekaterinburg = {
       dragStartTheta = rotation.theta;
     };
 
-    const onPointerMove = (event) => {
+    const onPointerMove = (event: PointerEvent) => {
       if (!isDragging) return;
 
       const deltaX = event.clientX - dragStartX;
       const deltaY = event.clientY - dragStartY;
 
       rotation.phi = dragStartPhi + deltaX / 220;
-      rotation.theta = clampTheta(dragStartTheta - deltaY / 280);
+      rotation.theta = clampTheta(dragStartTheta + deltaY / 280);
     };
 
-    const onPointerUp = (event) => {
+    const onPointerUp = (event: PointerEvent) => {
       isDragging = false;
       root.classList.remove("is-dragging");
 
@@ -400,14 +441,10 @@ const yekaterinburg = {
     root.addEventListener("pointerup", onPointerUp);
     root.addEventListener("pointercancel", onPointerUp);
 
-    const intersection = new IntersectionObserver(([entry]) => {
-      isVisible = entry?.isIntersecting ?? true;
-    });
-    intersection.observe(root);
-
     const themeObserver = new MutationObserver(() => {
       globe?.update(getPalette());
     });
+
     themeObserver.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
@@ -423,7 +460,6 @@ const yekaterinburg = {
       root.removeEventListener("pointermove", onPointerMove);
       root.removeEventListener("pointerup", onPointerUp);
       root.removeEventListener("pointercancel", onPointerUp);
-      intersection.disconnect();
       themeObserver.disconnect();
       globe?.destroy();
     });
