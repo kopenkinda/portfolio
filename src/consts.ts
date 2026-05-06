@@ -9,6 +9,14 @@ export const SITE_TITLE = "Kopenkin Dmitrii | Full-Stack AI Developer";
 export const SITE_DESCRIPTION = "Welcome to my website!";
 export const STARTED_DEVELOPMENT_IN = new Date("2017-01-01");
 
+export const CONFIG = {
+  game: {
+    game: "autobattler" satisfies Game,
+    title: "Take a little break",
+    description: "Some bs",
+  },
+};
+
 let id = 0;
 const iota = () => id++;
 
@@ -274,3 +282,5 @@ type ExperienceEntry = {
   bulletpoints: [string] | [string, string] | [string, string, string];
   technologies?: TechId[];
 };
+
+export type Game = "autobattler";

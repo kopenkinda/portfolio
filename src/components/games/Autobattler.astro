@@ -1,254 +1,217 @@
 ---
-import enemySprite from "../assets/game/enemy.png";
-import grassTexture from "../assets/game/grass.png";
-import playerSprite from "../assets/game/player.png";
-import potionIcon from "../assets/game/potion.png";
-import shieldIcon from "../assets/game/shield.png";
-import swordIcon from "../assets/game/sword.png";
-import trophyIcon from "../assets/game/trophy.png";
-import Button from "./Button.astro";
+import enemySprite from "../../assets/game/enemy.png";
+import grassTexture from "../../assets/game/grass.png";
+import playerSprite from "../../assets/game/player.png";
+import potionIcon from "../../assets/game/potion.png";
+import shieldIcon from "../../assets/game/shield.png";
+import swordIcon from "../../assets/game/sword.png";
+import trophyIcon from "../../assets/game/trophy.png";
+import Button from "../Button.astro";
 
 const winSlots = Array.from({ length: 10 }, (_, index) => index);
 ---
 
-<section id="games" class="bg-background py-14 md:py-18">
-  <div class="container mx-auto px-4 sm:px-6">
-    <div
-      class="grid gap-8 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:items-start"
-    >
-      <div>
-        <h2 class="font-headline text-3xl font-bold dark:font-normal">
-          Take a little break
-        </h2>
-      </div>
+<games-break
+  class="block space-y-5"
+  data-icon-attack={swordIcon.src}
+  data-icon-defend={shieldIcon.src}
+  data-icon-heal={potionIcon.src}
+>
+  <div
+    class="relative min-h-56 overflow-hidden border border-dashed border-border p-4"
+    data-arena
+  >
+    <div class="hidden gap-1" aria-label="wins" data-wins-row>
+      {
+        winSlots.map((slot) => (
+          <span class="grid size-5 place-items-center" data-win-slot={slot}>
+            <img
+              class="hidden size-4 object-contain [image-rendering:pixelated]"
+              src={trophyIcon.src}
+              alt=""
+              loading="lazy"
+              data-win-trophy
+            />
+          </span>
+        ))
+      }
+    </div>
 
-      <games-break
-        class="block space-y-5"
-        data-icon-attack={swordIcon.src}
-        data-icon-defend={shieldIcon.src}
-        data-icon-heal={potionIcon.src}
-      >
+    <div class="mt-9" data-upgrade-scene>
+      <div class="relative h-20">
+        <img
+          class="absolute -top-2 left-0 size-14 -scale-x-100 object-contain [image-rendering:pixelated]"
+          src={playerSprite.src}
+          alt=""
+          loading="lazy"
+        />
+        <img
+          class="absolute -top-1 right-2 size-14 -scale-x-100 object-contain [image-rendering:pixelated]"
+          src={enemySprite.src}
+          alt=""
+          loading="lazy"
+        />
         <div
-          class="relative min-h-56 overflow-hidden border border-dashed border-border p-4"
-          data-arena
+          class="absolute right-0 bottom-0 left-0 h-8 [background-size:auto_100%] [background-position:left_bottom] bg-repeat-x"
+          style={`background-image: url(${grassTexture.src}); image-rendering: pixelated;`}
         >
-          <div class="hidden gap-1" aria-label="wins" data-wins-row>
-            {
-              winSlots.map((slot) => (
-                <span
-                  class="grid size-5 place-items-center"
-                  data-win-slot={slot}
-                >
-                  <img
-                    class="hidden size-4 object-contain [image-rendering:pixelated]"
-                    src={trophyIcon.src}
-                    alt=""
-                    loading="lazy"
-                    data-win-trophy
-                  />
-                </span>
-              ))
-            }
-          </div>
-
-          <div class="mt-9" data-upgrade-scene>
-            <div class="relative h-20">
-              <img
-                class="absolute -top-2 left-0 size-14 -scale-x-100 object-contain [image-rendering:pixelated]"
-                src={playerSprite.src}
-                alt=""
-                loading="lazy"
-              />
-              <img
-                class="absolute -top-1 right-2 size-14 -scale-x-100 object-contain [image-rendering:pixelated]"
-                src={enemySprite.src}
-                alt=""
-                loading="lazy"
-              />
-              <div
-                class="absolute right-0 bottom-0 left-0 h-8 [background-size:auto_100%] [background-position:left_bottom] bg-repeat-x"
-                style={`background-image: url(${grassTexture.src}); image-rendering: pixelated;`}
-              >
-              </div>
-            </div>
-          </div>
-
-          <div class="hidden" data-battle-scene>
-            <div class="relative mt-3 h-34">
-              <svg
-                class="absolute inset-0 h-full w-full text-border"
-                viewBox="0 0 500 140"
-                preserveAspectRatio="none"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path d="M18 96H482" stroke="currentColor" stroke-width="2"
-                ></path>
-              </svg>
-              <div class="absolute top-0 left-1 flex items-start gap-3">
-                <img
-                  class="size-12 -scale-x-100 object-contain [image-rendering:pixelated]"
-                  src={playerSprite.src}
-                  alt=""
-                  loading="lazy"
-                />
-                <p class="font-headline text-xs font-black dark:font-bold">
-                  HP: <span data-player-hp>100</span> def:
-                  <span data-player-def>5</span> atk:
-                  <span data-player-atk>10</span>
-                </p>
-              </div>
-              <span
-                class="absolute top-[5.3rem] left-1/2 -translate-x-1/2 border border-accent bg-accent/20 px-1 font-headline text-xs font-black dark:font-bold"
-              >
-                VS
-              </span>
-              <div class="absolute top-11 right-1 flex items-end gap-3">
-                <p class="font-headline text-xs font-black dark:font-bold">
-                  HP: <span data-enemy-hp>35</span> def:
-                  <span data-enemy-def>0</span> atk:
-                  <span data-enemy-atk>8</span>
-                </p>
-                <img
-                  class="size-12 -scale-x-100 object-contain [image-rendering:pixelated]"
-                  src={enemySprite.src}
-                  alt=""
-                  loading="lazy"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="hidden py-8 text-center" data-win-scene>
-            <p class="font-headline text-sm font-black dark:font-bold">10/10</p>
-            <p class="mt-3 text-sm">
-              Well damn, the score is just like you are
-            </p>
-            <div class="mx-auto mt-5 flex justify-center gap-1">
-              {
-                winSlots.map(() => (
-                  <img
-                    class="size-4 object-contain [image-rendering:pixelated]"
-                    src={trophyIcon.src}
-                    alt=""
-                    loading="lazy"
-                  />
-                ))
-              }
-            </div>
-          </div>
-
-          <div class="hidden py-8 text-center" data-lose-scene>
-            <p class="font-headline text-sm font-black dark:font-bold">
-              GG you tried your best
-            </p>
-            <p class="mt-3 font-headline text-sm font-black dark:font-bold">
-              <span data-final-wins>0</span>/10
-            </p>
-            <div
-              class="mx-auto mt-5 grid size-16 place-items-center rounded-full border border-accent bg-accent/10 text-accent"
-            >
-              <img
-                class="size-12 -scale-x-100 object-contain opacity-60 grayscale [image-rendering:pixelated]"
-                src={playerSprite.src}
-                alt=""
-                loading="lazy"
-              />
-            </div>
-          </div>
         </div>
+      </div>
+    </div>
 
-        <div class="space-y-3" data-upgrade-panel>
-          <p
-            class="text-center font-headline text-sm font-black dark:font-bold"
-          >
-            choose an upgrade
+    <div class="hidden" data-battle-scene>
+      <div class="relative mt-3 h-34">
+        <svg
+          class="absolute inset-0 h-full w-full text-border"
+          viewBox="0 0 500 140"
+          preserveAspectRatio="none"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path d="M18 96H482" stroke="currentColor" stroke-width="2"></path>
+        </svg>
+        <div class="absolute top-0 left-1 flex items-start gap-3">
+          <img
+            class="size-12 -scale-x-100 object-contain [image-rendering:pixelated]"
+            src={playerSprite.src}
+            alt=""
+            loading="lazy"
+          />
+          <p class="font-headline text-xs font-black dark:font-bold">
+            HP: <span data-player-hp>100</span> def:
+            <span data-player-def>5</span> atk:
+            <span data-player-atk>10</span>
           </p>
-          <div class="grid gap-3 sm:grid-cols-3">
-            {
-              [0, 1, 2].map((index) => (
-                <div>
-                  <Button
-                    class="min-h-14 w-full whitespace-normal"
-                    variant="secondary"
-                    size="sm"
-                    type="button"
-                    data-upgrade={index}
-                  >
-                    <img
-                      class="size-5 object-contain [image-rendering:pixelated]"
-                      src={swordIcon.src}
-                      alt=""
-                      data-upgrade-icon
-                    />
-                    <span data-upgrade-label>Upgrade</span>
-                  </Button>
-                </div>
-              ))
-            }
-          </div>
         </div>
-
-        <div class="hidden grid-cols-3 gap-3" data-action-panel>
-          <Button
-            variant="secondary"
-            size="sm"
-            type="button"
-            data-action="attack"
-          >
-            <img
-              slot="icon"
-              src={swordIcon.src}
-              alt=""
-              class="size-4 object-contain [image-rendering:pixelated]"
-            />
-            atk
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            type="button"
-            data-action="defend"
-          >
-            <img
-              slot="icon"
-              src={shieldIcon.src}
-              alt=""
-              class="size-4 object-contain [image-rendering:pixelated]"
-            />
-            def
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            type="button"
-            data-action="heal"
-          >
-            <img
-              slot="icon"
-              src={potionIcon.src}
-              alt=""
-              class="size-4 object-contain [image-rendering:pixelated]"
-            />
-            heal
-          </Button>
-        </div>
-
-        <div class="hidden justify-center" data-end-panel>
-          <Button variant="secondary" size="sm" type="button" data-reset>
-            try again
-          </Button>
-        </div>
-
-        <p
-          class="min-h-10 text-center text-sm leading-relaxed text-muted-foreground"
-          data-log
+        <span
+          class="absolute top-[5.3rem] left-1/2 -translate-x-1/2 border border-accent bg-accent/20 px-1 font-headline text-xs font-black dark:font-bold"
         >
-        </p>
-      </games-break>
+          VS
+        </span>
+        <div class="absolute top-11 right-1 flex items-end gap-3">
+          <p class="font-headline text-xs font-black dark:font-bold">
+            HP: <span data-enemy-hp>35</span> def:
+            <span data-enemy-def>0</span> atk:
+            <span data-enemy-atk>8</span>
+          </p>
+          <img
+            class="size-12 -scale-x-100 object-contain [image-rendering:pixelated]"
+            src={enemySprite.src}
+            alt=""
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="hidden py-8 text-center" data-win-scene>
+      <p class="font-headline text-sm font-black dark:font-bold">10/10</p>
+      <p class="mt-3 text-sm">Well damn, the score is just like you are</p>
+      <div class="mx-auto mt-5 flex justify-center gap-1">
+        {
+          winSlots.map(() => (
+            <img
+              class="size-4 object-contain [image-rendering:pixelated]"
+              src={trophyIcon.src}
+              alt=""
+              loading="lazy"
+            />
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="hidden py-8 text-center" data-lose-scene>
+      <p class="font-headline text-sm font-black dark:font-bold">
+        GG you tried your best
+      </p>
+      <p class="mt-3 font-headline text-sm font-black dark:font-bold">
+        <span data-final-wins>0</span>/10
+      </p>
+      <div
+        class="mx-auto mt-5 grid size-16 place-items-center rounded-full border border-accent bg-accent/10 text-accent"
+      >
+        <img
+          class="size-12 -scale-x-100 object-contain opacity-60 grayscale [image-rendering:pixelated]"
+          src={playerSprite.src}
+          alt=""
+          loading="lazy"
+        />
+      </div>
     </div>
   </div>
-</section>
+
+  <div class="space-y-3" data-upgrade-panel>
+    <p class="text-center font-headline text-sm font-black dark:font-bold">
+      choose an upgrade
+    </p>
+    <div class="grid gap-3 sm:grid-cols-3">
+      {
+        [0, 1, 2].map((index) => (
+          <div>
+            <Button
+              class="min-h-14 w-full whitespace-normal"
+              variant="secondary"
+              size="sm"
+              type="button"
+              data-upgrade={index}
+            >
+              <img
+                class="size-5 object-contain [image-rendering:pixelated]"
+                src={swordIcon.src}
+                alt=""
+                data-upgrade-icon
+              />
+              <span data-upgrade-label>Upgrade</span>
+            </Button>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="hidden grid-cols-3 gap-3" data-action-panel>
+    <Button variant="secondary" size="sm" type="button" data-action="attack">
+      <img
+        slot="icon"
+        src={swordIcon.src}
+        alt=""
+        class="size-4 object-contain [image-rendering:pixelated]"
+      />
+      atk
+    </Button>
+    <Button variant="secondary" size="sm" type="button" data-action="defend">
+      <img
+        slot="icon"
+        src={shieldIcon.src}
+        alt=""
+        class="size-4 object-contain [image-rendering:pixelated]"
+      />
+      def
+    </Button>
+    <Button variant="secondary" size="sm" type="button" data-action="heal">
+      <img
+        slot="icon"
+        src={potionIcon.src}
+        alt=""
+        class="size-4 object-contain [image-rendering:pixelated]"
+      />
+      heal
+    </Button>
+  </div>
+
+  <div class="hidden justify-center" data-end-panel>
+    <Button variant="secondary" size="sm" type="button" data-reset>
+      try again
+    </Button>
+  </div>
+
+  <p
+    class="min-h-10 text-center text-sm leading-relaxed text-muted-foreground"
+    data-log
+  >
+  </p>
+</games-break>
 
 <script>
   type UpgradeIcon = "attack" | "defend" | "heal";
