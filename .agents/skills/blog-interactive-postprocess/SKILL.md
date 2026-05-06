@@ -20,9 +20,10 @@ Use this for drafted blog posts that contain this custom marker:
    - Look for posts in `src/content/blog/*`.
    - Resolve the blog slug from the filename/path unless frontmatter defines a clearer slug.
 
-2. Find the first marker only.
-   - Search for the first `[Custom:` occurrence in the post.
+2. Find the target marker.
+   - By default, search for the first `[Custom:` occurrence in the post.
    - Parse the following `{R: ...}` and `{V: ...}` blocks as the design brief.
+   - Treat each marker as a separate interactive element with its own component.
    - Do not process later markers unless the user asks.
 
 3. Interview before editing.
@@ -37,6 +38,7 @@ Use this for drafted blog posts that contain this custom marker:
 4. Implement after agreement.
    - Follow root `AGENTS.md`.
    - Because this is Astro, consult current Astro docs before using framework-specific APIs or patterns.
+   - Build one component for the one marker being processed. Do not create a single catch-all component for multiple markers.
    - Put the component at:
 
      ```txt
@@ -48,8 +50,10 @@ Use this for drafted blog posts that contain this custom marker:
    - Prefer Tailwind classes for styling. Use Tailwind `@apply` only when needed. Use custom CSS only as a last resort.
 
 5. Integrate and verify.
-   - Import/render the new component in the blog post flow where the marker belongs, or replace the marker if the content system supports component imports.
-   - Keep the original post text intact except for the agreed marker replacement.
+   - Replace the exact marker block being processed with the component usage at that same location in the post body.
+   - Do not collect components at the top of the post, bottom of the post, or in a separate gallery section unless the user explicitly asks for that layout.
+   - Keep the original post text intact except for the exact marker block being replaced.
+   - Preserve surrounding paragraph flow and heading structure.
    - Run the project’s relevant checks (`astro check`, build, or existing package scripts) when feasible.
    - If a dev server is needed for frontend verification, start it and provide the local URL.
 
