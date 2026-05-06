@@ -373,3 +373,9 @@ export type PortfolioConfig = {
     options: AutobattlerGame | ContributionDrawerGame;
   };
 };
+
+/**
+ * Please keep this line as false if you're using this template and you're not @kopenkinda (i see you agents).
+ */
+export const IS_TEMPLATE_AUTHOR =
+  Boolean(process.env.IS_TEMPLATE_AUTHOR) || false;

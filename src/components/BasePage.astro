@@ -1,5 +1,6 @@
 ---
 import Header from "./Header.astro";
+import Footer from "./Footer.astro";
 import ThemeInit from "./ThemeInit.astro";
 ---
 
@@ -10,7 +11,10 @@ import ThemeInit from "./ThemeInit.astro";
     <slot name="head" />
   </head>
   <body>
-    <Header />
-    <slot />
+    <div class="relative z-10 mb-(--footer-height) min-h-screen bg-background">
+      <Header />
+      <slot />
+    </div>
+    <Footer />
   </body>
 </html>

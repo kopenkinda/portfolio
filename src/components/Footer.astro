@@ -1,0 +1,23 @@
+---
+import { USER, IS_TEMPLATE_AUTHOR } from "../consts";
+
+const year = new Date().getFullYear();
+---
+
+<footer
+  class="fixed inset-x-0 bottom-0 z-0 flex h-(--footer-height) items-center justify-center bg-accent px-4 text-center font-headline text-sm font-black text-accent-foreground dark:font-bold"
+>
+  <div>
+    <p>&copy; {year} {USER.name}</p>
+    {
+      !IS_TEMPLATE_AUTHOR && (
+        <p class="text-muted/40">
+          Source:{" "}
+          <a href="https://github.com/kopenkinda/portfolio">
+            kopenkinda/portfolio
+          </a>
+        </p>
+      )
+    }
+  </div>
+</footer>
