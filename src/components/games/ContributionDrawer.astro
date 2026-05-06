@@ -150,6 +150,7 @@ const cells = Array.from({ length: rows * columns }, (_, index) => index);
       const attributionGap = 14;
       const attributionFontSize = 13;
       const includeAttribution = this.dataset.includeAttribution === "true";
+      const scale = 3;
       const width = columns * cellSize + (columns - 1) * gap + padding * 2;
       const gridHeight = rows * cellSize + (rows - 1) * gap;
       const attributionHeight = includeAttribution
@@ -157,11 +158,12 @@ const cells = Array.from({ length: rows * columns }, (_, index) => index);
         : 0;
       const height = gridHeight + padding * 2 + attributionHeight;
       const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = width * scale;
+      canvas.height = height * scale;
 
       const context = canvas.getContext("2d");
       if (!context) return;
+      context.scale(scale, scale);
 
       const isDark = document.documentElement.classList.contains("dark");
       const emptyColor = this.resolveThemeColor(
