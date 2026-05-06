@@ -211,5 +211,5 @@ X<sup>n</sup> + Y<sup>n</sup> = Z<sup>n</sup>
 
 Press <kbd>CTRL</kbd> + <kbd>ALT</kbd> + <kbd>Delete</kbd> to end the session.
 
-Sup <mark> Lorem ipsum D  olor sit amet</mark> Heyoo
+Sup <mark> Lorem ipsum D olor sit amet</mark> Heyoo
 Most <mark>salamanders</mark> are nocturnal, and hunt for insects, worms, and other small creatures.

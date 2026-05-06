@@ -17,23 +17,8 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
     <ThemeInit />
     <BaseHead title={title} description={description} />
     <style>
-      main {
-        width: calc(100% - 2em);
-        max-width: 100%;
-        margin: 0;
-      }
-      .hero-image {
-        width: 100%;
-      }
-      .hero-image img {
-        display: block;
-        margin: 0 auto;
-        border-radius: 12px;
-        box-shadow: var(--box-shadow);
-      }
       .title {
         margin-bottom: 1em;
-        padding: 1em 0;
         text-align: center;
         line-height: 1;
       }
@@ -53,16 +38,24 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
   <body>
     <div class="relative z-10 mb-48 min-h-screen bg-background">
       <Header />
-      <main>
+      <main class="px-4 pt-8 sm:px-6 md:pt-12">
         <article>
-          <div class="hero-image">
+          <div class="mx-auto max-w-[1020px]">
             {
               heroImage && (
-                <Image width={1020} height={510} src={heroImage} alt="" />
+                <Image
+                  width={1020}
+                  height={510}
+                  src={heroImage}
+                  alt=""
+                  class="aspect-[2/1] w-full rounded-lg border border-border object-cover shadow-[6px_6px_0_var(--border)]"
+                />
               )
             }
           </div>
-          <div class="mx-auto prose max-w-[720px] px-4 py-4 prose-portfolio">
+          <div
+            class="prose-portfolio mx-auto prose max-w-[720px] py-8 md:py-10"
+          >
             <div class="title">
               <div class="date">
                 <FormattedDate date={pubDate} />
