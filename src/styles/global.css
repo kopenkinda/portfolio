@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme inline {
   --font-headline: var(--font-doto);
@@ -20,6 +21,84 @@
 @utility font-headline {
   font-family: var(--font-doto);
   font-variation-settings: "ROND" 100;
+}
+
+@utility prose-portfolio {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-links: var(--accent-color);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--border);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-kbd: var(--foreground);
+  --tw-prose-kbd-shadows: color-mix(
+    in srgb,
+    var(--foreground) 18%,
+    transparent
+  );
+  --tw-prose-code: var(--foreground);
+  --tw-prose-pre-code: var(--color-stone-100);
+  --tw-prose-pre-bg: var(--color-stone-900);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-headline;
+  }
+
+  kbd {
+    --kbd-button-bg: var(--muted);
+    --kbd-button-border: color-mix(in srgb, var(--muted) 72%, black);
+    --kbd-button-depth: color-mix(in srgb, var(--muted) 72%, black);
+    --kbd-button-fg: var(--foreground);
+
+    @apply relative inline-flex translate-y-[-1px] items-center justify-center rounded-[3px] border px-2 py-1 font-headline text-[0.74em] leading-none font-black tracking-[1px] whitespace-nowrap uppercase;
+
+    border-color: var(--kbd-button-border);
+    background-color: var(--kbd-button-bg);
+    color: var(--kbd-button-fg);
+    text-shadow: 0 1px 0 rgb(255 255 255 / 0.4);
+    box-shadow:
+      inset 0 18px 18px -12px rgb(255 255 255 / 0.22),
+      inset 0 0 0 1px rgb(255 255 255 / 0.35),
+      0 2px 0 var(--kbd-button-depth),
+      0 2px 2px rgb(0 0 0 / 0.18),
+      0 4px 8px rgb(0 0 0 / 0.1);
+  }
+}
+
+.dark .prose-portfolio {
+  --tw-prose-body: var(--color-stone-200);
+  --tw-prose-headings: var(--color-stone-50);
+  --tw-prose-links: var(--color-teal-200);
+  --tw-prose-bold: var(--color-stone-50);
+  --tw-prose-counters: var(--color-stone-300);
+  --tw-prose-bullets: var(--color-stone-500);
+  --tw-prose-hr: var(--color-stone-700);
+  --tw-prose-quotes: var(--color-stone-100);
+  --tw-prose-quote-borders: var(--color-stone-700);
+  --tw-prose-captions: var(--color-stone-300);
+  --tw-prose-kbd: var(--color-stone-50);
+  --tw-prose-code: var(--color-stone-50);
+  --tw-prose-th-borders: var(--color-stone-600);
+  --tw-prose-td-borders: var(--color-stone-700);
+}
+
+.dark .prose-portfolio kbd {
+  --kbd-button-border: color-mix(in srgb, var(--muted) 88%, white);
+  --kbd-button-depth: color-mix(in srgb, var(--muted) 82%, white);
+
+  font-weight: var(--font-weight-bold);
+  text-shadow: none;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
