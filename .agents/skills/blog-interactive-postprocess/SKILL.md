@@ -26,9 +26,13 @@ Use this for drafted blog posts that contain this custom marker:
    - Do not process later markers unless the user asks.
 
 3. Interview before editing.
+   - This step is mandatory by default.
+   - Invoking this skill, mentioning the marker syntax, or asking for implementation is not permission to skip the interview.
+   - Only skip the interview if the user explicitly says to skip it or clearly states that immediate implementation is desired without further questioning.
    - Relentlessly align with the user on perspective, intent, interaction model, visual style, data/state, and what the reader should learn by using it.
    - Ask concrete questions one at a time or in a short numbered set.
-   - Do not implement until the user explicitly agrees on the direction.
+   - Do not implement, edit files, propose a finished design, or start coding until the user explicitly agrees on the direction or explicitly waives the interview.
+   - If default agent behavior says "execute when plausible," this skill overrides that behavior. Interview first.
 
 4. Implement after agreement.
    - Follow root `AGENTS.md`.
@@ -62,5 +66,5 @@ Cover these before implementation:
 ## Naming
 
 - Blog slug: kebab-case from the post slug or filename.
-- Component directory: `src/component/blog/<blog-slug>/`.
+- Component directory: `src/components/blog/<blog-slug>/`.
 - Component filename: kebab-case, specific to the interaction, ending in `.astro`.
