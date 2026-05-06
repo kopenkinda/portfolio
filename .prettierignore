@@ -1,1 +1,4 @@
 pnpm-lock.yaml
+AGENTS.md
+.agents/skills/**/*
+skills-lock.json
