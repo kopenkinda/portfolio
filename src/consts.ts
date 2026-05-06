@@ -11,9 +11,10 @@ export const STARTED_DEVELOPMENT_IN = new Date("2017-01-01");
 
 export const CONFIG = {
   game: {
-    game: "autobattler" satisfies Game,
+    game: "contribution-drawer" satisfies Game,
     title: "Take a little break",
-    description: "Some bs",
+    description:
+      "A quiet contribution-grid drawing board. Click, drag, fill, unfill.",
   },
 };
 
@@ -283,4 +284,4 @@ type ExperienceEntry = {
   technologies?: TechId[];
 };
 
-export type Game = "autobattler";
+export type Game = "autobattler" | "contribution-drawer";
