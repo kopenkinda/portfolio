@@ -74,6 +74,40 @@
       0 2px 2px rgb(0 0 0 / 0.18),
       0 4px 8px rgb(0 0 0 / 0.1);
   }
+
+  mark {
+    --mark-fill: color-mix(in srgb, var(--accent-color) 28%, transparent);
+    --mark-stroke: color-mix(in srgb, var(--accent-color) 46%, transparent);
+
+    @apply relative -mx-0.5 px-1 font-medium text-foreground;
+
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    background: transparent;
+    isolation: isolate;
+  }
+
+  mark::before,
+  mark::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    transform: skewX(-7deg);
+    transform-origin: center;
+  }
+
+  mark::before {
+    inset: -0.05em -0.08em 0.02em -0.08em;
+    background: var(--mark-fill);
+  }
+
+  mark::after {
+    right: -0.01em;
+    bottom: -0.22em;
+    left: -0.18em;
+    height: 0.4em;
+    background: var(--mark-stroke);
+  }
 }
 
 .dark .prose-portfolio {
@@ -99,6 +133,11 @@
 
   font-weight: var(--font-weight-bold);
   text-shadow: none;
+}
+
+.dark .prose-portfolio mark {
+  --mark-fill: color-mix(in srgb, var(--accent-color) 24%, transparent);
+  --mark-stroke: color-mix(in srgb, var(--accent-color) 42%, transparent);
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
