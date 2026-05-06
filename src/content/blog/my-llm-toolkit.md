@@ -5,4 +5,71 @@ pubDate: "May 10 2026"
 heroImage: "../../assets/blog/my-llm-toolkit.png"
 ---
 
-WIP
+> After drowning in a sea of models, tools, and "game-changing" AI platforms that absolutely weren't, I've finally found my sweet spot. Here's the stack that actually works without making me want to throw my laptop out the window.
+
+[Custom: Stack-overview-diagram]
+{R: Gives a bird's-eye view of how the tools layer together before the reader dives into the details}
+{V: A clean, minimal flowchart showing three tiers: "Agent Harnesses" at the bottom, "Harness Manager" in the middle, and "Skills + Search" feeding into both. Arrows show data flow. No corporate Memphis design, just crisp lines and monospace labels}
+
+## The Harnesses (Where the Magic Happens)
+
+**Codex CLI** is my main workhorse. GPT 5.4 and 5.5 live here, and this is where most of my actual workflows run. It's the agent harness I reach for when I need something done without drama.
+
+**Opencode CLI** is my sandbox. I use it to test small, temporarily-free open-source models and to tap my z.ai GLM subscription. It's the "let's see if this cheap thing works" harness. Sometimes it surprises me. Often it doesn't. That's the game.
+
+**T3 Code** is the harness for my harnesses. Look, TUIs are great until you paste an image and realize you're staring into the void because the model can't see a damn thing. T3 Code gives me actual visibility over my history, and I can see the images I paste. It's open source, way less laggy than the Codex app, and honestly? It just clicks with me better than anything else in this category. (Sorry, Jean.)
+
+[Custom: Terminal-comparison-screenshot]
+{R: Illustrates the TUI vs GUI difference so readers understand why someone would layer a harness on top of another harness}
+{V: A split-screen mockup. Left side: a dark TUI terminal with a broken image icon and question marks where a screenshot should be. Right side: T3 Code's interface showing the same conversation with the image rendered clearly in the chat history. Minimal UI chrome, dark mode}
+
+## The Skills (The Secret Sauce)
+
+I don't prompt from scratch like a caveman. My main driver skills are all from [skills.sh](https://skills.sh):
+
+- `grill-me`
+- `to-issues`
+- `to-prd`
+- `improve-codebase-architecture` (Matt Pocock's, and yes, it's as good as you'd expect)
+- `frontend-design` (Anthropic's)
+- `vercel-composition-patterns`
+- `vercel-react-best-practices`
+- `web-design-guidelines` (the Vercel trio)
+
+I've also built a few custom skills to speed up my personal flow, but those are mostly micro-optimizations. I'll write about them separately when I have the energy.
+
+[Custom: Skills-inventory-widget]
+{R: Lets readers (and future me) see which skills are from where, since attribution matters and I don't want to pretend I wrote the Vercel ones}
+{V: A small, sortable table or card grid showing each skill name, its source (Matt Pocock / Anthropic / Vercel / Custom), and a one-line description. Clean monospace typography, no heavy shadows}
+
+## Custom Tooling (Vibe-Coded, Obviously)
+
+When the ecosystem doesn't give you what you need, you build it. Or rather, you vibe-code it and pretend you architected it.
+
+**Skill Manager** — A tiny app to toggle skills globally or per-project. Because manually editing config files every time you switch contexts is a special kind of hell, and I refuse to live there.
+
+**Codex Limit Indicator** — A macOS status bar widget that tracks my usage limits across multiple Codex accounts. Yes, I have multiple accounts. No, I won't explain why. Yes, I need to know when I'm about to hit a wall.
+
+[Custom: Menu-bar-mockup]
+{R: Shows the utility of the limit indicator in a format people instantly recognize—a macOS menu bar}
+{V: A zoomed-in macOS menu bar showing a small icon with "Codex: 12/30" next to the WiFi and battery icons. Clean, native-looking, no custom window chrome. Maybe a subtle green/yellow/red dot for usage status}
+
+## The Misc Drawer (Search, Research, and Vibes)
+
+**Perplexity** is my search default right now because I have a free year subscription. When that honeymoon ends, I'll probably move to a mix of Google + Gemini. For now, it works.
+
+I route everything through [unduckling](https://github.com/dev-bhaskar8/unduckling) so I can keep using DuckDuckGo-style bangs (`!gh`, `!so`, etc.) but with Google as the actual search engine. It's one of those "why isn't this built-in" tools.
+
+For deep research, **ChatGPT 5.5 Pro** is genuinely insane. But when I need something faster and less... thorough, **Perplexity** gets the nod.
+
+And for anything I actually _write_—like this post—I reach for **Kimi**. It's the model whose stylistic vibe matches mine the closest. It just sounds like me, or at least like a version of me that proofreads.
+
+[Custom: Search-routing-diagram]
+{R: Clarifies the unduckling setup because "bangs with Google backend" is slightly cursed and needs visual explanation}
+{V: A simple flow: User types query with `!gh` → unduckling intercepts → routes to Google with site:github.com modifier → results displayed. Three boxes, two arrows, done}
+
+---
+
+That's the stack. No AI-native IDEs, no "second brain" apps that require more maintenance than my actual brain, and definitely no tools that demo well but collapse under real work. Just a few harnesses, some well-curated skills, two vibe-coded utilities, and a search setup that doesn't make me angry.
+
+It'll probably change in three months. That's the hobby.
