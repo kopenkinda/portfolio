@@ -250,6 +250,45 @@ export const USER = {
       },
     ] satisfies ExperienceEntry[],
   },
+  education: {
+    entries: [
+      {
+        id: iota(),
+        type: "university",
+        title: "Computer and Information Systems Master",
+        organization: "Toulouse Ynov Campus",
+        startDate: new Date("2018-01-01"),
+        endDate: new Date("2024-01-01"),
+        href: "https://www.francecompetences.fr/recherche/rncp/35078/",
+        actionLabel: "RNCP 35078",
+      },
+      {
+        id: iota(),
+        type: "certifications",
+        title: "Meta Front-End Developer",
+        organization: "Meta",
+        startDate: new Date("2024-01-01"),
+        href: "https://coursera.org/share/e80c8a8b0498f1bb918cae2abbd3907c",
+        actionLabel: "Verify",
+      },
+      {
+        id: iota(),
+        type: "certifications",
+        title: "TOEIC C1",
+        organization: "ETS Global",
+        startDate: new Date("2023-01-01"),
+        href: "https://www.etsglobal.org/fr/en/digital-score-report/9D3BDAB4946D81D12AC1D209CC6F73DB0EAF21730F664DA26E24AA14FFD9F7FDWXFuemg1cUNINGg0aEFiVWp0dmZDd2VINjAzSm82b0JrT005T1JOYVBoQ2ZhWmpB",
+        actionLabel: "Verify",
+      },
+      {
+        id: iota(),
+        type: "course",
+        title: "Solidity Developer",
+        organization: "GuideDAO (formerly Moscow Coding School)",
+        startDate: new Date("2019-01-01"),
+      },
+    ] satisfies EducationEntry[],
+  },
 };
 
 type SocialLink = {
@@ -292,6 +331,19 @@ type ExperienceEntry = {
       };
   bulletpoints: [string] | [string, string] | [string, string, string];
   technologies?: TechId[];
+};
+
+type EducationType = "university" | "course" | "certifications";
+
+type EducationEntry = {
+  id: number;
+  type: EducationType;
+  title: string;
+  organization: string;
+  startDate: Date;
+  endDate?: Date;
+  href?: string;
+  actionLabel?: string;
 };
 
 export type AutobattlerGame = {

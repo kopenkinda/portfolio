@@ -2,6 +2,7 @@
 import BaseHead from "../components/BaseHead.astro";
 import BasePage from "../components/BasePage.astro";
 import Button from "../components/Button.astro";
+import EducationSection from "../components/EducationSection.astro";
 import ExperienceTimeline from "../components/ExperienceTimeline.astro";
 import GameSection from "../components/GameSection.astro";
 import PixelIcon from "../components/PixelIcon.astro";
@@ -60,5 +61,6 @@ import { CONFIG, USER } from "../consts";
     </section>
     <ExperienceTimeline />
     {CONFIG.game.enabled && <GameSection />}
+    <EducationSection />
   </main>
 </BasePage>
