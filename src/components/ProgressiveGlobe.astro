@@ -53,7 +53,7 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
     <img
       class="globe-fallback globe-fallback-light"
       src={globePreviewLight.src}
-      alt=""
+      alt={globe.intial.srDescription}
       width="640"
       height="640"
       loading="eager"
@@ -62,7 +62,7 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
     <img
       class="globe-fallback globe-fallback-dark"
       src={globePreviewDark.src}
-      alt=""
+      alt={globe.intial.srDescription}
       width="640"
       height="640"
       loading="eager"
@@ -116,7 +116,7 @@ const globeData = JSON.stringify({ arcs, markers, rotation });
               data-globe-detail-close
               aria-label="Close"
             >
-              <X size={15} strokeWidth={3} aria-hidden="true" />
+              <X class="size-4" aria-hidden="true" />
             </button>
             {image && (
               <img src={image.src} alt="" loading="eager" decoding="async" />
