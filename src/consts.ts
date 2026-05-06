@@ -298,6 +298,12 @@ type SocialLink = {
   notracking?: boolean;
 };
 
+export const BLOG = {
+  title: "Mind Palace",
+  subtitle:
+    'because "blog" sounds like I have my shit together. This is just a public dumping ground for thoughts on code, AI, life, and other things I pretend to understand. Enter at your own intellectual risk.',
+};
+
 type MapLocation = {
   id: string;
   label: string;

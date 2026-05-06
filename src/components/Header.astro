@@ -1,6 +1,7 @@
 ---
 const pathname = Astro.url.pathname;
 const isBlogActive = pathname === "/blog/" || pathname.startsWith("/blog/");
+import { BLOG } from "../consts";
 import Button from "./Button.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 ---
@@ -24,7 +25,7 @@ import ThemeToggle from "./ThemeToggle.astro";
         variant="ghost"
         size="sm"
       >
-        {isBlogActive ? "Home" : "Blog"}
+        {isBlogActive ? "Home" : BLOG.title}
       </Button>
     </div>
   </nav>

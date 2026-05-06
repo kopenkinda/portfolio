@@ -1,44 +1,176 @@
 ---
 import { Image } from "astro:assets";
 import { getCollection } from "astro:content";
+import { ArrowRight } from "@lucide/astro";
 import BaseHead from "../../components/BaseHead.astro";
-import FormattedDate from "../../components/FormattedDate.astro";
 import BasePage from "../../components/BasePage.astro";
-import { CONFIG } from "../../consts";
+import Button from "../../components/Button.astro";
+import FormattedDate from "../../components/FormattedDate.astro";
+import { BLOG, CONFIG } from "../../consts";
 
 const posts = (await getCollection("blog")).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+const [featuredPost, ...archivePosts] = posts;
 ---
 
 <BasePage>
   <Fragment slot="head">
-    <BaseHead title={CONFIG.meta.title} description={CONFIG.meta.description} />
+    <BaseHead
+      title={`${BLOG.title} | ${CONFIG.meta.title}`}
+      description={CONFIG.meta.description}
+    />
   </Fragment>
-  <main>
-    <section>
-      <ul>
-        {
-          posts.map((post) => (
-            <li>
-              <a href={`/blog/${post.id}/`}>
-                {post.data.heroImage && (
+  <main class="min-h-screen">
+    <section class="container mx-auto px-4 py-14 sm:px-6 md:py-20">
+      <div>
+        <h1
+          class="max-w-4xl font-headline text-3xl leading-[0.95] font-bold text-balance md:text-7xl dark:font-normal"
+        >
+          {BLOG.title}
+        </h1>
+        <p
+          class="mt-5 max-w-2xl leading-relaxed text-balance text-muted-foreground"
+        >
+          {BLOG.subtitle}
+        </p>
+      </div>
+    </section>
+
+    {
+      featuredPost && (
+        <section class="border-y border-border/70 bg-muted/35 py-12 md:py-16">
+          <div class="container mx-auto px-4 sm:px-6">
+            <article class="grid gap-6 border border-border bg-card p-4 shadow-[6px_6px_0_var(--border)] transition-transform duration-200 hover:-translate-y-1 md:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)] md:p-5">
+              {featuredPost.data.heroImage && (
+                <a
+                  href={`/blog/${featuredPost.id}/`}
+                  class="group overflow-hidden border border-border bg-muted"
+                >
                   <Image
-                    width={720}
-                    height={360}
-                    src={post.data.heroImage}
+                    width={960}
+                    height={540}
+                    src={featuredPost.data.heroImage}
                     alt=""
+                    class="aspect-video h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                   />
-                )}
-                <h4 class="title">{post.data.title}</h4>
-                <p class="date">
-                  <FormattedDate date={post.data.pubDate} />
+                </a>
+              )}
+
+              <div class="flex min-h-72 flex-col p-1 md:p-3">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="border border-accent bg-background px-2 py-1 font-headline text-xs font-black text-accent uppercase dark:font-bold">
+                    Latest
+                  </span>
+                  <time
+                    class="text-sm text-muted-foreground"
+                    datetime={featuredPost.data.pubDate.toISOString()}
+                  >
+                    <FormattedDate date={featuredPost.data.pubDate} />
+                  </time>
+                </div>
+
+                <h2 class="mt-8 font-headline text-2xl leading-tight font-bold text-balance text-card-foreground md:text-4xl lg:text-5xl dark:font-normal">
+                  <a
+                    href={`/blog/${featuredPost.id}/`}
+                    class="hover:text-accent"
+                  >
+                    {featuredPost.data.title}
+                  </a>
+                </h2>
+                <p class="mt-4 max-w-[58ch] leading-relaxed text-muted-foreground">
+                  {featuredPost.data.description}
                 </p>
-              </a>
+
+                <div class="mt-auto pt-8">
+                  <Button
+                    href={`/blog/${featuredPost.id}/`}
+                    variant="primary"
+                    size="sm"
+                    class="font-headline font-black"
+                  >
+                    Read latest
+                    <ArrowRight slot="icon" />
+                  </Button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      )
+    }
+
+    <section class="container mx-auto px-4 py-14 sm:px-6 md:py-20">
+      <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <h2 class="font-headline text-3xl font-bold dark:font-normal">
+          More posts
+        </h2>
+        <Button
+          href="/rss.xml"
+          variant="secondary"
+          size="sm"
+          class="font-headline font-black"
+        >
+          RSS
+        </Button>
+      </div>
+
+      <ol class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {
+          archivePosts.map((post, index) => (
+            <li class="min-h-full">
+              <article class="flex h-full flex-col border border-border bg-card p-4 shadow-[6px_6px_0_var(--border)] transition-transform duration-200 hover:-translate-y-1">
+                <a href={`/blog/${post.id}/`} class="group block">
+                  {post.data.heroImage && (
+                    <div class="overflow-hidden border border-border bg-muted">
+                      <Image
+                        width={720}
+                        height={405}
+                        src={post.data.heroImage}
+                        alt=""
+                        class="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                      />
+                    </div>
+                  )}
+
+                  <div class="flex grow flex-col pt-5">
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="font-headline text-xs font-black text-accent uppercase dark:font-bold">
+                        {String(index + 2).padStart(2, "0")}
+                      </span>
+                      <time
+                        class="text-xs text-muted-foreground"
+                        datetime={post.data.pubDate.toISOString()}
+                      >
+                        <FormattedDate date={post.data.pubDate} />
+                      </time>
+                    </div>
+
+                    <h3 class="mt-5 text-lg leading-tight font-bold text-balance text-card-foreground md:text-xl">
+                      {post.data.title}
+                    </h3>
+                    <p class="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                      {post.data.description}
+                    </p>
+                  </div>
+                </a>
+                <div class="mt-auto pt-8">
+                  <Button
+                    href={`/blog/${post.id}/`}
+                    variant="secondary"
+                    size="sm"
+                    class="font-headline font-black"
+                  >
+                    Read post
+                    <ArrowRight slot="icon" />
+                  </Button>
+                </div>
+              </article>
             </li>
           ))
         }
-      </ul>
+      </ol>
     </section>
   </main>
 </BasePage>
