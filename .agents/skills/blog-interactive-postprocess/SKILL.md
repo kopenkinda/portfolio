@@ -1,6 +1,6 @@
 ---
 name: blog-interactive-postprocess
-description: Use when post-processing drafted blog posts to turn the first custom interactive marker into an Astro interactive element. Triggers on blog draft post-processing, custom blog syntax like "[Custom: ...] {R: ...} {V: ...}", or requests to implement interactive widgets for blog posts.
+description: Use when post-processing drafted blog posts to turn the first custom interactive marker into an Astro interactive element. Triggers on blog draft post-processing, custom blog syntax like "[Custom: ...] [R: ...] [V: ...]", or requests to implement interactive widgets for blog posts.
 ---
 
 # Blog Interactive Postprocess
@@ -9,8 +9,8 @@ Use this for drafted blog posts that contain this custom marker:
 
 ```md
 [Custom: <mini-description-of-the-interactive-widget>]
-{R: Reason as to why it would make sense to add here}
-{V: Text description of the visual representation of the widget}.
+[R: Reason as to why it would make sense to add here]
+[V: Text description of the visual representation of the widget].
 ```
 
 ## Workflow
@@ -22,7 +22,7 @@ Use this for drafted blog posts that contain this custom marker:
 
 2. Find the target marker.
    - By default, search for the first `[Custom:` occurrence in the post.
-   - Parse the following `{R: ...}` and `{V: ...}` blocks as the design brief.
+   - Parse the following `[R: ...]` and `[V: ...]` lines as the design brief.
    - Treat each marker as a separate interactive element with its own component.
    - Do not process later markers unless the user asks.
 

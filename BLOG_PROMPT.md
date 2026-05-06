@@ -6,8 +6,8 @@ You may add custom tags for suggested interactive elements/graphics. Keep them a
 
 ```md
 [Custom: <mini-description-of-the-interactive-widget>]
-{R: Reason as to why it would make sense to add here}
-{V: Text description of the visual representation of the widget}.
+[R: Reason as to why it would make sense to add here]
+[V: Text description of the visual representation of the widget].
 ```
 
 ## Style
