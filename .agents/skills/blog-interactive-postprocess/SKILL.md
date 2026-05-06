@@ -22,7 +22,9 @@ Use this for drafted blog posts that contain this custom marker:
 
 2. Find the target marker.
    - By default, search for the first `[Custom:` occurrence in the post.
-   - Parse the following `[R: ...]` and `[V: ...]` lines as the design brief.
+   - Parse the following `[R: ...]` and `[V: ...]` lines as the draft design brief.
+   - Treat `R` and `V` as LLM-generated suggestions, not requirements. They may be wrong, weak, redundant, or not worth implementing.
+   - Challenge whether the interactive element should exist at all before accepting `R` and `V` at face value.
    - Treat each marker as a separate interactive element with its own component.
    - Do not process later markers unless the user asks.
 
@@ -65,6 +67,8 @@ Cover these before implementation:
 - Interaction: what the reader can change, click, drag, filter, compare, or reveal.
 - Visual: layout, labels, motion, density, empty/error states, and responsive behavior.
 - Content boundaries: exact claims/data from the post that the widget may encode.
+- Whether the suggested `R` actually justifies an interactive element.
+- Whether the suggested `V` is the right representation, or whether a different visual or no visual is better.
 - Success criteria: what must be true for the widget to feel worth keeping.
 
 ## Naming
