@@ -1,0 +1,126 @@
+---
+import { experiences } from "../data/experiences";
+import type { ExperienceEntry } from "../data/experiences";
+
+const monthFormatter = new Intl.DateTimeFormat("en", {
+  month: "short",
+  year: "numeric",
+});
+
+const formatDate = (date: Date) => monthFormatter.format(date);
+
+const formatRange = ({ startDate, endDate }: ExperienceEntry) =>
+  `${formatDate(startDate)} - ${endDate ? formatDate(endDate) : "Present"}`;
+---
+
+<section
+  id="experience"
+  class="border-y border-border/70 bg-muted/35 py-16 md:py-24"
+>
+  <div class="container mx-auto px-4 sm:px-6">
+    <div class="mb-8">
+      <div>
+        <p class="font-headline text-sm font-black text-accent dark:font-bold">
+          Experience
+        </p>
+        <h2 class="mt-2 font-headline text-3xl font-bold dark:font-normal">
+          Work timeline
+        </h2>
+      </div>
+    </div>
+
+    <div
+      class="-mx-4 overflow-x-auto px-4 pb-5 sm:-mx-6 sm:px-6"
+      aria-label="Scrollable work timeline"
+    >
+      <ol
+        class="relative flex min-w-max items-stretch before:pointer-events-none before:absolute before:top-[19px] before:right-[29rem] before:left-0 before:h-0.5 before:bg-border before:content-[''] sm:before:right-[34rem]"
+      >
+        {
+          experiences.map((experience, index) => (
+            <li class="relative flex w-[19rem] shrink-0 flex-col pr-5 sm:w-[23rem]">
+              <div class="relative mb-6 flex h-10 items-center">
+                <span
+                  class:list={[
+                    "relative z-10 grid min-w-32 place-items-center border px-3 py-2 font-headline text-xs font-black whitespace-nowrap shadow-[4px_4px_0_var(--border)] dark:font-bold",
+                    index === 0
+                      ? "border-accent bg-accent text-accent-foreground"
+                      : "border-accent bg-background text-accent",
+                  ]}
+                >
+                  {formatRange(experience)}
+                </span>
+              </div>
+
+              <article class="flex h-full flex-col border border-border bg-card p-5 shadow-[6px_6px_0_var(--border)] transition-transform duration-200 hover:-translate-y-1">
+                <div class="mb-5">
+                  <h3 class="text-xl font-bold text-card-foreground">
+                    {experience.title}
+                  </h3>
+                  <div class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+                    {experience.company.name && experience.company.href ? (
+                      <a
+                        class="font-bold text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-accent"
+                        href={experience.company.href}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {experience.company.name}
+                      </a>
+                    ) : (
+                      <span class="font-bold text-foreground">
+                        {experience.company.name ?? "Independent"}
+                      </span>
+                    )}
+                    <span aria-hidden="true">/</span>
+                    <span>{experience.company.location}</span>
+                  </div>
+                </div>
+
+                <ul class="space-y-3 text-sm leading-relaxed text-muted-foreground">
+                  {experience.bulletpoints.map((bulletpoint) => (
+                    <li class="grid grid-cols-[0.625rem_1fr] gap-3">
+                      <span
+                        class="mt-2 size-1.5 bg-accent"
+                        aria-hidden="true"
+                      />
+                      <span>{bulletpoint}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </li>
+          ))
+        }
+        <li class="relative w-[29rem] shrink-0 pl-0 sm:w-[34rem]">
+          <div class="relative h-full min-h-72 text-border">
+            <svg
+              class="absolute top-0 left-0 h-56 w-full overflow-visible"
+              viewBox="0 0 544 224"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M0 20H284C338 20 384 48 389 94C393 133 351 159 316 148C289 139 307 105 348 107C391 109 390 153 416 177C443 203 465 205 494 178C509 164 519 158 532 158"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+              <path
+                d="M532 158H533M544 151H545"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"></path>
+            </svg>
+            <p
+              class="absolute top-40 left-18 max-w-[32ch] font-headline text-sm leading-relaxed font-black text-foreground dark:font-bold"
+            >
+              Born in Russia. Built websites, wired restaurants into ordering
+              systems, kept pulling the thread. Eventually it became a career.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
