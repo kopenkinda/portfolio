@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "generate:background": "tsx scripts/generate-background.ts",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -30,8 +31,10 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
     "eslint": "^10.3.0",
+    "p5": "^2.2.3",
     "prettier": "^3.8.3",
     "prettier-plugin-astro": "0.14.1",
-    "prettier-plugin-tailwindcss": "^0.8.0"
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "tsx": "^4.21.0"
   }
 }
