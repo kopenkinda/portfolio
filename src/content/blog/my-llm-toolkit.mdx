@@ -5,11 +5,9 @@ pubDate: "May 10 2026"
 heroImage: "../../assets/blog/my-llm-toolkit.png"
 ---
 
-> After drowning in a sea of models, tools, and "game-changing" AI platforms that absolutely weren't, I've finally found my sweet spot. Here's the stack that actually works without making me want to throw my laptop out the window.
+import SkillsInventory from "../../components/blog/my-llm-toolkit/SkillsInventory.astro";
 
-[Custom: Stack-overview-diagram]
-[R: Gives a bird's-eye view of how the tools layer together before the reader dives into the details]
-[V: A clean, minimal flowchart showing three tiers: "Agent Harnesses" at the bottom, "Harness Manager" in the middle, and "Skills + Search" feeding into both. Arrows show data flow. No corporate Memphis design, just crisp lines and monospace labels]
+> After drowning in a sea of models, tools, and "game-changing" AI platforms that absolutely weren't, I've finally found my sweet spot. Here's the stack that actually works without making me want to throw my laptop out the window.
 
 ## The Harnesses (Where the Magic Happens)
 
@@ -25,12 +23,17 @@ heroImage: "../../assets/blog/my-llm-toolkit.png"
 
 ## The Skills (The Secret Sauce)
 
-I don't prompt from scratch like a caveman. My main driver skills are all from [skills.sh](https://skills.sh):
+I don't prompt from scratch like a caveman. My main driver skills are all from [skills.sh](https://skills.sh).
+
+The first four are Matt Pocock's, and yes, they're as good as you'd expect:
 
 - `grill-me`
 - `to-issues`
 - `to-prd`
-- `improve-codebase-architecture` (Matt Pocock's, and yes, it's as good as you'd expect)
+- `improve-codebase-architecture`
+
+The rest are Anthropic and Vercel staples:
+
 - `frontend-design` (Anthropic's)
 - `vercel-composition-patterns`
 - `vercel-react-best-practices`
@@ -38,9 +41,7 @@ I don't prompt from scratch like a caveman. My main driver skills are all from [
 
 I've also built a few custom skills to speed up my personal flow, but those are mostly micro-optimizations. I'll write about them separately when I have the energy.
 
-[Custom: Skills-inventory-widget]
-[R: Lets readers (and future me) see which skills are from where, since attribution matters and I don't want to pretend I wrote the Vercel ones]
-[V: A small, sortable table or card grid showing each skill name, its source (Matt Pocock / Anthropic / Vercel / Custom), and a one-line description. Clean monospace typography, no heavy shadows]
+<SkillsInventory />
 
 ## Custom Tooling (Vibe-Coded, Obviously)
 

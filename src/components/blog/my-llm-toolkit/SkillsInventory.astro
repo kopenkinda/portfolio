@@ -1,0 +1,149 @@
+---
+type SkillSource = "Matt Pocock" | "Anthropic" | "Vercel";
+
+const skills: Array<{
+  name: string;
+  source: SkillSource;
+  href: string;
+  description: string;
+}> = [
+  {
+    name: "grill-me",
+    source: "Matt Pocock",
+    href: "https://skills.sh/mattpocock/skills/grill-me",
+    description: "Pressure-tests a plan through a focused interview.",
+  },
+  {
+    name: "to-issues",
+    source: "Matt Pocock",
+    href: "https://skills.sh/mattpocock/skills/to-issues",
+    description: "Turns a plan into implementation-ready GitHub issues.",
+  },
+  {
+    name: "to-prd",
+    source: "Matt Pocock",
+    href: "https://skills.sh/mattpocock/skills/to-prd",
+    description: "Synthesizes context into a PRD.",
+  },
+  {
+    name: "improve-codebase-architecture",
+    source: "Matt Pocock",
+    href: "https://skills.sh/mattpocock/skills/improve-codebase-architecture",
+    description: "Finds refactors that improve boundaries and testability.",
+  },
+  {
+    name: "frontend-design",
+    source: "Anthropic",
+    href: "https://skills.sh/anthropics/skills/frontend-design",
+    description: "Builds polished, production-grade web interfaces.",
+  },
+  {
+    name: "vercel-composition-patterns",
+    source: "Vercel",
+    href: "https://skills.sh/vercel-labs/agent-skills/vercel-composition-patterns",
+    description: "Guides scalable React component composition.",
+  },
+  {
+    name: "vercel-react-best-practices",
+    source: "Vercel",
+    href: "https://skills.sh/vercel-labs/agent-skills/vercel-react-best-practices",
+    description: "Keeps React code aligned with current platform patterns.",
+  },
+  {
+    name: "web-design-guidelines",
+    source: "Vercel",
+    href: "https://skills.sh/vercel-labs/agent-skills/web-design-guidelines",
+    description: "Reviews web UI quality, accessibility, and interaction polish.",
+  },
+];
+
+const sources = ["All", "Matt Pocock", "Anthropic", "Vercel"] as const;
+---
+
+<skills-inventory
+  class="my-8 block border border-border bg-card p-4 shadow-[6px_6px_0_var(--border)]"
+>
+  <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div class="space-y-1">
+      <p
+        class="m-0 font-headline text-sm font-black text-accent uppercase dark:font-bold"
+      >
+        Skills inventory
+      </p>
+      <p class="m-0 text-sm leading-relaxed text-muted-foreground">
+        Filter the stack by who made what.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      {
+        sources.map((source) => (
+          <button
+            class="border border-border bg-background px-2.5 py-1.5 font-headline text-xs font-black text-foreground uppercase shadow-[3px_3px_0_var(--border)] transition-transform duration-150 hover:-translate-y-0.5 data-[active=true]:border-accent data-[active=true]:bg-accent data-[active=true]:text-accent-foreground dark:font-bold"
+            type="button"
+            data-filter={source}
+            data-active={source === "All" ? "true" : "false"}
+          >
+            {source}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="grid gap-3 sm:grid-cols-2" data-skill-list>
+    {
+      skills.map((skill) => (
+        <a
+          class="block border border-border bg-background p-3 no-underline transition-transform duration-150 hover:-translate-y-0.5 hover:text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          href={skill.href}
+          target="_blank"
+          rel="noreferrer"
+          data-source={skill.source}
+        >
+          <div class="space-y-1">
+            <h3 class="m-0 font-mono text-sm font-bold text-foreground">
+              {skill.name}
+            </h3>
+            <p class="m-0 font-headline text-xs font-black text-accent uppercase dark:font-bold">
+              {skill.source}
+            </p>
+          </div>
+          <p class="m-0 mt-2 text-sm leading-relaxed text-muted-foreground">
+            {skill.description}
+          </p>
+        </a>
+      ))
+    }
+  </div>
+</skills-inventory>
+
+<script>
+  class SkillsInventory extends HTMLElement {
+    private filter = "All";
+
+    connectedCallback() {
+      this.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((button) => {
+        button.addEventListener("click", () => {
+          this.filter = button.dataset.filter ?? "All";
+          this.update();
+        });
+      });
+
+      this.update();
+    }
+
+    private update() {
+      this.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((button) => {
+        button.dataset.active = String((button.dataset.filter ?? "All") === this.filter);
+      });
+
+      this.querySelectorAll<HTMLElement>("[data-source]").forEach((item) => {
+        item.hidden = this.filter !== "All" && item.dataset.source !== this.filter;
+      });
+    }
+  }
+
+  if (!customElements.get("skills-inventory")) {
+    customElements.define("skills-inventory", SkillsInventory);
+  }
+</script>
