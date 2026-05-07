@@ -1,15 +1,19 @@
 ---
-name: blog-interactive-postprocess
-description: Interview the user before turning a blog draft custom marker into an Astro interactive element. Use for blog post-processing, custom syntax like "[Custom: ...] [R: ...] [V: ...]", or requests to add interactive widgets to drafted blog posts.
+name: blog-interactive-interview
+description: Interview-only workflow for blog interactive post-processing. Use when the user says "blog interactive postprocess", references custom syntax like "[Custom: ...] [R: ...] [V: ...]", or asks about interactive blog widgets. This skill must start by interviewing the user and must not implement unless the user explicitly says to skip the interview or explicitly approves the final direction.
 ---
 
-# Blog Interactive Postprocess
+# Blog Interactive Interview
+
+This is an interview skill, not an implementation skill.
 
 Interview the user relentlessly before implementation. Ask questions one at a time and provide your recommended answer for each question.
 
 Do not edit files, create components, replace markers, or start implementation unless the user explicitly says to skip the interview or explicitly approves the final agreed direction after the interview.
 
 If a question can be answered by reading the post or codebase, inspect it instead of asking.
+
+If the user invocation sounds like "blog interactive postprocess on <post>", that is not implementation approval. Start the interview.
 
 ## Marker Syntax
 
