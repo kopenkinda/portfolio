@@ -48,7 +48,7 @@ try {
     "--no-default-browser-check",
     `--window-size=${WIDTH},${CAPTURE_HEIGHT}`,
     `--screenshot=${screenshotPath}`,
-    `--virtual-time-budget=${Math.max(1000, config.seed * 20 + 500)}`,
+    `--virtual-time-budget=${Math.max(5000, config.seed * 40 + 1000)}`,
     pathToFileURL(htmlPath).href,
   ]);
 
@@ -128,63 +128,154 @@ function makeHtml(seed: number, text: string): string {
       #label .line + .line {
         margin-top: -1px;
       }
+
     </style>
   </head>
   <body>
     <div id="label">${renderLabelHtml(text)}</div>
     <script src="${p5Url}"></script>
     <script>
-      const requestedFrames = ${JSON.stringify(seed)};
-      const palette = ["#111827", "#164e63", "#be123c", "#f59e0b", "#84cc16", "#f8fafc"];
-      const fontFamily = "DotoGenerated";
-      let fontReady = false;
-      let renderedFrames = 0;
+      new p5((p) => {
+        const requestedFrames = ${JSON.stringify(seed)};
+        const fontFamily = "DotoGenerated";
+        const seedValue = Math.max(1, requestedFrames);
+        const colorScheme = [
+          ["#F27EA9", "#366CD9", "#5EADF2", "#636E73", "#F2E6D8"],
+          ["#D962AF", "#58A6A6", "#8AA66F", "#F29F05", "#F26D6D"],
+          ["#222940", "#D98E04", "#F2A950", "#BF3E21", "#F2F2F2"],
+          ["#1B618C", "#55CCD9", "#F2BC57", "#F2DAAC", "#F24949"],
+          ["#074A59", "#F2C166", "#F28241", "#F26B5E", "#F2F2F2"],
+          ["#023059", "#459DBF", "#87BF60", "#D9D16A", "#F2F2F2"],
+          ["#632973", "#02734A", "#F25C05", "#F29188", "#F2E0DF"],
+          ["#8D95A6", "#0A7360", "#F28705", "#D98825", "#F2F2F2"],
+          ["#4146A6", "#063573", "#5EC8F2", "#8C4E03", "#D98A29"],
+          ["#034AA6", "#72B6F2", "#73BFB1", "#F2A30F", "#F26F63"],
+          ["#303E8C", "#F2AE2E", "#F28705", "#D91414", "#F2F2F2"],
+          ["#424D8C", "#84A9BF", "#C1D9CE", "#F2B705", "#F25C05"],
+          ["#D9D7D8", "#3B5159", "#5D848C", "#7CA2A6", "#262321"],
+          ["#906FA6", "#025951", "#252625", "#D99191", "#F2F2F2"],
+        ];
+        let fontReady = false;
+        let renderedFrames = 0;
+        let texture;
+        let palette;
 
-      function setup() {
-        pixelDensity(1);
-        createCanvas(window.innerWidth, window.innerHeight);
-        randomSeed(requestedFrames || 1);
-        noiseSeed(requestedFrames || 1);
-        frameRate(60);
+        p.setup = () => {
+          p.pixelDensity(1);
+          p.createCanvas(window.innerWidth, window.innerHeight);
+          p.colorMode(p.HSB, 360, 100, 100, 100);
+          p.randomSeed(seedValue);
+          p.noiseSeed(seedValue);
+          palette = colorScheme[Math.floor(p.random(colorScheme.length))].slice();
+          shufflePalette();
+          texture = p.createGraphics(p.width, p.height);
+          texture.clear();
+          texture.stroke(255, 75);
+          for (let i = 0; i < p.width * p.height * 0.015; i++) {
+            const r = (1 - p.random(p.random())) * (Math.sqrt(2) * p.width) / 2;
+            const a = p.random(Math.PI * 2);
+            texture.point(p.width / 2 + Math.cos(a) * r, p.height / 2 + Math.sin(a) * r);
+          }
+          document.fonts.load('900 112px "' + fontFamily + '"').then(() => {
+            fontReady = true;
+          });
+        };
 
-        document.fonts.load('900 112px "' + fontFamily + '"').then(() => {
-          fontReady = true;
-        });
-      }
+        p.draw = () => {
+          p.blendMode(p.BLEND);
+          p.background(0);
+          p.randomSeed(seedValue + renderedFrames);
+          drawPattern();
+          p.blendMode(p.ADD);
+          p.image(texture, 0, 0);
+          renderedFrames += 1;
+          if (fontReady && renderedFrames >= Math.max(1, requestedFrames)) {
+            p.noLoop();
+          }
+        };
 
-      function draw() {
-        renderBackground();
-        renderedFrames += 1;
-
-        if (fontReady && renderedFrames >= Math.max(1, requestedFrames)) {
-          noLoop();
-        }
-      }
-
-      function renderBackground() {
-        background("#0f172a");
-        noStroke();
-
-        for (let y = 0; y < height; y += 14) {
-          for (let x = 0; x < width; x += 14) {
-            const n = noise(x * 0.006, y * 0.006, renderedFrames * 0.012);
-            const c = color(palette[floor(n * palette.length) % palette.length]);
-            c.setAlpha(70 + n * 120);
-            fill(c);
-            rect(x, y, 16, 16);
+        function drawPattern() {
+          const cells = 50;
+          const offset = (p.width * (Math.sqrt(2) - 1)) / 2;
+          const d = (p.width + offset * 2) / cells;
+          let jStep = 1;
+          for (let j = 0; j < cells; j += jStep) {
+            jStep = Math.max(1, Math.floor(p.random(1, cells / 10)));
+            if (j + jStep > cells || Math.abs(cells - (j + jStep)) < 3) jStep = cells - j;
+            let iStep = jStep;
+            for (let i = 0; i < cells; i += iStep) {
+              iStep = jStep;
+              if (i + iStep > cells || Math.abs(cells - (i + iStep)) <= cells / 15) iStep = cells - i;
+              const x = -offset + i * d + (d / 2) * iStep;
+              const y = -offset + j * d + (d / 2) * jStep;
+              const distance = p.dist(x, y, p.width / 2, p.height / 2) / (Math.sqrt(2) * (p.width / 2 - offset));
+              const t = easeInOutCirc(1 - ((renderedFrames / 100 + distance) % 1));
+              drawLinePattern(x, y, d * iStep, d * jStep, t);
+            }
           }
         }
 
-        for (let i = 0; i < 140; i++) {
-          const n = noise(i * 0.08, renderedFrames * 0.018);
-          fill(palette[i % palette.length] + "99");
-          circle(
-            (random(width) + renderedFrames * (0.6 + n)) % width,
-            random(height),
-            random(6, 42)
-          );
+        function drawLinePattern(centerX, centerY, patternW, patternH, t) {
+          const ctx = p.drawingContext;
+          const angle = Math.floor(p.random(4)) * Math.PI / 2;
+          ctx.save();
+          ctx.translate(centerX, centerY);
+          ctx.rotate(angle);
+          ctx.beginPath();
+          ctx.rect(-patternW / 2, -patternH / 2, patternW, patternH);
+          ctx.clip();
+
+          const layers = Math.floor(p.random(1, 4));
+          for (let layer = 0; layer < layers; layer++) {
+            ctx.save();
+            ctx.rotate(layer * Math.PI / 2);
+            const skewX = Math.tan((t * 46 * (p.random() > 0.5 ? -1 : 1) * Math.PI) / 180);
+            const skewY = Math.tan(((1 - t) * 46 * (p.random() > 0.5 ? -1 : 1) * Math.PI) / 180);
+            ctx.transform(1, skewY, skewX, 1, -patternW / 2, -patternH / 2);
+            const vertical = p.random() > 0.5;
+            const steps = Math.floor(p.random(1, 6));
+            const segment = patternW / steps;
+            const dash = vertical ? patternH : segment;
+            for (let i = 0; i < steps; i++) {
+              const x = (i / steps) * patternW;
+              ctx.setLineDash([dash / 2]);
+              ctx.lineDashOffset = (renderedFrames + t * dash * 2) % (dash * 2);
+              ctx.strokeStyle = palette[Math.floor(p.random(palette.length))];
+              ctx.lineCap = "butt";
+              ctx.beginPath();
+              if (vertical) {
+                ctx.lineWidth = segment / 2;
+                const shifted = (x + segment / 2 + renderedFrames / 3) % patternW;
+                ctx.moveTo(shifted, 0);
+                ctx.lineTo(shifted, patternH);
+              } else {
+                ctx.lineWidth = patternH;
+                ctx.moveTo(x + segment / 2 - segment / 4, patternH / 2);
+                ctx.lineTo(x + segment / 2 + segment / 4, patternH / 2);
+              }
+              ctx.stroke();
+            }
+            ctx.restore();
+          }
+          ctx.setLineDash([]);
+          ctx.restore();
         }
-      }
+
+        function easeInOutCirc(x) {
+          return x < 0.5
+            ? (1 - Math.sqrt(1 - Math.pow(2 * x, 2))) / 2
+            : (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2;
+        }
+
+        function shufflePalette() {
+          for (let i = palette.length - 1; i > 0; i--) {
+            const j = Math.floor(p.random(i + 1));
+            const tmp = palette[i];
+            palette[i] = palette[j];
+            palette[j] = tmp;
+          }
+        }
+      });
     </script>
   </body>
 </html>`;
