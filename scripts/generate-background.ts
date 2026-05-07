@@ -70,9 +70,14 @@ try {
 }
 
 function makeHtml(seed: number, text: string): string {
-  const p5Url = pathToFileURL(resolve(ROOT, "node_modules/p5/lib/p5.min.js")).href;
+  const p5Url = pathToFileURL(
+    resolve(ROOT, "node_modules/p5/lib/p5.min.js"),
+  ).href;
   const fontUrl = pathToFileURL(
-    resolve(ROOT, ".astro/fonts/font-doto-100-900-normal-latin-eae8a2c8b642d469.woff2"),
+    resolve(
+      ROOT,
+      ".astro/fonts/font-doto-100-900-normal-latin-eae8a2c8b642d469.woff2",
+    ),
   ).href;
 
   return `<!doctype html>
@@ -125,14 +130,35 @@ function makeHtml(seed: number, text: string): string {
         font-variation-settings: "ROND" 100;
       }
 
+      #label .accent {
+        color: oklch(70.4% 0.14 182.503);
+      }
+
       #label .line + .line {
         margin-top: -1px;
+      }
+
+      #attribution {
+        position: absolute;
+        right: 28px;
+        bottom: 24px;
+        z-index: 1;
+        padding: 6px 8px;
+        background: rgb(0 0 0 / 0.62);
+        color: rgb(255 255 255 / 0.86);
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: 0;
+        white-space: nowrap;
       }
 
     </style>
   </head>
   <body>
     <div id="label">${renderLabelHtml(text)}</div>
+    <div id="attribution">bg generated with script by Shunsuke TAKAWO @takawo</div>
     <script src="${p5Url}"></script>
     <script>
       new p5((p) => {
@@ -305,11 +331,15 @@ function parseConfig(argv: string[]): GeneratorConfig {
   const seed = args.seed;
 
   if (seed === undefined || !Number.isInteger(seed) || seed < 0) {
-    fail("Usage: pnpm generate:background -- --seed <int> --text <text> [--out <path>]");
+    fail(
+      "Usage: pnpm generate:background -- --seed <int> --text <text> [--out <path>]",
+    );
   }
 
   if (!args.text) {
-    fail("Usage: pnpm generate:background -- --seed <int> --text <text> [--out <path>]");
+    fail(
+      "Usage: pnpm generate:background -- --seed <int> --text <text> [--out <path>]",
+    );
   }
 
   return {
@@ -321,10 +351,14 @@ function parseConfig(argv: string[]): GeneratorConfig {
 
 function decodeCliText(value: string): string {
   return value
+    .replace(/\\\[/g, "\u0000")
+    .replace(/\\\]/g, "\u0001")
     .replace(/\\n/g, "\n")
     .replace(/\\t/g, "\t")
     .replace(/\\"/g, '"')
-    .replace(/\\\\/g, "\\");
+    .replace(/\\\\/g, "\\")
+    .replace(/\u0000/g, "\\[")
+    .replace(/\u0001/g, "\\]");
 }
 
 function escapeHtml(value: string): string {
@@ -337,8 +371,47 @@ function escapeHtml(value: string): string {
 function renderLabelHtml(value: string): string {
   return value
     .split("\n")
-    .map((line) => `<span class="line">${escapeHtml(line)}</span>`)
+    .map((line) => `<span class="line">${renderFormattedText(line)}</span>`)
     .join("");
+}
+
+function renderFormattedText(value: string): string {
+  let html = "";
+  let buffer = "";
+  let accented = false;
+
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    const next = value[index + 1];
+
+    if (char === "\\" && (next === "[" || next === "]")) {
+      buffer += next;
+      index += 1;
+      continue;
+    }
+
+    if (char === "[" && !accented) {
+      html += escapeHtml(buffer);
+      buffer = "";
+      accented = true;
+      continue;
+    }
+
+    if (char === "]" && accented) {
+      html += `<span class="accent">${escapeHtml(buffer)}</span>`;
+      buffer = "";
+      accented = false;
+      continue;
+    }
+
+    buffer += char;
+  }
+
+  if (accented) {
+    html += escapeHtml("[");
+  }
+
+  return html + escapeHtml(buffer);
 }
 
 function chromePath(): string {
