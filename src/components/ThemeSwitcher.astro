@@ -10,12 +10,13 @@
 </theme-switcher>
 
 <script>
-  const GLYPHS = "!<>-_\\/[]{}—=+*^?#0123456789";
+  const GLYPHS = "!<>-_\\/[]{}=+*^?#0123456789";
 
   class ThemeSwitcher extends HTMLElement {
+    private static transitionRunning = false;
+
     private button?: HTMLButtonElement;
     private label?: HTMLElement;
-    private running = false;
     private readonly storageKey = "theme";
 
     connectedCallback() {
@@ -48,7 +49,7 @@
     };
 
     private toggle = () => {
-      if (this.running) return;
+      if (ThemeSwitcher.transitionRunning) return;
 
       const current = this.currentTheme();
       const next = current === "dark" ? "light" : "dark";
@@ -61,13 +62,14 @@
         return;
       }
 
-      this.running = true;
+      ThemeSwitcher.transitionRunning = true;
+      this.setControlsDisabled(true);
       this.button?.setAttribute("aria-busy", "true");
 
       const root =
         document.querySelector<HTMLElement>("keyboard-navigator") ??
         document.body;
-      const clone = root.cloneNode(true) as HTMLElement;
+      const clone = this.freezeClone(root.cloneNode(true) as HTMLElement);
       clone.querySelectorAll("[data-theme-label]").forEach((label) => {
         label.textContent = next;
       });
@@ -81,23 +83,19 @@
       overlay.append(overlayInner);
       document.body.append(overlay);
 
+      const scrambleFragments = this.createScrambleFragments(clone, overlay);
+      clone.classList.add("theme-reveal-text-hidden");
+
       const sweep = document.createElement("div");
       sweep.className = "theme-sweep";
       sweep.setAttribute("aria-hidden", "true");
-      sweep.textContent = this.randomLine();
+      sweep.dataset.text = this.randomLine();
       document.body.append(sweep);
-
-      const textNodes = this.collectTextNodes(clone, {
-        includeAriaHidden: true,
-      });
-      const originals = new Map<Text, string>();
-      textNodes.forEach((node) => originals.set(node, node.data));
 
       let frame = 0;
       const scramble = () => {
-        textNodes.forEach((node) => {
-          const original = originals.get(node);
-          if (original) node.data = this.scrambleText(original);
+        scrambleFragments.forEach((fragment) => {
+          fragment.element.textContent = this.scrambleText(fragment.length);
         });
         frame = requestAnimationFrame(scramble);
       };
@@ -105,13 +103,11 @@
       scramble();
       window.setTimeout(() => {
         cancelAnimationFrame(frame);
-        originals.forEach((original, node) => {
-          node.data = original;
-        });
         this.setTheme(next);
         overlay.remove();
         sweep.remove();
-        this.running = false;
+        ThemeSwitcher.transitionRunning = false;
+        this.setControlsDisabled(false);
         this.button?.removeAttribute("aria-busy");
         this.syncLabel();
       }, 420);
@@ -134,6 +130,114 @@
       if (this.label) this.label.textContent = this.currentTheme();
     }
 
+    private setControlsDisabled(disabled: boolean) {
+      document
+        .querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")
+        .forEach((button) => {
+          button.disabled = disabled;
+          button.setAttribute("aria-disabled", String(disabled));
+        });
+    }
+
+    private freezeClone(root: HTMLElement) {
+      const customSelectors = [
+        "keyboard-navigator",
+        "theme-switcher",
+        "scramble-link",
+        "experience-console",
+        "skills-inventory",
+      ].join(",");
+
+      const replaceCustomElement = (element: HTMLElement) => {
+        const replacement = document.createElement(
+          element.tagName.toLowerCase() === "scramble-link" ||
+            element.tagName.toLowerCase() === "theme-switcher"
+            ? "span"
+            : "div",
+        );
+
+        Array.from(element.attributes).forEach((attribute) => {
+          if (attribute.name === "id") return;
+          replacement.setAttribute(attribute.name, attribute.value);
+        });
+
+        replacement.replaceChildren(...Array.from(element.childNodes));
+        element.replaceWith(replacement);
+        return replacement;
+      };
+
+      let frozenRoot = root;
+      if (root.matches(customSelectors)) {
+        frozenRoot = replaceCustomElement(root);
+      }
+
+      Array.from(frozenRoot.querySelectorAll<HTMLElement>(customSelectors))
+        .reverse()
+        .forEach((element) => {
+          replaceCustomElement(element);
+        });
+
+      frozenRoot
+        .querySelectorAll("script")
+        .forEach((script) => script.remove());
+      return frozenRoot;
+    }
+
+    private createScrambleFragments(root: HTMLElement, overlay: HTMLElement) {
+      const nodes = this.collectTextNodes(root, {
+        includeAriaHidden: true,
+      });
+      const layer = document.createElement("div");
+      layer.className = "theme-scramble-layer";
+      overlay.append(layer);
+
+      const fragments: Array<{ element: HTMLElement; length: number }> = [];
+
+      nodes.forEach((node) => {
+        const original = node.data;
+        if (!original.trim()) return;
+
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const rects = Array.from(range.getClientRects()).filter(
+          (rect) => rect.width > 0 && rect.height > 0,
+        );
+
+        if (!rects.length) return;
+
+        const parent = node.parentElement;
+        if (!parent) return;
+
+        const style = getComputedStyle(parent);
+        rects.forEach((rect) => {
+          const fragment = document.createElement("span");
+          const fontSize = Number.parseFloat(style.fontSize) || 14;
+          const estimatedCharacterWidth = Math.max(5, fontSize * 0.6);
+
+          fragment.className = "theme-scramble-fragment";
+          fragment.style.left = `${rect.left}px`;
+          fragment.style.top = `${rect.top}px`;
+          fragment.style.width = `${rect.width}px`;
+          fragment.style.height = `${rect.height}px`;
+          fragment.style.font = style.font;
+          fragment.style.letterSpacing = style.letterSpacing;
+          fragment.style.lineHeight = style.lineHeight;
+          fragment.style.color = style.color;
+
+          layer.append(fragment);
+          fragments.push({
+            element: fragment,
+            length: Math.max(
+              1,
+              Math.ceil(rect.width / estimatedCharacterWidth),
+            ),
+          });
+        });
+      });
+
+      return fragments;
+    }
+
     private collectTextNodes(
       root: Node,
       options: { includeAriaHidden?: boolean } = {},
@@ -146,8 +250,8 @@
           }
 
           const ignoredSelector = options.includeAriaHidden
-            ? "script, style, noscript, svg, canvas, .theme-sweep"
-            : "script, style, noscript, svg, canvas, [aria-hidden='true'], .theme-sweep";
+            ? "script, style, noscript, svg, canvas, .theme-sweep, .theme-scramble-layer"
+            : "script, style, noscript, svg, canvas, [aria-hidden='true'], .theme-sweep, .theme-scramble-layer";
 
           if (parent.closest(ignoredSelector)) {
             return NodeFilter.FILTER_REJECT;
@@ -162,9 +266,10 @@
       return nodes;
     }
 
-    private scrambleText(text: string) {
-      return Array.from(text, (char) =>
-        /\s/.test(char) ? char : GLYPHS[(Math.random() * GLYPHS.length) | 0],
+    private scrambleText(length: number) {
+      return Array.from(
+        { length },
+        () => GLYPHS[(Math.random() * GLYPHS.length) | 0],
       ).join("");
     }
 

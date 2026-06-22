@@ -103,15 +103,44 @@
   }
 
   .theme-sweep {
-    @apply fixed inset-x-0 top-0 z-[9999] h-[1.65rem] overflow-hidden border-y border-accent bg-accent px-5 font-mono text-xs leading-[1.65rem] whitespace-nowrap text-accent-foreground;
-    animation: theme-sweep 420ms steps(18) forwards;
+    @apply fixed inset-x-0 top-0 z-[9999] h-px overflow-visible border-t border-accent bg-accent font-mono text-xs whitespace-nowrap text-accent;
+    animation: theme-sweep 420ms linear forwards;
     pointer-events: none;
+  }
+
+  .theme-sweep::before {
+    content: attr(data-text);
+    @apply absolute inset-x-0 top-0 block -translate-y-1/2 overflow-hidden px-5 leading-none;
   }
 
   .theme-reveal-overlay {
     @apply fixed inset-0 z-[9998] overflow-hidden bg-background text-foreground;
-    animation: theme-reveal 420ms steps(18) forwards;
+    animation: theme-reveal 420ms linear forwards;
+    font-variant-ligatures: none;
+    font-feature-settings:
+      "liga" 0,
+      "calt" 0;
     pointer-events: none;
+  }
+
+  .theme-reveal-text-hidden,
+  .theme-reveal-text-hidden * {
+    color: transparent !important;
+    text-decoration-color: transparent !important;
+    text-shadow: none !important;
+  }
+
+  .theme-scramble-layer {
+    @apply fixed inset-0 z-[1] overflow-hidden;
+    pointer-events: none;
+  }
+
+  .theme-scramble-fragment {
+    @apply fixed block overflow-hidden whitespace-nowrap;
+    font-variant-ligatures: none;
+    font-feature-settings:
+      "liga" 0,
+      "calt" 0;
   }
 }
 
