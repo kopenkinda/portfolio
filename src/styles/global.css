@@ -123,13 +123,6 @@
     pointer-events: none;
   }
 
-  .theme-reveal-text-hidden,
-  .theme-reveal-text-hidden * {
-    color: transparent !important;
-    text-decoration-color: transparent !important;
-    text-shadow: none !important;
-  }
-
   .theme-scramble-layer {
     @apply fixed inset-0 z-[1] overflow-hidden;
     pointer-events: none;
@@ -137,6 +130,7 @@
 
   .theme-scramble-fragment {
     @apply fixed block overflow-hidden whitespace-nowrap;
+    background: var(--background);
     font-variant-ligatures: none;
     font-feature-settings:
       "liga" 0,

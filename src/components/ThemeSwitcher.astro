@@ -11,6 +11,8 @@
 
 <script>
   const GLYPHS = "!<>-_\\/[]{}=+*^?#0123456789";
+  const REVEAL_DURATION_MS = 420;
+  const SCRAMBLE_DURATION_MS = 260;
 
   class ThemeSwitcher extends HTMLElement {
     private static transitionRunning = false;
@@ -78,31 +80,44 @@
 
       overlay.className = `theme-reveal-overlay theme-preview-${next}`;
       overlay.setAttribute("aria-hidden", "true");
+      overlay.style.animationDuration = `${REVEAL_DURATION_MS}ms`;
       overlayInner.style.transform = `translateY(-${window.scrollY}px)`;
       overlayInner.append(clone);
       overlay.append(overlayInner);
       document.body.append(overlay);
 
       const scrambleFragments = this.createScrambleFragments(clone, overlay);
-      clone.classList.add("theme-reveal-text-hidden");
 
       const sweep = document.createElement("div");
       sweep.className = "theme-sweep";
       sweep.setAttribute("aria-hidden", "true");
+      sweep.style.animationDuration = `${REVEAL_DURATION_MS}ms`;
       sweep.dataset.text = this.randomLine();
       document.body.append(sweep);
 
       let frame = 0;
-      const scramble = () => {
+      const startedAt = performance.now();
+      const scramble = (now: number) => {
+        const elapsed = now - startedAt;
         scrambleFragments.forEach((fragment) => {
+          if (fragment.done || elapsed < fragment.startAt) return;
+
+          if (elapsed >= fragment.endAt) {
+            fragment.done = true;
+            fragment.element.remove();
+            return;
+          }
+
+          fragment.element.hidden = false;
           fragment.element.textContent = this.scrambleText(fragment.length);
         });
         frame = requestAnimationFrame(scramble);
       };
 
-      scramble();
+      frame = requestAnimationFrame(scramble);
       window.setTimeout(() => {
         cancelAnimationFrame(frame);
+        scrambleFragments.forEach((fragment) => fragment.element.remove());
         this.setTheme(next);
         overlay.remove();
         sweep.remove();
@@ -110,7 +125,7 @@
         this.setControlsDisabled(false);
         this.button?.removeAttribute("aria-busy");
         this.syncLabel();
-      }, 420);
+      }, REVEAL_DURATION_MS + SCRAMBLE_DURATION_MS);
     };
 
     private currentTheme() {
@@ -191,7 +206,13 @@
       layer.className = "theme-scramble-layer";
       overlay.append(layer);
 
-      const fragments: Array<{ element: HTMLElement; length: number }> = [];
+      const fragments: Array<{
+        element: HTMLElement;
+        length: number;
+        startAt: number;
+        endAt: number;
+        done: boolean;
+      }> = [];
 
       nodes.forEach((node) => {
         const original = node.data;
@@ -219,18 +240,31 @@
           fragment.style.top = `${rect.top}px`;
           fragment.style.width = `${rect.width}px`;
           fragment.style.height = `${rect.height}px`;
-          fragment.style.font = style.font;
+          fragment.style.fontFamily = style.fontFamily;
+          fragment.style.fontSize = style.fontSize;
+          fragment.style.fontStyle = style.fontStyle;
+          fragment.style.fontStretch = style.fontStretch;
+          fragment.style.fontWeight = style.fontWeight;
           fragment.style.letterSpacing = style.letterSpacing;
           fragment.style.lineHeight = style.lineHeight;
+          fragment.style.textTransform = style.textTransform;
           fragment.style.color = style.color;
+          fragment.hidden = true;
 
           layer.append(fragment);
+          const startAt = Math.min(
+            REVEAL_DURATION_MS,
+            Math.max(0, (rect.top / window.innerHeight) * REVEAL_DURATION_MS),
+          );
           fragments.push({
             element: fragment,
             length: Math.max(
               1,
               Math.ceil(rect.width / estimatedCharacterWidth),
             ),
+            startAt,
+            endAt: startAt + SCRAMBLE_DURATION_MS,
+            done: false,
           });
         });
       });
