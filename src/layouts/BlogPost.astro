@@ -4,6 +4,7 @@ import BaseHead from "../components/BaseHead.astro";
 import Footer from "../components/Footer.astro";
 import FormattedDate from "../components/FormattedDate.astro";
 import Header from "../components/Header.astro";
+import KeyboardNavigator from "../components/KeyboardNavigator.astro";
 import ScrambleLink from "../components/ScrambleLink.astro";
 import { CONFIG } from "../consts";
 
@@ -21,42 +22,48 @@ const { title, description, pubDate, updatedDate } = Astro.props;
     />
   </head>
   <body>
-    <div class="min-h-dvh bg-background">
-      <Header />
-      <main class="mx-auto max-w-3xl px-5 pt-10 pb-16 sm:pt-14">
-        <article>
-          <header class="mb-8">
-            <p class="mb-3 text-xs text-muted-foreground">
-              <span class="text-accent">$</span> cat ./mind-palace/{
-                Astro.params.slug
-              }.mdx
-            </p>
-            <h1
-              class="text-3xl leading-tight font-bold tracking-tight text-pretty text-foreground sm:text-4xl"
-            >
-              {title.toLowerCase()}
-            </h1>
-            <div class="mt-4 text-xs leading-relaxed text-muted-foreground">
-              <FormattedDate date={pubDate} />
-              {
-                updatedDate && (
-                  <>
-                    <span class="px-2 text-border">·</span>
-                    updated <FormattedDate date={updatedDate} />
-                  </>
-                )
-              }
-              <span class="px-2 text-border">·</span>
-              <ScrambleLink href="/blog/" label="all posts" external={false} />
-            </div>
-          </header>
+    <KeyboardNavigator>
+      <div class="min-h-dvh bg-background">
+        <Header />
+        <main class="mx-auto max-w-3xl px-5 pt-10 pb-16 sm:pt-14">
+          <article>
+            <header class="mb-8">
+              <p class="mb-3 text-xs text-muted-foreground">
+                <span class="text-accent">$</span> cat ./mind-palace/{
+                  Astro.params.slug
+                }.mdx
+              </p>
+              <h1
+                class="text-3xl leading-tight font-bold tracking-tight text-pretty text-foreground sm:text-4xl"
+              >
+                {title.toLowerCase()}
+              </h1>
+              <div class="mt-4 text-xs leading-relaxed text-muted-foreground">
+                <FormattedDate date={pubDate} />
+                {
+                  updatedDate && (
+                    <>
+                      <span class="px-2 text-border">·</span>
+                      updated <FormattedDate date={updatedDate} />
+                    </>
+                  )
+                }
+                <span class="px-2 text-border">·</span>
+                <ScrambleLink
+                  href="/blog/"
+                  label="all posts"
+                  external={false}
+                />
+              </div>
+            </header>
 
-          <div class="prose max-w-none prose-portfolio">
-            <slot />
-          </div>
-        </article>
-      </main>
-    </div>
-    <Footer />
+            <div class="prose max-w-none prose-portfolio">
+              <slot />
+            </div>
+          </article>
+        </main>
+      </div>
+      <Footer />
+    </KeyboardNavigator>
   </body>
 </html>

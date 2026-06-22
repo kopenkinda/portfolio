@@ -33,6 +33,7 @@ const formatRange = (experience: (typeof experiences)[number]) =>
             class="group flex w-full items-baseline gap-2 bg-transparent py-3 text-left outline-none"
             aria-expanded={index === 0 ? "true" : "false"}
             data-trigger
+            data-initial-keyboard-focus={index === 0 ? true : undefined}
           >
             <span
               aria-hidden="true"
@@ -131,58 +132,26 @@ const formatRange = (experience: (typeof experiences)[number]) =>
           this.selected = index;
           this.sync();
         });
+        trigger?.addEventListener("focus", () => {
+          this.navActive = true;
+          this.selected = index;
+          this.sync();
+        });
       });
 
-      window.addEventListener("keydown", this.onKeyDown);
+      this.addEventListener("focusout", this.onFocusOut);
+      this.addEventListener("mouseleave", this.onMouseLeave);
       this.sync();
     }
 
     disconnectedCallback() {
-      window.removeEventListener("keydown", this.onKeyDown);
+      this.removeEventListener("focusout", this.onFocusOut);
+      this.removeEventListener("mouseleave", this.onMouseLeave);
     }
 
     private get rows() {
       return Array.from(this.querySelectorAll<HTMLElement>("[data-row]"));
     }
-
-    private onKeyDown = (event: KeyboardEvent) => {
-      const target = event.target;
-      if (
-        target instanceof HTMLElement &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-
-      const max = this.rows.length - 1;
-      if (event.key === "ArrowDown" || event.key === "j") {
-        event.preventDefault();
-        this.selected = Math.min(max, this.selected + 1);
-      } else if (event.key === "ArrowUp" || event.key === "k") {
-        event.preventDefault();
-        this.selected = Math.max(0, this.selected - 1);
-      } else if (event.key === "g") {
-        this.selected = 0;
-      } else if (event.key === "G") {
-        this.selected = max;
-      } else if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        this.toggle(this.selected);
-      } else {
-        return;
-      }
-
-      this.navActive = true;
-      this.sync();
-      this.rows[this.selected]?.scrollIntoView({
-        block: "nearest",
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "auto"
-          : "smooth",
-      });
-    };
 
     private toggle(index: number) {
       const row = this.rows[index];
@@ -194,6 +163,25 @@ const formatRange = (experience: (typeof experiences)[number]) =>
       trigger.setAttribute("aria-expanded", String(!isOpen));
       panel.hidden = isOpen;
     }
+
+    private onFocusOut = (event: FocusEvent) => {
+      if (
+        event.relatedTarget instanceof Node &&
+        this.contains(event.relatedTarget)
+      ) {
+        return;
+      }
+
+      this.navActive = false;
+      this.sync();
+    };
+
+    private onMouseLeave = () => {
+      if (!this.contains(document.activeElement)) {
+        this.navActive = false;
+        this.sync();
+      }
+    };
 
     private sync() {
       this.rows.forEach((row, index) => {
