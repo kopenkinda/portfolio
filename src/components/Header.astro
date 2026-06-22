@@ -26,10 +26,7 @@ const isBlogActive = pathname === "/blog/" || pathname.startsWith("/blog/");
         <span class="text-foreground">{CONFIG.ui.keyboardHint.action}</span>{
           " "
         }
-        {CONFIG.ui.keyboardHint.actionLabel}
-      </span>
-      <span class="hidden text-border sm:inline" aria-hidden="true">·</span>
-      <span class="hidden sm:inline">
+        {CONFIG.ui.keyboardHint.actionLabel} ·{" "}
         <span class="text-foreground">{CONFIG.ui.keyboardHint.theme}</span>{" "}
         {CONFIG.ui.keyboardHint.themeLabel}
       </span>
