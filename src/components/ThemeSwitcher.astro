@@ -92,7 +92,6 @@
       sweep.className = "theme-sweep";
       sweep.setAttribute("aria-hidden", "true");
       sweep.style.animationDuration = `${REVEAL_DURATION_MS}ms`;
-      sweep.dataset.text = this.randomLine();
       document.body.append(sweep);
 
       let frame = 0;
@@ -312,14 +311,6 @@
     }
 
     private scrambleText(length: number) {
-      return Array.from(
-        { length },
-        () => GLYPHS[(Math.random() * GLYPHS.length) | 0],
-      ).join("");
-    }
-
-    private randomLine() {
-      const length = Math.ceil(window.innerWidth / 8);
       return Array.from(
         { length },
         () => GLYPHS[(Math.random() * GLYPHS.length) | 0],

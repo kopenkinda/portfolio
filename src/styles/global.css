@@ -116,11 +116,6 @@
     pointer-events: none;
   }
 
-  .theme-sweep::before {
-    content: attr(data-text);
-    @apply absolute inset-x-0 top-0 block -translate-y-1/2 overflow-hidden px-5 leading-none;
-  }
-
   .theme-reveal-overlay {
     @apply fixed inset-0 z-[9998] overflow-hidden bg-background text-foreground;
     animation: theme-reveal 420ms linear forwards;

@@ -1,0 +1,375 @@
+---
+interface Props {
+  label: string;
+  lat: number;
+  lng: number;
+  marker?: string;
+  columns?: number;
+  rows?: number;
+  fontSize?: number;
+  initialPhi?: number;
+  initialTheta?: number;
+}
+
+const {
+  label,
+  lat,
+  lng,
+  marker = "@",
+  columns = 40,
+  rows = 18,
+  fontSize = 10,
+  initialPhi = -2.259,
+  initialTheta = 0.485,
+} = Astro.props;
+---
+
+<ascii-globe
+  class="relative hidden self-start justify-self-end text-muted-foreground select-none lg:block"
+  data-label={label}
+  data-lat={String(lat)}
+  data-lng={String(lng)}
+  data-marker={marker}
+  data-columns={String(columns)}
+  data-rows={String(rows)}
+  data-initial-phi={String(initialPhi)}
+  data-initial-theta={String(initialTheta)}
+  style={`font-size: ${fontSize}px; --globe-water: #3b82f6`}
+>
+  <canvas class="absolute size-px opacity-0" aria-hidden="true" data-source
+  ></canvas>
+  <canvas
+    class="block max-w-full cursor-grab active:cursor-grabbing"
+    data-canvas></canvas>
+  <pre class="sr-only" data-fallback>{label}</pre>
+</ascii-globe>
+
+<script>
+  import { prepareWithSegments } from "@chenglou/pretext";
+  import createGlobe, { type COBEOptions, type Globe } from "cobe";
+
+  const rgb = (
+    red: number,
+    green: number,
+    blue: number,
+  ): [number, number, number] => [red, green, blue];
+
+  class AsciiGlobe extends HTMLElement {
+    private canvas?: HTMLCanvasElement;
+    private source?: HTMLCanvasElement;
+    private fallback?: HTMLElement;
+    private sampleCanvas = document.createElement("canvas");
+    private sampleContext = this.sampleCanvas.getContext("2d", {
+      willReadFrequently: true,
+    });
+    private globe?: Globe;
+    private animation = 0;
+    private dragging = false;
+    private pointerX = 0;
+    private pointerY = 0;
+    private phi = 0;
+    private theta = 0.485;
+    private readonly sourceSize = 220;
+    connectedCallback() {
+      this.canvas = this.querySelector("[data-canvas]") ?? undefined;
+      this.source = this.querySelector("[data-source]") ?? undefined;
+      this.fallback = this.querySelector("[data-fallback]") ?? undefined;
+      this.phi = this.initialPhi;
+      this.theta = this.initialTheta;
+      this.syncPositionAttributes();
+
+      this.addEventListener("pointerdown", this.onPointerDown);
+      window.addEventListener("pointermove", this.onPointerMove);
+      window.addEventListener("pointerup", this.onPointerUp);
+
+      this.init();
+    }
+
+    disconnectedCallback() {
+      cancelAnimationFrame(this.animation);
+      this.globe?.destroy();
+      this.removeEventListener("pointerdown", this.onPointerDown);
+      window.removeEventListener("pointermove", this.onPointerMove);
+      window.removeEventListener("pointerup", this.onPointerUp);
+    }
+
+    private async init() {
+      if (!this.source) return;
+
+      try {
+        await document.fonts?.ready;
+      } catch {
+        // keep rendering with fallback font
+      }
+
+      this.sampleCanvas.width = this.sourceSize;
+      this.sampleCanvas.height = this.sourceSize;
+
+      this.globe = createGlobe(this.source, this.options());
+      this.tick();
+    }
+
+    private options(): COBEOptions {
+      return {
+        width: this.sourceSize,
+        height: this.sourceSize,
+        devicePixelRatio: 1,
+        phi: this.phi,
+        theta: this.theta,
+        diffuse: 1.35,
+        mapSamples: 18000,
+        mapBaseBrightness: 0,
+        mapBrightness: 8,
+        markerElevation: 0.1,
+        markers: [
+          {
+            location: [this.lat, this.lng],
+            size: 0.055,
+          },
+        ],
+        baseColor: rgb(0.18, 0.18, 0.17),
+        markerColor: rgb(1, 0.08, 0),
+        glowColor: rgb(0, 0, 0),
+        dark: 0,
+        opacity: 1,
+        scale: 1,
+      };
+    }
+
+    private tick = () => {
+      if (!this.globe || !this.source) return;
+
+      this.globe.update({
+        phi: this.phi,
+        theta: this.theta,
+      });
+      this.drawAscii();
+
+      this.animation = requestAnimationFrame(this.tick);
+    };
+
+    private drawAscii() {
+      if (!this.canvas || !this.source || !this.sampleContext) {
+        return;
+      }
+
+      this.sampleContext.clearRect(0, 0, this.sourceSize, this.sourceSize);
+      this.sampleContext.drawImage(
+        this.source,
+        0,
+        0,
+        this.sourceSize,
+        this.sourceSize,
+      );
+      const pixels = this.sampleContext.getImageData(
+        0,
+        0,
+        this.sourceSize,
+        this.sourceSize,
+      );
+
+      const lines = this.toAscii(pixels);
+      const text = lines.join("\n");
+      if (this.fallback) this.fallback.textContent = text;
+
+      const context = this.canvas.getContext("2d");
+      if (!context) return;
+
+      const computed = getComputedStyle(this);
+      const fontSize = Number.parseFloat(computed.fontSize) || 12;
+      const lineHeight = Math.round(fontSize * 1.32);
+      const font = `${computed.fontWeight || "400"} ${fontSize}px ${computed.fontFamily}`;
+
+      context.font = font;
+      const characterWidth = context.measureText("0").width || fontSize * 0.6;
+      const cssWidth = Math.ceil(characterWidth * this.columns);
+      const cssHeight = Math.ceil(lineHeight * lines.length);
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+
+      this.canvas.width = Math.ceil(cssWidth * ratio);
+      this.canvas.height = Math.ceil(cssHeight * ratio);
+      this.canvas.style.width = `${cssWidth}px`;
+      this.canvas.style.height = `${cssHeight}px`;
+
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      context.clearRect(0, 0, cssWidth, cssHeight);
+      context.font = font;
+      context.textBaseline = "alphabetic";
+      const landColor = computed.color;
+      const waterColor =
+        computed.getPropertyValue("--globe-water").trim() || landColor;
+      const markerColor =
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--accent")
+          .trim() || landColor;
+      lines.forEach((line, index) => {
+        prepareWithSegments(line, font);
+        const y = index * lineHeight + fontSize;
+
+        for (const [charIndex, character] of [...line].entries()) {
+          if (character === " ") continue;
+
+          const x = context.measureText(line.slice(0, charIndex)).width;
+          context.fillStyle =
+            character === this.marker
+              ? markerColor
+              : character === "."
+                ? waterColor
+                : landColor;
+          context.fillText(character, x, y);
+        }
+      });
+    }
+
+    private toAscii(pixels: ImageData) {
+      const output: string[][] = [];
+      let markerCandidate:
+        | { row: number; column: number; score: number }
+        | undefined;
+      const cellWidth = this.sourceSize / this.columns;
+      const cellHeight = this.sourceSize / this.rows;
+      const water = ".";
+      const land = "#";
+
+      for (let row = 0; row < this.rows; row++) {
+        const line: string[] = [];
+        for (let column = 0; column < this.columns; column++) {
+          let red = 0;
+          let green = 0;
+          let blue = 0;
+          let alpha = 0;
+          let samples = 0;
+          let globeSamples = 0;
+          let landSamples = 0;
+          let markerSamples = 0;
+
+          const startX = Math.floor(column * cellWidth);
+          const endX = Math.floor((column + 1) * cellWidth);
+          const startY = Math.floor(row * cellHeight);
+          const endY = Math.floor((row + 1) * cellHeight);
+
+          for (let y = startY; y < endY; y += 2) {
+            for (let x = startX; x < endX; x += 2) {
+              const index = (y * pixels.width + x) * 4;
+              red += pixels.data[index] ?? 0;
+              green += pixels.data[index + 1] ?? 0;
+              blue += pixels.data[index + 2] ?? 0;
+              alpha += pixels.data[index + 3] ?? 0;
+              const pixelAlpha = pixels.data[index + 3] ?? 0;
+              const pixelRed = pixels.data[index] ?? 0;
+              const pixelGreen = pixels.data[index + 1] ?? 0;
+              const pixelBlue = pixels.data[index + 2] ?? 0;
+              const pixelLuminance = (pixelRed + pixelGreen + pixelBlue) / 3;
+
+              if (pixelAlpha > 8) globeSamples++;
+              if (
+                pixelAlpha > 8 &&
+                pixelRed - Math.max(pixelGreen, pixelBlue) > 32 &&
+                pixelRed > 78
+              ) {
+                markerSamples++;
+              }
+              if (pixelAlpha > 8 && pixelLuminance < 18) landSamples++;
+              samples++;
+            }
+          }
+
+          red /= samples;
+          green /= samples;
+          blue /= samples;
+          alpha /= samples;
+
+          if (globeSamples / samples < 0.08 || alpha < 8) {
+            line.push(" ");
+            continue;
+          }
+
+          const markerScore = markerSamples / Math.max(1, globeSamples);
+          if (
+            markerScore > 0.015 &&
+            (!markerCandidate || markerScore > markerCandidate.score)
+          ) {
+            markerCandidate = { row, column, score: markerScore };
+          }
+
+          line.push(
+            landSamples / Math.max(1, globeSamples) > 0.09 ? land : water,
+          );
+        }
+        output.push(line);
+      }
+
+      if (markerCandidate) {
+        output[markerCandidate.row]![markerCandidate.column] = this.marker;
+      }
+
+      return output.map((line) => line.join("").trimEnd());
+    }
+
+    private onPointerDown = (event: PointerEvent) => {
+      this.dragging = true;
+      this.pointerX = event.clientX;
+      this.pointerY = event.clientY;
+      this.setPointerCapture(event.pointerId);
+    };
+
+    private onPointerMove = (event: PointerEvent) => {
+      if (!this.dragging) return;
+      this.phi += (event.clientX - this.pointerX) * 0.01;
+      this.theta = Math.max(
+        -Math.PI / 2,
+        Math.min(
+          Math.PI / 2,
+          this.theta + (event.clientY - this.pointerY) * 0.008,
+        ),
+      );
+      this.pointerX = event.clientX;
+      this.pointerY = event.clientY;
+      this.syncPositionAttributes();
+    };
+
+    private onPointerUp = () => {
+      this.dragging = false;
+      this.syncPositionAttributes();
+    };
+
+    private syncPositionAttributes() {
+      this.dataset.currentPhi = String(this.phi);
+      this.dataset.currentTheta = String(this.theta);
+    }
+
+    private get lat() {
+      return Number(this.dataset.lat ?? 0);
+    }
+
+    private get lng() {
+      return Number(this.dataset.lng ?? 0);
+    }
+
+    private get marker() {
+      return this.dataset.marker ?? "@";
+    }
+
+    private get columns() {
+      return Number(this.dataset.columns ?? 40);
+    }
+
+    private get rows() {
+      return Number(this.dataset.rows ?? 18);
+    }
+
+    private get initialPhi() {
+      return Number(this.dataset.currentPhi ?? this.dataset.initialPhi ?? -2.259);
+    }
+
+    private get initialTheta() {
+      return Number(
+        this.dataset.currentTheta ?? this.dataset.initialTheta ?? 0.485,
+      );
+    }
+  }
+
+  if (!customElements.get("ascii-globe")) {
+    customElements.define("ascii-globe", AsciiGlobe);
+  }
+</script>

@@ -1,5 +1,6 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
+import AsciiGlobe from "../components/AsciiGlobe.astro";
 import BasePage from "../components/BasePage.astro";
 import ExperienceConsole from "../components/ExperienceConsole.astro";
 import ScrambleLink from "../components/ScrambleLink.astro";
@@ -26,53 +27,56 @@ const bio = USER.headline;
   </Fragment>
 
   <main class="mx-auto max-w-3xl px-5 pt-12 pb-16 sm:pt-16">
-    <header>
-      <p class="mb-3 text-xs text-muted-foreground">
-        <span class="text-accent">$</span>{" "}
-        {CONFIG.ui.terminalCommand}
-      </p>
-      <h1
-        class="text-3xl leading-tight font-bold tracking-tight text-pretty text-foreground sm:text-4xl"
-      >
-        {USER.name.toLowerCase()}
-      </h1>
-      <p class="mt-3 text-sm text-muted-foreground">
-        {USER.role}
-        <span class="px-2 text-border">·</span>
-        {USER.location}
-        {
-          email && (
-            <>
-              <span class="px-2 text-border">·</span>
-              <ScrambleLink
-                href={email.href}
-                label={email.href.replace("mailto:", "")}
-                external={false}
-              />
-            </>
-          )
-        }
-      </p>
+    <header class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_15rem]">
+      <div>
+        <p class="mb-3 text-xs text-muted-foreground">
+          <span class="text-accent">$</span>{" "}
+          {CONFIG.ui.terminalCommand}
+        </p>
+        <h1
+          class="text-3xl leading-tight font-bold tracking-tight text-pretty text-foreground sm:text-4xl"
+        >
+          {USER.name.toLowerCase()}
+        </h1>
+        <p class="mt-3 text-sm text-muted-foreground">
+          {USER.role}
+          <span class="px-2 text-border">·</span>
+          {USER.location}
+          {
+            email && (
+              <>
+                <span class="px-2 text-border">·</span>
+                <ScrambleLink
+                  href={email.href}
+                  label={email.href.replace("mailto:", "")}
+                  external={false}
+                />
+              </>
+            )
+          }
+        </p>
 
-      <nav
-        class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm"
-        aria-label="profile links"
-      >
-        {
-          links.map((link) => (
-            <ScrambleLink
-              href={link.href}
-              label={link.label}
-              external={link.href.startsWith("http")}
-            />
-          ))
-        }
-        <ScrambleLink
-          href="/blog/"
-          label={BLOG.title.toLowerCase()}
-          external={false}
-        />
-      </nav>
+        <nav
+          class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm"
+          aria-label="profile links"
+        >
+          {
+            links.map((link) => (
+              <ScrambleLink
+                href={link.href}
+                label={link.label}
+                external={link.href.startsWith("http")}
+              />
+            ))
+          }
+          <ScrambleLink
+            href="/blog/"
+            label={BLOG.title.toLowerCase()}
+            external={false}
+          />
+        </nav>
+      </div>
+      <AsciiGlobe {...USER.asciiGlobe} />
     </header>
 
     <section class="mt-12">
