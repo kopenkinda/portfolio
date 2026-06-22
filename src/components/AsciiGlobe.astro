@@ -22,10 +22,37 @@ const {
   initialPhi = -2.259,
   initialTheta = 0.485,
 } = Astro.props;
+
+const placeholder = [
+  "                ########",
+  "           #####.#####.######",
+  "        ###...##...#...#.##.####",
+  "      ###.......#####.#.##########",
+  "     ##......##..#.##########..####",
+  "    ##.....@####################..##",
+  "    #.....##.#....####.#..##.#####.##",
+  "   ##..#####.#.###.#########..#..##.#",
+  "   ##.......#######.#####...###..#..#",
+  "   ##..######.#.#.######.....#....###",
+  "    ##....#.##.########............#",
+  "     ##......########.............#",
+  "      ##.....#######..#.........##",
+  "        ###...#####...#......###",
+  "          #####..........#####",
+  "               ##########",
+];
+
+const placeholderHtml = placeholder
+  .map((line) =>
+    line
+      .replaceAll(".", '<span class="text-[#3b82f6]">.</span>')
+      .replaceAll("@", '<span class="text-accent">@</span>'),
+  )
+  .join("\n");
 ---
 
 <ascii-globe
-  class="relative hidden self-start justify-self-end text-muted-foreground select-none lg:block"
+  class="relative hidden cursor-grab self-start justify-self-end overflow-hidden text-muted-foreground select-none active:cursor-grabbing lg:block"
   data-label={label}
   data-lat={String(lat)}
   data-lng={String(lng)}
@@ -34,14 +61,22 @@ const {
   data-rows={String(rows)}
   data-initial-phi={String(initialPhi)}
   data-initial-theta={String(initialTheta)}
-  style={`font-size: ${fontSize}px; --globe-water: #3b82f6`}
+  role="img"
+  aria-label={`ascii globe marking ${label}`}
+  style={`font-size: ${fontSize}px; width: calc(${columns} * 0.6em); height: calc(${rows} * 1.32em); --globe-water: #3b82f6; --placeholder-padding: 1.1em; --placeholder-letter-spacing: -0.005em`}
 >
   <canvas class="absolute size-px opacity-0" aria-hidden="true" data-source
   ></canvas>
   <canvas
-    class="block max-w-full cursor-grab active:cursor-grabbing"
+    class="absolute inset-0 z-10 block max-w-full bg-background transition-opacity duration-200 ease-out"
+    style="opacity: 0"
     data-canvas></canvas>
-  <pre class="sr-only" data-fallback>{label}</pre>
+  <pre
+    class="absolute inset-0 z-0 m-0 pt-[var(--placeholder-padding)] font-mono text-[1em] leading-[1.32] font-normal tracking-[var(--placeholder-letter-spacing)] text-muted-foreground transition-opacity duration-200 ease-out"
+    aria-hidden="true"
+    data-placeholder
+    set:html={placeholderHtml}
+  />
 </ascii-globe>
 
 <script>
@@ -57,7 +92,8 @@ const {
   class AsciiGlobe extends HTMLElement {
     private canvas?: HTMLCanvasElement;
     private source?: HTMLCanvasElement;
-    private fallback?: HTMLElement;
+    private placeholder?: HTMLElement;
+    private liveCanvasVisible = false;
     private sampleCanvas = document.createElement("canvas");
     private sampleContext = this.sampleCanvas.getContext("2d", {
       willReadFrequently: true,
@@ -73,7 +109,8 @@ const {
     connectedCallback() {
       this.canvas = this.querySelector("[data-canvas]") ?? undefined;
       this.source = this.querySelector("[data-source]") ?? undefined;
-      this.fallback = this.querySelector("[data-fallback]") ?? undefined;
+      this.placeholder =
+        this.querySelector("[data-placeholder]") ?? undefined;
       this.phi = this.initialPhi;
       this.theta = this.initialTheta;
       this.syncPositionAttributes();
@@ -169,32 +206,50 @@ const {
       );
 
       const lines = this.toAscii(pixels);
-      const text = lines.join("\n");
-      if (this.fallback) this.fallback.textContent = text;
+      this.drawLines(lines, this.canvas);
 
-      const context = this.canvas.getContext("2d");
+      if (!this.liveCanvasVisible) {
+        this.liveCanvasVisible = true;
+        requestAnimationFrame(() => {
+          if (this.canvas) this.canvas.style.opacity = "1";
+        });
+        window.setTimeout(() => {
+          if (this.placeholder) this.placeholder.style.opacity = "0";
+        }, 220);
+      }
+    }
+
+    private drawLines(lines: string[], canvas = this.canvas) {
+      if (!canvas) return;
+
+      const context = canvas.getContext("2d");
       if (!context) return;
 
-      const computed = getComputedStyle(this);
+      const computed = getComputedStyle(this.placeholder ?? this);
       const fontSize = Number.parseFloat(computed.fontSize) || 12;
-      const lineHeight = Math.round(fontSize * 1.32);
+      const lineHeight = fontSize * 1.32;
       const font = `${computed.fontWeight || "400"} ${fontSize}px ${computed.fontFamily}`;
 
       context.font = font;
       const characterWidth = context.measureText("0").width || fontSize * 0.6;
-      const cssWidth = Math.ceil(characterWidth * this.columns);
+      const letterSpacing =
+        Number.parseFloat(computed.letterSpacing) || 0;
+      const cssWidth = Math.ceil(
+        characterWidth * this.columns +
+          letterSpacing * Math.max(0, this.columns - 1),
+      );
       const cssHeight = Math.ceil(lineHeight * lines.length);
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
 
-      this.canvas.width = Math.ceil(cssWidth * ratio);
-      this.canvas.height = Math.ceil(cssHeight * ratio);
-      this.canvas.style.width = `${cssWidth}px`;
-      this.canvas.style.height = `${cssHeight}px`;
+      canvas.width = Math.ceil(cssWidth * ratio);
+      canvas.height = Math.ceil(cssHeight * ratio);
+      canvas.style.width = `${cssWidth}px`;
+      canvas.style.height = `${cssHeight}px`;
 
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       context.clearRect(0, 0, cssWidth, cssHeight);
       context.font = font;
-      context.textBaseline = "alphabetic";
+      context.textBaseline = "top";
       const landColor = computed.color;
       const waterColor =
         computed.getPropertyValue("--globe-water").trim() || landColor;
@@ -204,12 +259,14 @@ const {
           .trim() || landColor;
       lines.forEach((line, index) => {
         prepareWithSegments(line, font);
-        const y = index * lineHeight + fontSize;
+        const y = index * lineHeight;
 
         for (const [charIndex, character] of [...line].entries()) {
           if (character === " ") continue;
 
-          const x = context.measureText(line.slice(0, charIndex)).width;
+          const x =
+            context.measureText(line.slice(0, charIndex)).width +
+            letterSpacing * charIndex;
           context.fillStyle =
             character === this.marker
               ? markerColor
