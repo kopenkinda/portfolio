@@ -9,9 +9,15 @@ import ScrambleLink from "../components/ScrambleLink.astro";
 import ThemeInit from "../components/ThemeInit.astro";
 import { CONFIG } from "../consts";
 
-type Props = CollectionEntry<"blog">["data"];
+type BlogData = CollectionEntry<"blog">["data"];
 
-const { title, description, pubDate, updatedDate } = Astro.props;
+interface Props extends BlogData {
+  slug: string;
+  reading?: string;
+}
+
+const { title, description, pubDate, reading, tags } = Astro.props;
+const updatedDate = Astro.props.updatedDate;
 ---
 
 <!doctype html>
@@ -19,9 +25,12 @@ const { title, description, pubDate, updatedDate } = Astro.props;
   <head>
     <ThemeInit />
     <BaseHead
-      title={`${title} | ${CONFIG.meta.title}`}
+      title={`${title} — ${CONFIG.meta.title}`}
       description={description}
+      ogType="article"
     />
+    <meta property="article:published_time" content={pubDate.toISOString()} />
+    {tags.map((tag) => <meta property="article:tag" content={tag} />)}
   </head>
   <body>
     <KeyboardNavigator>
@@ -42,6 +51,8 @@ const { title, description, pubDate, updatedDate } = Astro.props;
               </h1>
               <div class="mt-4 text-xs leading-relaxed text-muted-foreground">
                 <FormattedDate date={pubDate} />
+                {reading && <span class="px-2 text-border">·</span>}
+                {reading && <span>{reading} read</span>}
                 {
                   updatedDate && (
                     <>
@@ -49,6 +60,17 @@ const { title, description, pubDate, updatedDate } = Astro.props;
                       updated <FormattedDate date={updatedDate} />
                     </>
                   )
+                }
+                {
+                  tags.map((tag) => (
+                    <>
+                      <span class="px-2 text-border">·</span>
+                      <span>
+                        <span class="text-border">#</span>
+                        {tag}
+                      </span>
+                    </>
+                  ))
                 }
                 <span class="px-2 text-border">·</span>
                 <ScrambleLink
@@ -59,7 +81,7 @@ const { title, description, pubDate, updatedDate } = Astro.props;
               </div>
             </header>
 
-            <div class="prose max-w-none prose-portfolio">
+            <div class="prose-terminal prose">
               <slot />
             </div>
           </article>

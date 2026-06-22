@@ -1,0 +1,20 @@
+---
+const { src = "", alt = "", class: className, ...attrs } = Astro.props;
+---
+
+<span class="my-6 block">
+  <img
+    {...attrs}
+    src={src}
+    alt={alt}
+    class:list={[className, "block w-full border border-border"]}
+  />
+  {
+    alt && (
+      <span class="mt-2 block text-xs text-muted-foreground">
+        <span class="text-accent">// </span>
+        {alt}
+      </span>
+    )
+  }
+</span>

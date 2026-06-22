@@ -1,0 +1,14 @@
+---
+const { class: className, ...attrs } = Astro.props;
+---
+
+<h2
+  {...attrs}
+  class:list={[
+    className,
+    "group mt-12 mb-4 flex items-baseline gap-2 text-base font-bold tracking-wide text-foreground",
+  ]}
+>
+  <span aria-hidden="true" class="text-accent">##</span>
+  <span><slot /></span>
+</h2>

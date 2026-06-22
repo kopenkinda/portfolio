@@ -1,5 +1,11 @@
 ---
 import { type CollectionEntry, getCollection, render } from "astro:content";
+import MDXAnchor from "../../components/mdx/Anchor.astro";
+import MDXCallout from "../../components/mdx/Callout.astro";
+import MDXHeading2 from "../../components/mdx/Heading2.astro";
+import MDXHeading3 from "../../components/mdx/Heading3.astro";
+import MDXImg from "../../components/mdx/Img.astro";
+import MDXPre from "../../components/mdx/Pre.astro";
 import BlogPost from "../../layouts/BlogPost.astro";
 
 export async function getStaticPaths() {
@@ -13,8 +19,19 @@ type Props = CollectionEntry<"blog">;
 
 const post = Astro.props;
 const { Content } = await render(post);
+const words = (post.body ?? "").trim().split(/\s+/).filter(Boolean).length;
+const reading =
+  post.data.reading ?? `${Math.max(1, Math.ceil(words / 220))} min`;
+const components = {
+  a: MDXAnchor,
+  h2: MDXHeading2,
+  h3: MDXHeading3,
+  pre: MDXPre,
+  img: MDXImg,
+  Callout: MDXCallout,
+};
 ---
 
-<BlogPost {...post.data}>
-  <Content />
+<BlogPost {...post.data} slug={post.id} reading={reading}>
+  <Content components={components} />
 </BlogPost>

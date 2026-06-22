@@ -10,7 +10,12 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   site: "https://kopenkin.tech",
   integrations: [mdx(), sitemap()],
-
+  markdown: {
+    shikiConfig: {
+      theme: "css-variables",
+      defaultColor: false,
+    },
+  },
   fonts: [
     {
       provider: fontProviders.google(),
@@ -22,7 +27,6 @@ export default defineConfig({
       fallbacks: ["monospace"],
     },
   ],
-
   vite: {
     plugins: [tailwindcss()],
   },

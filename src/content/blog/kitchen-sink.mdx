@@ -1,0 +1,126 @@
+---
+title: 'Markdown Kitchen Sink'
+description: 'Every supported element in one place — headings, lists, tables, quotes, images, highlighted code, and a styled callout component.'
+pubDate: '2026-06-23'
+tags: ['reference', 'mdx', 'typography']
+---
+
+This post exists to exercise the full rendering pipeline: GitHub-flavored
+markdown via `remark-gfm`, syntax highlighting via `rehype-pretty-code` with a
+custom paper/ink Shiki theme, and a styled MDX component. If it looks right
+here, it looks right everywhere.
+
+<Callout type="note">
+  Callouts are a custom MDX component, not markdown. They are imported into the
+  component map and used directly in `.mdx` files — no extra syntax required.
+</Callout>
+
+## Text and inline marks
+
+Body copy supports **bold**, _italic_, ***bold italic***, ~~strikethrough~~,
+inline `code`, and [internal links](/blog) as well as
+[external links](https://nextjs.org). Footnote-style references and tight line
+length keep everything readable in monospace.
+
+### Heading level three
+
+Smaller sections nest under their parents with the `###` ASCII marker, so the
+document outline reads like a file tree even before you parse the content.
+
+## Lists
+
+Unordered lists use a terminal-style em-dash marker:
+
+- First item, no nesting
+- Second item with a nested list
+  - Nested child one
+  - Nested child two
+- Third item with inline `code`
+
+Ordered lists get accent-tinted numbers:
+
+1. Install the dependencies
+2. Wire up the rehype plugin
+3. Frame the output as a terminal
+4. Ship it
+
+Task lists (GFM) render with checkboxes:
+
+- [x] Syntax highlighting
+- [x] Terminal frame
+- [ ] Dark mode (someday)
+
+## Blockquote
+
+> Design is not just what it looks like and feels like.
+> Design is how it works.
+>
+> — paraphrasing the usual suspect
+
+## Table
+
+GitHub-flavored tables render as a tight monospace grid:
+
+| Element   | Source        | Styled by         |
+| --------- | ------------- | ----------------- |
+| Headings  | markdown `##` | `mdx-components`  |
+| Code      | fenced block  | `rehype-pretty`   |
+| Callout   | JSX component | `Callout`         |
+| Tables    | `remark-gfm`  | `prose-terminal`  |
+
+## Code with highlighting
+
+Inline highlighting, line highlighting, and language labels all work. Here is
+TypeScript with lines 2 and 6 flagged:
+
+```ts {2,6}
+export function layout(text: string, width: number) {
+  const segments = prepareWithSegments(text)
+  const lines = layoutWithLines(segments, width)
+  return {
+    lineCount: lines.length,
+    widest: Math.max(...lines.map((l) => l.width)),
+  }
+}
+```
+
+A shell snippet (note the language tab in the window chrome):
+
+```bash
+pnpm add rehype-pretty-code shiki
+pnpm dev
+```
+
+Highlighting a specific term with the `/segments/` syntax:
+
+```js /segments/
+const segments = prepareWithSegments(input)
+render(segments)
+```
+
+<Callout type="warn" title="! gotcha">
+  `rehype-pretty-code` emits its styles in the same layer as the typography
+  plugin. The `prose-terminal` overrides are intentionally unlayered so they
+  win the cascade — see `app/globals.css`.
+</Callout>
+
+## Image
+
+Images get a thin frame and a muted caption:
+
+![A minimal terminal illustration in paper and ink](/images/kitchen-sink.png)
+
+## Horizontal rule
+
+Below is a thematic break, then a closing line.
+
+---
+
+That is the whole vocabulary. Anything you write in a post will land on one of
+these styles, all on the same three-color paper/ink palette.
+
+<Callout type="tip">
+  Want a new element style? It only needs to be defined once in
+  `prose-terminal` or added to the component map — every post inherits it
+  automatically.
+</Callout>

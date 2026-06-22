@@ -1,0 +1,29 @@
+---
+type CalloutType = "note" | "warn" | "tip";
+
+interface Props {
+  type?: CalloutType;
+  title?: string;
+}
+
+const labels: Record<CalloutType, string> = {
+  note: "! note",
+  warn: "! warning",
+  tip: "$ tip",
+};
+
+const { type = "note", title } = Astro.props;
+---
+
+<aside
+  class="my-6 border border-l-2 border-border border-l-accent bg-muted/50 px-4 py-3"
+>
+  <p class="mb-1 text-xs font-bold tracking-[0.18em] text-accent uppercase">
+    {title ?? labels[type]}
+  </p>
+  <div
+    class="text-sm leading-relaxed text-foreground [&>:last-child]:mb-0 [&>p]:mb-2"
+  >
+    <slot />
+  </div>
+</aside>
