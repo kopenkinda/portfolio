@@ -294,10 +294,20 @@
           }
 
           const ignoredSelector = options.includeAriaHidden
-            ? "script, style, noscript, svg, canvas, .theme-sweep, .theme-scramble-layer"
-            : "script, style, noscript, svg, canvas, [aria-hidden='true'], .theme-sweep, .theme-scramble-layer";
+            ? "script, style, noscript, svg, canvas, .sr-only, [hidden], [data-fallback], .theme-sweep, .theme-scramble-layer"
+            : "script, style, noscript, svg, canvas, .sr-only, [hidden], [data-fallback], [aria-hidden='true'], .theme-sweep, .theme-scramble-layer";
 
           if (parent.closest(ignoredSelector)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+
+          const style = getComputedStyle(parent);
+          if (
+            style.display === "none" ||
+            style.visibility === "hidden" ||
+            style.opacity === "0" ||
+            parent.offsetParent === null
+          ) {
             return NodeFilter.FILTER_REJECT;
           }
 
