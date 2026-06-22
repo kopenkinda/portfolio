@@ -1,66 +1,128 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
 import BasePage from "../components/BasePage.astro";
-import Button from "../components/Button.astro";
-import EducationSection from "../components/EducationSection.astro";
-import ExperienceTimeline from "../components/ExperienceTimeline.astro";
-import GameSection from "../components/GameSection.astro";
-import PixelIcon from "../components/PixelIcon.astro";
-import ProgressiveGlobe from "../components/ProgressiveGlobe.astro";
+import ExperienceConsole from "../components/ExperienceConsole.astro";
+import ReflowDemo from "../components/ReflowDemo.astro";
+import ScrambleLink from "../components/ScrambleLink.astro";
+import SectionLabel from "../components/SectionLabel.astro";
 import { CONFIG, USER } from "../consts";
+
+const email = USER.socials.find((social) => social.label === "mail");
+const links = USER.socials.filter((social) => social.label !== "mail");
+
+const yearFormatter = new Intl.DateTimeFormat("en", { year: "numeric" });
+const formatEducationRange = (
+  entry: (typeof USER.education.entries)[number],
+) =>
+  entry.endDate
+    ? `${yearFormatter.format(entry.startDate)} — ${yearFormatter.format(entry.endDate)}`
+    : yearFormatter.format(entry.startDate);
+
+const bio = USER.headline
+  .replace("I've", "i've")
+  .replace("TypeScript", "typescript")
+  .replace("React", "react")
+  .replace("Next.js", "next.js")
+  .replace("Postgres", "postgres")
+  .replace("AI", "ai");
 ---
 
 <BasePage>
   <Fragment slot="head">
     <BaseHead title={CONFIG.meta.title} description={CONFIG.meta.description} />
   </Fragment>
-  <main>
-    <section
-      id="about-me"
-      class="container mx-auto grid min-h-[calc(100vh-73px)] items-start gap-8 p-4 transition-all duration-300 md:grid-cols-2 md:gap-12"
-    >
-      <div>
-        <h2 class="mt-36 font-headline text-4xl font-bold dark:font-normal">
-          Hi, my name is <span
-            class="inline-block font-black text-accent dark:font-bold"
-            >{USER.name}</span
-          >
-        </h2>
-        <span
-          class="mt-4 inline-block max-w-[60ch] leading-relaxed text-balance"
-          >{USER.headline}</span
-        >
-        <div class="mt-4 space-y-3 space-x-2">
-          {
-            USER.socials.map(({ icon, label, href, notracking }) => (
-              <Button
-                class="font-headline font-black"
-                variant="secondary"
-                href={href}
-                rel={notracking ? "noreferrer noopener" : undefined}
-              >
-                <PixelIcon slot="icon" name={icon} />
-                {label}
-              </Button>
-            ))
-          }
-        </div>
-        <div class="mt-12 w-full">
-          <span
-            class="animate-pulse text-center font-headline font-bold text-muted-foreground dark:font-normal"
-            >Scroll down for more</span
-          >
-        </div>
-      </div>
-      <div class="flex flex-col justify-center pt-6 md:justify-end md:pt-28">
-        <ProgressiveGlobe />
-        <p class="text-center text-xs text-muted-foreground">
-          {USER.globe.intial.srDescription}
-        </p>
-      </div>
+
+  <main class="mx-auto max-w-3xl px-5 pt-12 pb-16 sm:pt-16">
+    <header>
+      <p class="mb-3 text-xs text-muted-foreground">
+        <span class="text-accent">$</span> whoami
+      </p>
+      <h1
+        class="text-3xl leading-tight font-bold tracking-tight text-pretty text-foreground sm:text-4xl"
+      >
+        {USER.name.toLowerCase()}
+        <span class="animate-blink text-accent">█</span>
+      </h1>
+      <p class="mt-3 text-sm text-muted-foreground">
+        full-stack ai developer
+        <span class="px-2 text-border">·</span>
+        andorra / spain
+        {
+          email && (
+            <>
+              <span class="px-2 text-border">·</span>
+              <ScrambleLink
+                href={email.href}
+                label={email.href.replace("mailto:", "")}
+                external={false}
+              />
+            </>
+          )
+        }
+      </p>
+
+      <nav
+        class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm"
+        aria-label="profile links"
+      >
+        {
+          links.map((link) => (
+            <ScrambleLink
+              href={link.href}
+              label={link.label}
+              external={link.href.startsWith("http")}
+            />
+          ))
+        }
+        <ScrambleLink href="/blog/" label="mind palace" external={false} />
+      </nav>
+    </header>
+
+    <section class="mt-12">
+      <SectionLabel label="BIO" />
+      <ReflowDemo text={bio} />
     </section>
-    <ExperienceTimeline />
-    {CONFIG.game.enabled && <GameSection />}
-    <EducationSection />
+
+    <section class="mt-14">
+      <SectionLabel label="EXPERIENCE" />
+      <ExperienceConsole experiences={USER.experiences.entries} />
+    </section>
+
+    <section class="mt-14">
+      <SectionLabel label="EDUCATION" />
+      <ul class="space-y-5">
+        {
+          USER.education.entries.map((entry) => (
+            <li class="flex flex-col gap-1">
+              <div class="flex flex-wrap items-baseline justify-between gap-x-4">
+                <h3 class="font-medium text-foreground">
+                  {entry.title.toLowerCase()}
+                </h3>
+                <span class="text-xs text-muted-foreground">
+                  {formatEducationRange(entry)}
+                </span>
+              </div>
+              <p class="text-sm text-muted-foreground">
+                {entry.organization.toLowerCase()}
+                {entry.actionLabel && (
+                  <>
+                    <span class="px-2 text-border">·</span>
+                    {entry.href ? (
+                      <ScrambleLink
+                        href={entry.href}
+                        label={entry.actionLabel.toLowerCase()}
+                        external
+                      />
+                    ) : (
+                      entry.actionLabel.toLowerCase()
+                    )}
+                  </>
+                )}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
   </main>
 </BasePage>

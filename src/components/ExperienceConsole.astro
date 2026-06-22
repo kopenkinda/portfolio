@@ -1,0 +1,222 @@
+---
+import type { USER } from "../consts";
+
+interface Props {
+  experiences: typeof USER.experiences.entries;
+}
+
+const { experiences } = Astro.props;
+
+const monthFormatter = new Intl.DateTimeFormat("en", {
+  month: "short",
+  year: "numeric",
+});
+
+const formatDate = (date: Date) => monthFormatter.format(date).toLowerCase();
+const formatRange = (experience: (typeof experiences)[number]) =>
+  `${formatDate(experience.startDate)} — ${
+    experience.endDate ? formatDate(experience.endDate) : "present"
+  }`;
+---
+
+<experience-console class="block">
+  <ul>
+    {
+      experiences.map((experience, index) => (
+        <li
+          class="border-b border-dashed border-border/70 last:border-0"
+          data-row
+          data-index={String(index)}
+        >
+          <button
+            type="button"
+            class="group flex w-full items-baseline gap-2 bg-transparent py-3 text-left outline-none"
+            aria-expanded={index === 0 ? "true" : "false"}
+            data-trigger
+          >
+            <span
+              aria-hidden="true"
+              class:list={[
+                "inline-block w-[0.6em]",
+                index === 0 ? "animate-blink text-accent" : "text-transparent",
+              ]}
+              data-cursor
+            >
+              █
+            </span>
+            <span
+              class="w-5 shrink-0 text-xs text-muted-foreground"
+              data-toggle
+            >
+              {index === 0 ? "[-]" : "[+]"}
+            </span>
+            <span class="flex-1">
+              <span
+                class:list={[
+                  "font-medium transition-colors group-hover:text-accent",
+                  index === 0 ? "text-accent" : "text-foreground",
+                ]}
+                data-title
+              >
+                {experience.title.toLowerCase()}
+              </span>
+              <span class="text-muted-foreground">
+                {" "}
+                @ {experience.company.name?.toLowerCase() ?? "independent"}
+              </span>
+            </span>
+            <span class="hidden shrink-0 text-xs text-muted-foreground sm:inline">
+              {formatRange(experience)}
+            </span>
+          </button>
+
+          <div
+            class="grid grid-cols-[1.7rem_1fr] gap-x-1 pb-5 pl-1 text-sm"
+            data-panel
+            hidden={index !== 0}
+          >
+            <div aria-hidden="true" class="text-border">
+              └
+            </div>
+            <div>
+              <p class="mb-3 text-xs text-muted-foreground sm:hidden">
+                {formatRange(experience)} ·{" "}
+                {experience.company.location.toLowerCase()}
+              </p>
+              <p class="mb-3 hidden text-xs text-muted-foreground sm:block">
+                {experience.company.location.toLowerCase()}
+              </p>
+              <ul class="space-y-2 leading-relaxed text-foreground/90">
+                {experience.bulletpoints.map((bulletpoint) => (
+                  <li class="flex gap-2">
+                    <span class="text-accent select-none">›</span>
+                    <span class="text-pretty">{bulletpoint}</span>
+                  </li>
+                ))}
+              </ul>
+              {experience.technologies && (
+                <p class="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                  {experience.technologies.map((technology) => (
+                    <span>
+                      <span class="text-border">#</span>
+                      {technology.replace("githubactions", "github-actions")}
+                    </span>
+                  ))}
+                </p>
+              )}
+            </div>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</experience-console>
+
+<script>
+  class ExperienceConsole extends HTMLElement {
+    private selected = 0;
+    private navActive = true;
+
+    connectedCallback() {
+      this.rows.forEach((row, index) => {
+        const trigger = row.querySelector<HTMLButtonElement>("[data-trigger]");
+        trigger?.addEventListener("click", () => {
+          this.navActive = true;
+          this.selected = index;
+          this.toggle(index);
+          this.sync();
+        });
+        trigger?.addEventListener("mouseenter", () => {
+          this.navActive = true;
+          this.selected = index;
+          this.sync();
+        });
+      });
+
+      window.addEventListener("keydown", this.onKeyDown);
+      this.sync();
+    }
+
+    disconnectedCallback() {
+      window.removeEventListener("keydown", this.onKeyDown);
+    }
+
+    private get rows() {
+      return Array.from(this.querySelectorAll<HTMLElement>("[data-row]"));
+    }
+
+    private onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      const max = this.rows.length - 1;
+      if (event.key === "ArrowDown" || event.key === "j") {
+        event.preventDefault();
+        this.selected = Math.min(max, this.selected + 1);
+      } else if (event.key === "ArrowUp" || event.key === "k") {
+        event.preventDefault();
+        this.selected = Math.max(0, this.selected - 1);
+      } else if (event.key === "g") {
+        this.selected = 0;
+      } else if (event.key === "G") {
+        this.selected = max;
+      } else if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        this.toggle(this.selected);
+      } else {
+        return;
+      }
+
+      this.navActive = true;
+      this.sync();
+      this.rows[this.selected]?.scrollIntoView({
+        block: "nearest",
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
+      });
+    };
+
+    private toggle(index: number) {
+      const row = this.rows[index];
+      const trigger = row?.querySelector<HTMLButtonElement>("[data-trigger]");
+      const panel = row?.querySelector<HTMLElement>("[data-panel]");
+      if (!trigger || !panel) return;
+
+      const isOpen = trigger.getAttribute("aria-expanded") === "true";
+      trigger.setAttribute("aria-expanded", String(!isOpen));
+      panel.hidden = isOpen;
+    }
+
+    private sync() {
+      this.rows.forEach((row, index) => {
+        const active = this.navActive && index === this.selected;
+        const trigger = row.querySelector<HTMLButtonElement>("[data-trigger]");
+        const cursor = row.querySelector<HTMLElement>("[data-cursor]");
+        const title = row.querySelector<HTMLElement>("[data-title]");
+        const toggle = row.querySelector<HTMLElement>("[data-toggle]");
+        const panel = row.querySelector<HTMLElement>("[data-panel]");
+        const isOpen = trigger?.getAttribute("aria-expanded") === "true";
+
+        cursor?.classList.toggle("text-accent", active);
+        cursor?.classList.toggle("text-transparent", !active);
+        cursor?.classList.toggle("animate-blink", active);
+        title?.classList.toggle("text-accent", active);
+        title?.classList.toggle("text-foreground", !active);
+        if (toggle) toggle.textContent = isOpen ? "[-]" : "[+]";
+        if (panel) panel.hidden = !isOpen;
+      });
+    }
+  }
+
+  if (!customElements.get("experience-console")) {
+    customElements.define("experience-console", ExperienceConsole);
+  }
+</script>

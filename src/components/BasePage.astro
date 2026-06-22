@@ -1,17 +1,15 @@
 ---
 import Header from "./Header.astro";
 import Footer from "./Footer.astro";
-import ThemeInit from "./ThemeInit.astro";
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
-    <ThemeInit />
     <slot name="head" />
   </head>
   <body>
-    <div class="relative z-10 mb-(--footer-height) min-h-screen bg-background">
+    <div class="min-h-dvh bg-background">
       <Header />
       <slot />
     </div>

@@ -1,0 +1,94 @@
+---
+interface Props {
+  href: string;
+  label: string;
+  external?: boolean;
+  class?: string;
+}
+
+const {
+  href,
+  label,
+  external = href.startsWith("http"),
+  class: className,
+} = Astro.props;
+---
+
+<scramble-link class:list={["inline-block", className]}>
+  <a
+    href={href}
+    target={external ? "_blank" : undefined}
+    rel={external ? "noreferrer noopener" : undefined}
+  >
+    <span class="tabular-nums" data-scramble-text>{label}</span>
+    {external && <span aria-hidden="true"> ↗</span>}
+  </a>
+</scramble-link>
+
+<script>
+  const GLYPHS = "!<>-_\\/[]{}—=+*^?#________";
+
+  class ScrambleLink extends HTMLElement {
+    private frame = 0;
+    private text = "";
+    private reduceMotion = false;
+
+    connectedCallback() {
+      const target = this.querySelector<HTMLElement>("[data-scramble-text]");
+      if (!target) return;
+
+      this.text = target.textContent ?? "";
+      this.reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      this.addEventListener("mouseenter", this.start);
+      this.addEventListener("mouseleave", this.stop);
+      this.addEventListener("focusin", this.start);
+      this.addEventListener("focusout", this.stop);
+    }
+
+    disconnectedCallback() {
+      this.stop();
+      this.removeEventListener("mouseenter", this.start);
+      this.removeEventListener("mouseleave", this.stop);
+      this.removeEventListener("focusin", this.start);
+      this.removeEventListener("focusout", this.stop);
+    }
+
+    private start = () => {
+      if (this.reduceMotion) return;
+      const target = this.querySelector<HTMLElement>("[data-scramble-text]");
+      if (!target) return;
+
+      const startedAt = performance.now();
+      const duration = 360;
+      const tick = (now: number) => {
+        const progress = Math.min((now - startedAt) / duration, 1);
+        const settled = Math.floor(progress * this.text.length);
+
+        target.textContent = Array.from(this.text, (char, index) => {
+          if (index < settled || char === " ") return char;
+          return GLYPHS[(Math.random() * GLYPHS.length) | 0];
+        }).join("");
+
+        if (progress < 1) this.frame = requestAnimationFrame(tick);
+        else target.textContent = this.text;
+      };
+
+      this.stop();
+      this.frame = requestAnimationFrame(tick);
+    };
+
+    private stop = () => {
+      if (this.frame) cancelAnimationFrame(this.frame);
+      this.frame = 0;
+      const target = this.querySelector<HTMLElement>("[data-scramble-text]");
+      if (target) target.textContent = this.text;
+    };
+  }
+
+  if (!customElements.get("scramble-link")) {
+    customElements.define("scramble-link", ScrambleLink);
+  }
+</script>

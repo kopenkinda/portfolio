@@ -1,23 +1,30 @@
 ---
-import { USER, IS_TEMPLATE_AUTHOR } from "../consts";
+import { USER } from "../consts";
+import ScrambleLink from "./ScrambleLink.astro";
 
 const year = new Date().getFullYear();
+const email = USER.socials.find((social) => social.label === "mail")?.href;
 ---
 
-<footer
-  class="fixed inset-x-0 bottom-0 z-0 flex h-(--footer-height) items-center justify-center bg-accent px-4 text-center font-headline text-sm font-black text-accent-foreground dark:font-bold"
->
-  <div>
-    <p>&copy; {year} {USER.name}</p>
-    {
-      !IS_TEMPLATE_AUTHOR && (
-        <p class="text-muted/40">
-          Source:{" "}
-          <a href="https://github.com/kopenkinda/portfolio">
-            kopenkinda/portfolio
-          </a>
-        </p>
-      )
-    }
+<footer class="mx-auto max-w-3xl px-5 pt-6 pb-10 text-xs text-muted-foreground">
+  <div class="border-t border-border pt-6">
+    <p>
+      <span class="text-accent">$</span> echo "let's build something" —
+      {
+        email && (
+          <ScrambleLink
+            href={email}
+            label={email.replace("mailto:", "")}
+            external={false}
+          />
+        )
+      }
+    </p>
+    <p class="mt-2">
+      © {year}
+      {USER.name.toLowerCase()} · built with
+      <span class="text-foreground">astro</span>,
+      <span class="text-foreground">pretext</span>, and text only.
+    </p>
   </div>
 </footer>

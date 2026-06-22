@@ -2,31 +2,72 @@
 @plugin "@tailwindcss/typography";
 
 @theme inline {
-  --font-headline: var(--font-doto);
+  --font-sans: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-accent: var(--accent-color);
+  --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
-  --footer-height: calc(var(--spacing) * 32);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-paper: var(--background);
+  --color-ink: var(--foreground);
+
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
 }
 
-@utility font-headline {
-  font-family: var(--font-doto);
-  font-variation-settings: "ROND" 100;
+:root {
+  color-scheme: light;
+  --background: oklch(0.962 0.009 85);
+  --foreground: oklch(0.235 0.008 70);
+  --muted: oklch(0.93 0.009 85);
+  --muted-foreground: oklch(0.56 0.012 70);
+  --accent: oklch(0.52 0.13 38);
+  --accent-foreground: oklch(0.962 0.009 85);
+  --border: oklch(0.84 0.011 78);
+  --primary: oklch(0.235 0.008 70);
+  --primary-foreground: oklch(0.962 0.009 85);
+  --radius: 0px;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply bg-background font-mono;
+  }
+
+  body {
+    @apply m-0 min-h-dvh bg-background text-foreground antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    @apply text-foreground underline decoration-border decoration-dotted underline-offset-4 transition-colors hover:text-accent hover:decoration-accent focus-visible:text-accent focus-visible:decoration-accent focus-visible:outline-none;
+  }
+
+  button {
+    font: inherit;
+  }
+
+  ::selection {
+    background: var(--foreground);
+    color: var(--background);
+  }
 }
 
 @utility prose-portfolio {
   --tw-prose-body: var(--foreground);
   --tw-prose-headings: var(--foreground);
-  --tw-prose-links: var(--accent-color);
+  --tw-prose-links: var(--accent);
   --tw-prose-bold: var(--foreground);
   --tw-prose-counters: var(--muted-foreground);
   --tw-prose-bullets: var(--muted-foreground);
@@ -35,14 +76,9 @@
   --tw-prose-quote-borders: var(--border);
   --tw-prose-captions: var(--muted-foreground);
   --tw-prose-kbd: var(--foreground);
-  --tw-prose-kbd-shadows: color-mix(
-    in srgb,
-    var(--foreground) 18%,
-    transparent
-  );
   --tw-prose-code: var(--foreground);
-  --tw-prose-pre-code: var(--color-stone-100);
-  --tw-prose-pre-bg: var(--color-stone-900);
+  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-pre-bg: var(--muted);
   --tw-prose-th-borders: var(--border);
   --tw-prose-td-borders: var(--border);
 
@@ -52,143 +88,49 @@
   h4,
   h5,
   h6 {
-    @apply font-headline;
+    @apply font-mono tracking-tight;
+  }
+
+  hr {
+    @apply border-dashed;
+  }
+
+  code {
+    @apply rounded-none bg-muted px-1 py-0.5;
+  }
+
+  pre {
+    @apply rounded-none border border-border;
   }
 
   kbd {
-    --kbd-button-bg: var(--muted);
-    --kbd-button-border: color-mix(in srgb, var(--muted) 72%, black);
-    --kbd-button-depth: color-mix(in srgb, var(--muted) 72%, black);
-    --kbd-button-fg: var(--foreground);
-
-    @apply relative inline-flex translate-y-[-1px] items-center justify-center rounded-[3px] border px-2 py-1 font-headline text-[0.74em] leading-none font-black tracking-[1px] whitespace-nowrap uppercase;
-
-    border-color: var(--kbd-button-border);
-    background-color: var(--kbd-button-bg);
-    color: var(--kbd-button-fg);
-    text-shadow: 0 1px 0 rgb(255 255 255 / 0.4);
-    box-shadow:
-      inset 0 18px 18px -12px rgb(255 255 255 / 0.22),
-      inset 0 0 0 1px rgb(255 255 255 / 0.35),
-      0 2px 0 var(--kbd-button-depth),
-      0 2px 2px rgb(0 0 0 / 0.18),
-      0 4px 8px rgb(0 0 0 / 0.1);
+    @apply rounded-none border border-border bg-muted px-1.5 py-0.5 text-xs font-normal shadow-none;
   }
 
   mark {
-    --mark-fill: color-mix(in srgb, var(--accent-color) 28%, transparent);
-    --mark-stroke: color-mix(in srgb, var(--accent-color) 46%, transparent);
-
-    @apply relative -mx-0.5 px-1 font-medium text-foreground;
-
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
-    background: transparent;
-    isolation: isolate;
-  }
-
-  mark::before,
-  mark::after {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    transform: skewX(-7deg);
-    transform-origin: center;
-  }
-
-  mark::before {
-    inset: -0.05em -0.08em 0.02em -0.08em;
-    background: var(--mark-fill);
-  }
-
-  mark::after {
-    right: -0.01em;
-    bottom: -0.22em;
-    left: -0.18em;
-    height: 0.4em;
-    background: var(--mark-stroke);
+    @apply bg-muted px-1 text-foreground;
   }
 }
 
-.dark .prose-portfolio {
-  --tw-prose-body: var(--color-stone-200);
-  --tw-prose-headings: var(--color-stone-50);
-  --tw-prose-links: var(--color-teal-200);
-  --tw-prose-bold: var(--color-stone-50);
-  --tw-prose-counters: var(--color-stone-300);
-  --tw-prose-bullets: var(--color-stone-500);
-  --tw-prose-hr: var(--color-stone-700);
-  --tw-prose-quotes: var(--color-stone-100);
-  --tw-prose-quote-borders: var(--color-stone-700);
-  --tw-prose-captions: var(--color-stone-300);
-  --tw-prose-kbd: var(--color-stone-50);
-  --tw-prose-code: var(--color-stone-50);
-  --tw-prose-th-borders: var(--color-stone-600);
-  --tw-prose-td-borders: var(--color-stone-700);
-}
+@layer utilities {
+  @keyframes blink {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
 
-.dark .prose-portfolio kbd {
-  --kbd-button-border: color-mix(in srgb, var(--muted) 88%, white);
-  --kbd-button-depth: color-mix(in srgb, var(--muted) 82%, white);
+  .animate-blink {
+    animation: blink 1.05s steps(1) infinite;
+  }
 
-  font-weight: var(--font-weight-bold);
-  text-shadow: none;
-}
-
-.dark .prose-portfolio mark {
-  --mark-fill: color-mix(in srgb, var(--accent-color) 24%, transparent);
-  --mark-stroke: color-mix(in srgb, var(--accent-color) 42%, transparent);
-}
-
-@custom-variant dark (&:where(.dark, .dark *));
-
-:root {
-  color-scheme: light;
-  --background: var(--color-stone-50);
-  --foreground: var(--color-stone-900);
-  --muted: var(--color-stone-100);
-  --muted-foreground: var(--color-stone-600);
-  --card: var(--color-white);
-  --card-foreground: var(--color-stone-900);
-  --primary: var(--color-stone-800);
-  --primary-foreground: var(--color-stone-50);
-  --accent-color: var(--color-teal-700);
-  --accent-foreground: var(--color-white);
-  --border: var(--color-stone-200);
-
-  --black: 15 23 42;
-  --gray-dark: 51 65 85;
-  --gray: 100 116 139;
-  --accent: 15 118 110;
-}
-
-.dark {
-  color-scheme: dark;
-  --background: var(--color-stone-950);
-  --foreground: var(--color-stone-100);
-  --muted: var(--color-stone-900);
-  --muted-foreground: var(--color-stone-400);
-  --card: var(--color-stone-900);
-  --card-foreground: var(--color-stone-100);
-  --primary: var(--color-stone-200);
-  --primary-foreground: var(--color-stone-950);
-  --accent-color: var(--color-teal-300);
-  --accent-foreground: var(--color-stone-950);
-  --border: var(--color-stone-800);
-
-  --black: 241 245 249;
-  --gray-dark: 203 213 225;
-  --gray: 148 163 184;
-  --accent: 94 234 212;
-}
-
-html {
-  background-color: var(--background);
-}
-
-body {
-  min-height: 100vh;
-  margin: 0;
-  background-color: var(--background);
-  color: var(--foreground);
+  @media (prefers-reduced-motion: reduce) {
+    .animate-blink {
+      animation: none;
+    }
+  }
 }

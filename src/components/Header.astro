@@ -1,48 +1,32 @@
 ---
+import { BLOG } from "../consts";
+import ScrambleLink from "./ScrambleLink.astro";
+
 const pathname = Astro.url.pathname;
 const isBlogActive = pathname === "/blog/" || pathname.startsWith("/blog/");
-import { BLOG } from "../consts";
-import Button from "./Button.astro";
-import ThemeToggle from "./ThemeToggle.astro";
 ---
 
 <header
-  id="site-header"
-  class="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur transition-all duration-300"
+  class="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur"
 >
-  <link rel="prefetch" href="/blog/" />
   <nav
-    class="container mx-auto flex items-center justify-between px-4 py-5 transition-all duration-300 sm:px-6"
-    aria-label="Primary navigation"
+    class="mx-auto flex max-w-3xl items-center justify-between px-5 py-2 text-xs text-muted-foreground"
+    aria-label="primary navigation"
   >
-    <a class="font-headline text-xl font-bold text-foreground" href="/"> DK </a>
-
-    <div class="flex items-center gap-2">
-      <ThemeToggle />
-      <Button
+    <a href="/" class="no-underline">
+      <span class="text-foreground">~</span>/kopenkin.tech
+    </a>
+    <div class="flex items-center gap-4">
+      <span class="hidden sm:inline">
+        <span class="text-foreground">↑↓</span>/<span class="text-foreground"
+          >jk</span
+        > move · <span class="text-foreground">enter</span> expand
+      </span>
+      <ScrambleLink
         href={isBlogActive ? "/" : "/blog/"}
-        data-astro-prefetch
-        variant="ghost"
-        size="sm"
-      >
-        {isBlogActive ? "Home" : BLOG.title}
-      </Button>
+        label={isBlogActive ? "home" : BLOG.title.toLowerCase()}
+        external={false}
+      />
     </div>
   </nav>
 </header>
-
-<script>
-  const header = document.querySelector("#site-header");
-  const nav = header?.querySelector("nav");
-
-  const syncHeader = () => {
-    const isCompact = window.scrollY > 24;
-
-    header?.classList.toggle("shadow-sm", isCompact);
-    nav?.classList.toggle("py-5", !isCompact);
-    nav?.classList.toggle("py-3", isCompact);
-  };
-
-  syncHeader();
-  window.addEventListener("scroll", syncHeader, { passive: true });
-</script>

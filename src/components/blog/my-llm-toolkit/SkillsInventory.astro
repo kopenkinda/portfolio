@@ -53,20 +53,21 @@ const skills: Array<{
     name: "web-design-guidelines",
     source: "Vercel",
     href: "https://skills.sh/vercel-labs/agent-skills/web-design-guidelines",
-    description: "Reviews web UI quality, accessibility, and interaction polish.",
+    description:
+      "Reviews web UI quality, accessibility, and interaction polish.",
   },
 ];
 
 const sources = ["All", "Matt Pocock", "Anthropic", "Vercel"] as const;
 ---
 
-<skills-inventory
-  class="my-8 block border border-border bg-card p-4 shadow-[6px_6px_0_var(--border)]"
->
-  <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+<skills-inventory class="my-8 block border-y border-dashed border-border py-4">
+  <div
+    class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
+  >
     <div class="space-y-1">
       <p
-        class="m-0 font-headline text-sm font-black text-accent uppercase dark:font-bold"
+        class="m-0 font-mono text-sm font-bold tracking-widest text-accent uppercase"
       >
         Skills inventory
       </p>
@@ -78,12 +79,12 @@ const sources = ["All", "Matt Pocock", "Anthropic", "Vercel"] as const;
       {
         sources.map((source) => (
           <button
-            class="border border-border bg-background px-2.5 py-1.5 font-headline text-xs font-black text-foreground uppercase shadow-[3px_3px_0_var(--border)] transition-transform duration-150 hover:-translate-y-0.5 data-[active=true]:border-accent data-[active=true]:bg-accent data-[active=true]:text-accent-foreground dark:font-bold"
+            class="bg-transparent p-0 text-xs text-muted-foreground uppercase underline decoration-border decoration-dotted underline-offset-4 hover:text-accent data-[active=true]:text-accent"
             type="button"
             data-filter={source}
             data-active={source === "All" ? "true" : "false"}
           >
-            {source}
+            [{source}]
           </button>
         ))
       }
@@ -94,7 +95,7 @@ const sources = ["All", "Matt Pocock", "Anthropic", "Vercel"] as const;
     {
       skills.map((skill) => (
         <a
-          class="block border border-border bg-background p-3 no-underline transition-transform duration-150 hover:-translate-y-0.5 hover:text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          class="block border-l border-border py-1 pl-3 no-underline hover:text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           href={skill.href}
           target="_blank"
           rel="noreferrer"
@@ -104,7 +105,7 @@ const sources = ["All", "Matt Pocock", "Anthropic", "Vercel"] as const;
             <h3 class="m-0 font-mono text-sm font-bold text-foreground">
               {skill.name}
             </h3>
-            <p class="m-0 font-headline text-xs font-black text-accent uppercase dark:font-bold">
+            <p class="m-0 font-mono text-xs font-bold text-accent uppercase">
               {skill.source}
             </p>
           </div>
@@ -122,23 +123,30 @@ const sources = ["All", "Matt Pocock", "Anthropic", "Vercel"] as const;
     private filter = "All";
 
     connectedCallback() {
-      this.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((button) => {
-        button.addEventListener("click", () => {
-          this.filter = button.dataset.filter ?? "All";
-          this.update();
-        });
-      });
+      this.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach(
+        (button) => {
+          button.addEventListener("click", () => {
+            this.filter = button.dataset.filter ?? "All";
+            this.update();
+          });
+        },
+      );
 
       this.update();
     }
 
     private update() {
-      this.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((button) => {
-        button.dataset.active = String((button.dataset.filter ?? "All") === this.filter);
-      });
+      this.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach(
+        (button) => {
+          button.dataset.active = String(
+            (button.dataset.filter ?? "All") === this.filter,
+          );
+        },
+      );
 
       this.querySelectorAll<HTMLElement>("[data-source]").forEach((item) => {
-        item.hidden = this.filter !== "All" && item.dataset.source !== this.filter;
+        item.hidden =
+          this.filter !== "All" && item.dataset.source !== this.filter;
       });
     }
   }

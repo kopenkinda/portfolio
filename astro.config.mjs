@@ -8,25 +8,18 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://example.com",
+  site: "https://kopenkin.tech",
   integrations: [mdx(), sitemap()],
 
   fonts: [
     {
       provider: fontProviders.google(),
-      name: "Doto",
-      cssVariable: "--font-doto",
-      weights: ["100 900"],
+      name: "JetBrains Mono",
+      cssVariable: "--font-jetbrains-mono",
+      weights: [400, 500, 700],
       styles: ["normal"],
       subsets: ["latin"],
-      fallbacks: ["sans-serif"],
-      options: {
-        experimental: {
-          variableAxis: {
-            ROND: [["0", "100"]],
-          },
-        },
-      },
+      fallbacks: ["monospace"],
     },
   ],
 

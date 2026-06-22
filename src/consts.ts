@@ -7,8 +7,9 @@ import yekaterinburgPhoto from "./assets/globe/yekaterinburg.jpg";
 
 export const CONFIG: PortfolioConfig = {
   meta: {
-    title: "Kopenkin Dmitrii | Full-Stack AI Developer",
-    description: "Welcome to my website!",
+    title: "kopenkin dmitrii — full-stack ai developer",
+    description:
+      "A minimal, text-first portfolio for Kopenkin Dmitrii: full-stack AI developer working with TypeScript, React, Postgres, Python, and product prototypes.",
     experienceStartDate: new Date("2017-01-01"),
   },
   game: {
