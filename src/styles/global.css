@@ -76,6 +76,14 @@
 }
 
 @layer base {
+  .theme-commit,
+  .theme-commit *,
+  .theme-commit *::before,
+  .theme-commit *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
   * {
     @apply border-border;
   }

@@ -118,7 +118,7 @@
       window.setTimeout(() => {
         cancelAnimationFrame(frame);
         scrambleFragments.forEach((fragment) => fragment.element.remove());
-        this.setTheme(next);
+        this.commitTheme(next);
         overlay.remove();
         sweep.remove();
         ThemeSwitcher.transitionRunning = false;
@@ -139,6 +139,17 @@
       document.documentElement.dataset.theme = theme;
       localStorage.setItem(this.storageKey, theme);
       this.syncLabel();
+    }
+
+    private commitTheme(theme: "dark" | "light") {
+      document.documentElement.classList.add("theme-commit");
+      this.setTheme(theme);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.documentElement.classList.remove("theme-commit");
+        });
+      });
     }
 
     private syncLabel() {
