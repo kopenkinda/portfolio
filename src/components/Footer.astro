@@ -20,10 +20,6 @@ const email = USER.socials.find((social) => social.label === "mail")?.href;
         )
       }
     </p>
-    <p class="mt-2">
-      © {year}{" "}
-      {USER.name.toLowerCase()} · built with{" "}
-      <span class="text-foreground">astro</span> and text only.
-    </p>
+    <p class="mt-2">© {year} {USER.name.toLowerCase()}</p>
   </div>
 </footer>
