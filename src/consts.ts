@@ -73,7 +73,7 @@ export const USER = {
       href: "https://t.me/leroifrancais",
       notracking: true,
     },
-    { icon: "mail", label: "mail", href: "mailto:kopenkin.da@gmail.com" },
+    { icon: "mail", label: "mail", href: "mailto:hi@kopenkin.tech" },
     {
       icon: "linkedin",
       label: "linkedin",
