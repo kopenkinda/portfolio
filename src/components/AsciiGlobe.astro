@@ -45,7 +45,10 @@ const placeholder = [
 const placeholderHtml = placeholder
   .map((line) =>
     line
-      .replaceAll(".", '<span class="text-[#3b82f6]">.</span>')
+      .replaceAll(
+        ".",
+        '<span class="text-[#3b82f6]" data-theme-scramble-target>.</span>',
+      )
       .replaceAll("@", '<span class="text-accent">@</span>'),
   )
   .join("\n");
@@ -76,6 +79,7 @@ const placeholderHtml = placeholder
     style="transform: translateY(var(--placeholder-offset))"
     aria-hidden="true"
     data-placeholder
+    data-theme-scramble-scope
     set:html={placeholderHtml}
   />
 </ascii-globe>
@@ -236,7 +240,10 @@ const placeholderHtml = placeholder
       this.placeholder.innerHTML = lines
         .map((line) =>
           line
-            .replaceAll(".", '<span class="text-[#3b82f6]">.</span>')
+            .replaceAll(
+              ".",
+              '<span class="text-[#3b82f6]" data-theme-scramble-target>.</span>',
+            )
             .replaceAll(
               this.marker,
               `<span class="text-accent">${this.marker}</span>`,

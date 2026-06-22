@@ -301,6 +301,13 @@
             return NodeFilter.FILTER_REJECT;
           }
 
+          if (
+            parent.closest("[data-theme-scramble-scope]") &&
+            !parent.closest("[data-theme-scramble-target]")
+          ) {
+            return NodeFilter.FILTER_REJECT;
+          }
+
           const style = getComputedStyle(parent);
           if (
             style.display === "none" ||
