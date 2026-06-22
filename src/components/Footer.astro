@@ -1,5 +1,5 @@
 ---
-import { USER } from "../consts";
+import { CONFIG, USER } from "../consts";
 import ScrambleLink from "./ScrambleLink.astro";
 
 const year = new Date().getFullYear();
@@ -9,7 +9,8 @@ const email = USER.socials.find((social) => social.label === "mail")?.href;
 <footer class="mx-auto max-w-3xl px-5 pt-6 pb-10 text-xs text-muted-foreground">
   <div class="border-t border-border pt-6">
     <p>
-      <span class="text-accent">$</span> echo "let's build something" —
+      <span class="text-accent">$</span>{" "}
+      {CONFIG.ui.footerCommand} —{" "}
       {
         email && (
           <ScrambleLink
@@ -20,6 +21,6 @@ const email = USER.socials.find((social) => social.label === "mail")?.href;
         )
       }
     </p>
-    <p class="mt-2">© {year} {USER.name.toLowerCase()}</p>
+    <p class="mt-2">© {year}{" "}{USER.name.toLowerCase()}</p>
   </div>
 </footer>

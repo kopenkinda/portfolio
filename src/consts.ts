@@ -10,7 +10,20 @@ export const CONFIG: PortfolioConfig = {
     title: "kopenkin dmitrii — full-stack ai developer",
     description:
       "A minimal, text-first portfolio for Kopenkin Dmitrii: full-stack AI developer working with TypeScript, React, Postgres, Python, and product prototypes.",
+    siteLabel: "kopenkin.tech",
     experienceStartDate: new Date("2017-01-01"),
+  },
+  ui: {
+    terminalCommand: "whoami",
+    footerCommand: `echo "let's build something"`,
+    keyboardHint: {
+      move: "↑↓/jk",
+      moveLabel: "focus",
+      action: "enter",
+      actionLabel: "activate",
+      theme: "t",
+      themeLabel: "theme",
+    },
   },
   game: {
     title: "Take a little break",
@@ -34,7 +47,9 @@ const iota = () => id++;
 
 export const USER = {
   name: "Kopenkin Dmitrii",
-  headline: `For ${new Date().getFullYear() - CONFIG.meta.experienceStartDate.getFullYear()} years I've been stacking TypeScript, React, Next.js, Postgres, and now AI into digital playgrounds - where every click feels inevitable, nothing breaks when you're not looking, and the software sometimes thinks ahead of you.`,
+  role: "full-stack ai developer",
+  location: "andorra",
+  headline: `For ${new Date().getFullYear() - CONFIG.meta.experienceStartDate.getFullYear()} years i've been stacking typescript, react, next.js, postgres, and now ai into digital playgrounds - where every click feels inevitable, nothing breaks when you're not looking, and the software sometimes thinks ahead of you.`,
   socials: [
     { icon: "file", label: "cv", href: "/dmitrii-kopenkin-cv.pdf" },
     {
@@ -371,7 +386,20 @@ export type PortfolioConfig = {
   meta: {
     title: string;
     description: string;
+    siteLabel: string;
     experienceStartDate: Date;
+  };
+  ui: {
+    terminalCommand: string;
+    footerCommand: string;
+    keyboardHint: {
+      move: string;
+      moveLabel: string;
+      action: string;
+      actionLabel: string;
+      theme: string;
+      themeLabel: string;
+    };
   };
   game: {
     enabled: boolean;

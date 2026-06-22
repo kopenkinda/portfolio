@@ -1,5 +1,5 @@
 ---
-import { BLOG } from "../consts";
+import { BLOG, CONFIG } from "../consts";
 import ScrambleLink from "./ScrambleLink.astro";
 import ThemeSwitcher from "./ThemeSwitcher.astro";
 
@@ -14,18 +14,24 @@ const isBlogActive = pathname === "/blog/" || pathname.startsWith("/blog/");
     class="mx-auto flex max-w-3xl items-center justify-between px-5 py-2 text-xs text-muted-foreground"
     aria-label="primary navigation"
   >
-    <a href="/" class="no-underline">
-      <span class="text-foreground">~</span>/kopenkin.tech
-    </a>
+    <ScrambleLink
+      href="/"
+      label={`~/${CONFIG.meta.siteLabel}`}
+      external={false}
+    />
     <div class="flex items-center gap-4">
       <span class="hidden sm:inline">
-        <span class="text-foreground">↑↓</span>/<span class="text-foreground"
-          >jk</span
-        > focus · <span class="text-foreground">enter</span> activate
+        <span class="text-foreground">{CONFIG.ui.keyboardHint.move}</span>{" "}
+        {CONFIG.ui.keyboardHint.moveLabel} ·{" "}
+        <span class="text-foreground">{CONFIG.ui.keyboardHint.action}</span>{
+          " "
+        }
+        {CONFIG.ui.keyboardHint.actionLabel}
       </span>
       <span class="hidden text-border sm:inline" aria-hidden="true">·</span>
       <span class="hidden sm:inline">
-        <span class="text-foreground">t</span> theme
+        <span class="text-foreground">{CONFIG.ui.keyboardHint.theme}</span>{" "}
+        {CONFIG.ui.keyboardHint.themeLabel}
       </span>
       <ThemeSwitcher />
       <ScrambleLink
