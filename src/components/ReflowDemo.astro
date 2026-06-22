@@ -39,10 +39,12 @@ const { text, fontSize = 15, lineHeightRatio = 1.7 } = Astro.props;
   <p class="mt-3 text-xs leading-relaxed text-muted-foreground">
     <span class="text-accent">// </span>drag the
     <span class="text-foreground">┆</span> edge — relaid live by
-    <span class="text-foreground">pretext</span>, no DOM reflow.
-    <span class="text-foreground" data-width>0px</span>
-    (<span class="text-foreground" data-percent>0%</span>) ·
-    <span class="text-foreground" data-lines>0</span> lines · widest
+    <span class="text-foreground">pretext</span>, no DOM reflow.{" "}<span
+      class="text-foreground"
+      data-width>0px</span
+    >{" "}
+    (<span class="text-foreground" data-percent>0%</span>) ·{" "}
+    <span class="text-foreground" data-lines>0</span> lines · widest{" "}
     <span class="text-foreground" data-widest>0px</span>
   </p>
 </pretext-reflow-demo>
