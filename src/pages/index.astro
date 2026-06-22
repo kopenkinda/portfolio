@@ -2,7 +2,6 @@
 import BaseHead from "../components/BaseHead.astro";
 import BasePage from "../components/BasePage.astro";
 import ExperienceConsole from "../components/ExperienceConsole.astro";
-import ReflowDemo from "../components/ReflowDemo.astro";
 import ScrambleLink from "../components/ScrambleLink.astro";
 import SectionLabel from "../components/SectionLabel.astro";
 import { CONFIG, USER } from "../consts";
@@ -41,7 +40,6 @@ const bio = USER.headline
         class="text-3xl leading-tight font-bold tracking-tight text-pretty text-foreground sm:text-4xl"
       >
         {USER.name.toLowerCase()}
-        <span class="animate-blink text-accent">█</span>
       </h1>
       <p class="mt-3 text-sm text-muted-foreground">
         full-stack ai developer
@@ -80,7 +78,11 @@ const bio = USER.headline
 
     <section class="mt-12">
       <SectionLabel label="BIO" />
-      <ReflowDemo text={bio} />
+      <p
+        class="max-w-[64ch] text-sm leading-relaxed text-pretty text-foreground/90"
+      >
+        {bio}
+      </p>
     </section>
 
     <section class="mt-14">
