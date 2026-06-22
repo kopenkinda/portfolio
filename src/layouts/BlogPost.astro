@@ -6,6 +6,7 @@ import FormattedDate from "../components/FormattedDate.astro";
 import Header from "../components/Header.astro";
 import KeyboardNavigator from "../components/KeyboardNavigator.astro";
 import ScrambleLink from "../components/ScrambleLink.astro";
+import ThemeInit from "../components/ThemeInit.astro";
 import { CONFIG } from "../consts";
 
 type Props = CollectionEntry<"blog">["data"];
@@ -16,6 +17,7 @@ const { title, description, pubDate, updatedDate } = Astro.props;
 <!doctype html>
 <html lang="en">
   <head>
+    <ThemeInit />
     <BaseHead
       title={`${title} | ${CONFIG.meta.title}`}
       description={description}

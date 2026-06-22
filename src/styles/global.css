@@ -36,6 +36,45 @@
   --radius: 0px;
 }
 
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.18 0.008 70);
+  --foreground: oklch(0.9 0.01 85);
+  --muted: oklch(0.23 0.008 70);
+  --muted-foreground: oklch(0.68 0.01 82);
+  --accent: oklch(0.69 0.13 42);
+  --accent-foreground: oklch(0.18 0.008 70);
+  --border: oklch(0.34 0.01 76);
+  --primary: oklch(0.9 0.01 85);
+  --primary-foreground: oklch(0.18 0.008 70);
+}
+
+.theme-preview-light {
+  color-scheme: light;
+  --background: oklch(0.962 0.009 85);
+  --foreground: oklch(0.235 0.008 70);
+  --muted: oklch(0.93 0.009 85);
+  --muted-foreground: oklch(0.56 0.012 70);
+  --accent: oklch(0.52 0.13 38);
+  --accent-foreground: oklch(0.962 0.009 85);
+  --border: oklch(0.84 0.011 78);
+  --primary: oklch(0.235 0.008 70);
+  --primary-foreground: oklch(0.962 0.009 85);
+}
+
+.theme-preview-dark {
+  color-scheme: dark;
+  --background: oklch(0.18 0.008 70);
+  --foreground: oklch(0.9 0.01 85);
+  --muted: oklch(0.23 0.008 70);
+  --muted-foreground: oklch(0.68 0.01 82);
+  --accent: oklch(0.69 0.13 42);
+  --accent-foreground: oklch(0.18 0.008 70);
+  --border: oklch(0.34 0.01 76);
+  --primary: oklch(0.9 0.01 85);
+  --primary-foreground: oklch(0.18 0.008 70);
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -61,6 +100,18 @@
   ::selection {
     background: var(--foreground);
     color: var(--background);
+  }
+
+  .theme-sweep {
+    @apply fixed inset-x-0 top-0 z-[9999] h-[1.65rem] overflow-hidden border-y border-accent bg-accent px-5 font-mono text-xs leading-[1.65rem] whitespace-nowrap text-accent-foreground;
+    animation: theme-sweep 420ms steps(18) forwards;
+    pointer-events: none;
+  }
+
+  .theme-reveal-overlay {
+    @apply fixed inset-0 z-[9998] overflow-hidden bg-background text-foreground;
+    animation: theme-reveal 420ms steps(18) forwards;
+    pointer-events: none;
   }
 }
 
@@ -128,8 +179,36 @@
     animation: blink 1.05s steps(1) infinite;
   }
 
+  @keyframes theme-sweep {
+    from {
+      transform: translateY(-100%);
+    }
+
+    to {
+      transform: translateY(100vh);
+    }
+  }
+
+  @keyframes theme-reveal {
+    from {
+      clip-path: inset(0 0 100% 0);
+    }
+
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-blink {
+      animation: none;
+    }
+
+    .theme-sweep {
+      animation: none;
+    }
+
+    .theme-reveal-overlay {
       animation: none;
     }
   }

@@ -2,11 +2,13 @@
 import Header from "./Header.astro";
 import Footer from "./Footer.astro";
 import KeyboardNavigator from "./KeyboardNavigator.astro";
+import ThemeInit from "./ThemeInit.astro";
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
+    <ThemeInit />
     <slot name="head" />
   </head>
   <body>

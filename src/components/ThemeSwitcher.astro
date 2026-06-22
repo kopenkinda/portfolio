@@ -1,0 +1,193 @@
+<theme-switcher class="inline-flex">
+  <button
+    type="button"
+    class="bg-transparent p-0 text-foreground underline decoration-border decoration-dotted underline-offset-4 outline-none hover:text-accent hover:decoration-accent focus-visible:text-accent focus-visible:decoration-accent"
+    aria-label="toggle dark mode"
+    data-theme-toggle
+  >
+    theme:<span data-theme-label>light</span>
+  </button>
+</theme-switcher>
+
+<script>
+  const GLYPHS = "!<>-_\\/[]{}—=+*^?#0123456789";
+
+  class ThemeSwitcher extends HTMLElement {
+    private button?: HTMLButtonElement;
+    private label?: HTMLElement;
+    private running = false;
+    private readonly storageKey = "theme";
+
+    connectedCallback() {
+      this.button = this.querySelector("[data-theme-toggle]") ?? undefined;
+      this.label = this.querySelector("[data-theme-label]") ?? undefined;
+
+      this.syncLabel();
+      this.button?.addEventListener("click", this.toggle);
+      window.addEventListener("keydown", this.onKeyDown);
+    }
+
+    disconnectedCallback() {
+      this.button?.removeEventListener("click", this.toggle);
+      window.removeEventListener("keydown", this.onKeyDown);
+    }
+
+    private onKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() !== "t" ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        this.isTyping(event.target)
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      this.toggle();
+    };
+
+    private toggle = () => {
+      if (this.running) return;
+
+      const current = this.currentTheme();
+      const next = current === "dark" ? "light" : "dark";
+      const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      if (reducedMotion) {
+        this.setTheme(next);
+        return;
+      }
+
+      this.running = true;
+      this.button?.setAttribute("aria-busy", "true");
+
+      const root =
+        document.querySelector<HTMLElement>("keyboard-navigator") ??
+        document.body;
+      const clone = root.cloneNode(true) as HTMLElement;
+      clone.querySelectorAll("[data-theme-label]").forEach((label) => {
+        label.textContent = next;
+      });
+      const overlay = document.createElement("div");
+      const overlayInner = document.createElement("div");
+
+      overlay.className = `theme-reveal-overlay theme-preview-${next}`;
+      overlay.setAttribute("aria-hidden", "true");
+      overlayInner.style.transform = `translateY(-${window.scrollY}px)`;
+      overlayInner.append(clone);
+      overlay.append(overlayInner);
+      document.body.append(overlay);
+
+      const sweep = document.createElement("div");
+      sweep.className = "theme-sweep";
+      sweep.setAttribute("aria-hidden", "true");
+      sweep.textContent = this.randomLine();
+      document.body.append(sweep);
+
+      const textNodes = this.collectTextNodes(clone, {
+        includeAriaHidden: true,
+      });
+      const originals = new Map<Text, string>();
+      textNodes.forEach((node) => originals.set(node, node.data));
+
+      let frame = 0;
+      const scramble = () => {
+        textNodes.forEach((node) => {
+          const original = originals.get(node);
+          if (original) node.data = this.scrambleText(original);
+        });
+        frame = requestAnimationFrame(scramble);
+      };
+
+      scramble();
+      window.setTimeout(() => {
+        cancelAnimationFrame(frame);
+        originals.forEach((original, node) => {
+          node.data = original;
+        });
+        this.setTheme(next);
+        overlay.remove();
+        sweep.remove();
+        this.running = false;
+        this.button?.removeAttribute("aria-busy");
+        this.syncLabel();
+      }, 420);
+    };
+
+    private currentTheme() {
+      return document.documentElement.dataset.theme === "dark"
+        ? "dark"
+        : "light";
+    }
+
+    private setTheme(theme: "dark" | "light") {
+      document.documentElement.classList.toggle("dark", theme === "dark");
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem(this.storageKey, theme);
+      this.syncLabel();
+    }
+
+    private syncLabel() {
+      if (this.label) this.label.textContent = this.currentTheme();
+    }
+
+    private collectTextNodes(
+      root: Node,
+      options: { includeAriaHidden?: boolean } = {},
+    ) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode: (node) => {
+          const parent = node.parentElement;
+          if (!parent || !node.textContent?.trim()) {
+            return NodeFilter.FILTER_REJECT;
+          }
+
+          const ignoredSelector = options.includeAriaHidden
+            ? "script, style, noscript, svg, canvas, .theme-sweep"
+            : "script, style, noscript, svg, canvas, [aria-hidden='true'], .theme-sweep";
+
+          if (parent.closest(ignoredSelector)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+
+          return NodeFilter.FILTER_ACCEPT;
+        },
+      });
+
+      const nodes: Text[] = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode as Text);
+      return nodes;
+    }
+
+    private scrambleText(text: string) {
+      return Array.from(text, (char) =>
+        /\s/.test(char) ? char : GLYPHS[(Math.random() * GLYPHS.length) | 0],
+      ).join("");
+    }
+
+    private randomLine() {
+      const length = Math.ceil(window.innerWidth / 8);
+      return Array.from(
+        { length },
+        () => GLYPHS[(Math.random() * GLYPHS.length) | 0],
+      ).join("");
+    }
+
+    private isTyping(target: EventTarget | null) {
+      return (
+        target instanceof HTMLElement &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      );
+    }
+  }
+
+  if (!customElements.get("theme-switcher")) {
+    customElements.define("theme-switcher", ThemeSwitcher);
+  }
+</script>
