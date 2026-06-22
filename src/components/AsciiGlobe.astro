@@ -218,6 +218,7 @@ const placeholderHtml = placeholder
           if (this.canvas) this.canvas.style.opacity = "1";
         });
         window.setTimeout(() => {
+          this.style.setProperty("--placeholder-offset", "-0.225em");
           if (this.placeholder) this.placeholder.style.opacity = "0";
           this.canSyncPlaceholder = true;
           this.syncPlaceholder(lines);
