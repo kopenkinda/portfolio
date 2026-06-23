@@ -17,8 +17,10 @@ interface Props extends BlogData {
   reading?: string;
 }
 
-const { title, description, pubDate, reading, tags, ogImage } = Astro.props;
-const updatedDate = Astro.props.updatedDate;
+const { title, description, pubDate, updatedDate, reading, tags, ogImage } =
+  Astro.props;
+const slug = Astro.props.slug;
+const ogImageSrc = ogImage ?? `/og/${slug}.png`;
 ---
 
 <!doctype html>
@@ -28,7 +30,8 @@ const updatedDate = Astro.props.updatedDate;
     <BaseHead
       title={`${title} — ${CONFIG.meta.title}`}
       description={description}
-      image={ogImage}
+      image={ogImageSrc}
+      imageAlt={title}
       ogType="article"
     />
     <meta property="article:published_time" content={pubDate.toISOString()} />
