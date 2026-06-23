@@ -2,7 +2,7 @@
 const { src = "", alt = "", class: className, ...attrs } = Astro.props;
 ---
 
-<span class="my-6 block">
+<span class="my-6 block" data-theme-transition-static>
   <img
     {...attrs}
     src={src}

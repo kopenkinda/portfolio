@@ -13,6 +13,22 @@
   const GLYPHS = "!<>-_\\/[]{}=+*^?#0123456789";
   const REVEAL_DURATION_MS = 420;
   const SCRAMBLE_DURATION_MS = 260;
+  const THEME_TRANSITION_BASE_IGNORED_SELECTOR = [
+    "script",
+    "style",
+    "noscript",
+    "svg",
+    "canvas",
+    ".sr-only",
+    "[hidden]",
+    "[data-fallback]",
+    ".theme-sweep",
+    ".theme-scramble-layer",
+  ].join(",");
+  const THEME_TRANSITION_STATIC_SELECTOR = [
+    "[data-theme-transition-static]",
+    "[data-theme-transition-rich-static] :is(img, picture, video, iframe, pre, code, figure[data-rehype-pretty-code-figure], .astro-code)",
+  ].join(",");
 
   class ThemeSwitcher extends HTMLElement {
     private static transitionRunning = false;
@@ -71,7 +87,7 @@
       const root =
         document.querySelector<HTMLElement>("keyboard-navigator") ??
         document.body;
-      const clone = this.freezeClone(root.cloneNode(true) as HTMLElement);
+      const clone = this.freezeClone(root.cloneNode(true) as HTMLElement, root);
       clone.querySelectorAll("[data-theme-label]").forEach((label) => {
         label.textContent = next;
       });
@@ -81,6 +97,7 @@
       overlay.className = `theme-reveal-overlay theme-preview-${next}`;
       overlay.setAttribute("aria-hidden", "true");
       overlay.style.animationDuration = `${REVEAL_DURATION_MS}ms`;
+      this.pinStickyHeader(clone, overlay);
       overlayInner.style.transform = `translateY(-${window.scrollY}px)`;
       overlayInner.append(clone);
       overlay.append(overlayInner);
@@ -164,7 +181,7 @@
         });
     }
 
-    private freezeClone(root: HTMLElement) {
+    private freezeClone(root: HTMLElement, sourceRoot: HTMLElement) {
       const customSelectors = [
         "keyboard-navigator",
         "theme-switcher",
@@ -203,9 +220,49 @@
         });
 
       frozenRoot
+        .querySelectorAll<HTMLElement>(THEME_TRANSITION_STATIC_SELECTOR)
+        .forEach((element, index) => {
+          const source = sourceRoot.querySelectorAll<HTMLElement>(
+            THEME_TRANSITION_STATIC_SELECTOR,
+          )[index];
+          const rect = source?.getBoundingClientRect();
+
+          if (rect && rect.width > 0 && rect.height > 0) {
+            element.style.inlineSize = `${rect.width}px`;
+            element.style.blockSize = `${rect.height}px`;
+          }
+
+          element.style.animation = "none";
+          element.style.transition = "none";
+          element.style.transform = "none";
+        });
+
+      frozenRoot
         .querySelectorAll("script")
         .forEach((script) => script.remove());
       return frozenRoot;
+    }
+
+    private pinStickyHeader(root: HTMLElement, overlay: HTMLElement) {
+      const header = root.querySelector<HTMLElement>("header");
+      if (!header) return;
+
+      const sourceHeader = document.querySelector<HTMLElement>("header");
+      const rect = sourceHeader?.getBoundingClientRect();
+      if (!rect || rect.height <= 0) return;
+
+      const pinnedHeader = header.cloneNode(true) as HTMLElement;
+      pinnedHeader.style.position = "fixed";
+      pinnedHeader.style.insetBlockStart = "0";
+      pinnedHeader.style.insetInlineStart = "0";
+      pinnedHeader.style.insetInlineEnd = "0";
+      pinnedHeader.style.zIndex = "2";
+
+      const placeholder = document.createElement("div");
+      placeholder.setAttribute("aria-hidden", "true");
+      placeholder.style.blockSize = `${rect.height}px`;
+      header.replaceWith(placeholder);
+      overlay.append(pinnedHeader);
     }
 
     private createScrambleFragments(root: HTMLElement, overlay: HTMLElement) {
@@ -294,8 +351,8 @@
           }
 
           const ignoredSelector = options.includeAriaHidden
-            ? "script, style, noscript, svg, canvas, .sr-only, [hidden], [data-fallback], .theme-sweep, .theme-scramble-layer"
-            : "script, style, noscript, svg, canvas, .sr-only, [hidden], [data-fallback], [aria-hidden='true'], .theme-sweep, .theme-scramble-layer";
+            ? `${THEME_TRANSITION_BASE_IGNORED_SELECTOR}, ${THEME_TRANSITION_STATIC_SELECTOR}`
+            : `${THEME_TRANSITION_BASE_IGNORED_SELECTOR}, ${THEME_TRANSITION_STATIC_SELECTOR}, [aria-hidden='true']`;
 
           if (parent.closest(ignoredSelector)) {
             return NodeFilter.FILTER_REJECT;

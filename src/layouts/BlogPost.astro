@@ -16,7 +16,7 @@ interface Props extends BlogData {
   reading?: string;
 }
 
-const { title, description, pubDate, reading, tags } = Astro.props;
+const { title, description, pubDate, reading, tags, ogImage } = Astro.props;
 const updatedDate = Astro.props.updatedDate;
 ---
 
@@ -27,6 +27,7 @@ const updatedDate = Astro.props.updatedDate;
     <BaseHead
       title={`${title} — ${CONFIG.meta.title}`}
       description={description}
+      image={ogImage}
       ogType="article"
     />
     <meta property="article:published_time" content={pubDate.toISOString()} />
@@ -81,7 +82,7 @@ const updatedDate = Astro.props.updatedDate;
               </div>
             </header>
 
-            <div class="prose-terminal prose">
+            <div class="prose-terminal prose" data-theme-transition-rich-static>
               <slot />
             </div>
           </article>
