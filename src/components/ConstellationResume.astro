@@ -150,6 +150,9 @@ const RESUME = { experiences, skills, socials };
 
   const FOV = 6;
   const MAX_EXTENT = 4.7;
+  // Number of discrete depth shades. More levels = smoother fade, but each
+  // level is a distinct span run so we keep it modest for render efficiency.
+  const DEPTH_LEVELS = 8;
 
   const esc = (value: string) =>
     value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -511,15 +514,34 @@ const RESUME = { experiences, skills, socials };
         row: screen[index]!.row,
       }));
 
+      // Normalize perspective into a 0..1 depth where 1 = closest to camera,
+      // then quantize into shade buckets. Tokens look like `n5` (node, level 5)
+      // so identical depths coalesce into a single colored span run.
+      let minP = Infinity;
+      let maxP = -Infinity;
+      for (const s of screen) {
+        if (s.persp < minP) minP = s.persp;
+        if (s.persp > maxP) maxP = s.persp;
+      }
+      const bucket = (persp: number) => {
+        const t = maxP > minP ? (persp - minP) / (maxP - minP) : 1;
+        return Math.max(
+          0,
+          Math.min(DEPTH_LEVELS - 1, Math.round(t * (DEPTH_LEVELS - 1))),
+        );
+      };
+
       const selectedIndex = this.selectable[this.selectionPos];
       for (const [a, b] of this.edges) {
         const isLinked = a === selectedIndex || b === selectedIndex;
+        // Lines fade with the depth of their farther endpoint.
+        const lvl = Math.min(bucket(screen[a]!.persp), bucket(screen[b]!.persp));
         this.drawLine(
           screen[a]!.col,
           screen[a]!.row,
           screen[b]!.col,
           screen[b]!.row,
-          isLinked ? "m" : "b",
+          isLinked ? "al" : `e${lvl}`,
           put,
         );
       }
@@ -530,14 +552,12 @@ const RESUME = { experiences, skills, socials };
         .sort((a, b) => screen[a]!.persp - screen[b]!.persp);
 
       // Pass 1: glyphs (claimed solid so labels and lines can route around).
+      // Color is driven purely by depth — near stars read bright, far stars
+      // recede toward the background.
       for (const index of order) {
         const node = this.nodes[index]!;
         const { col, row, persp } = screen[index]!;
-        const dim = persp < 0.85;
-        let cls = "m";
-        if (node.kind === "experience") cls = persp > 1.1 ? "f" : "m";
-        if (dim) cls = "b";
-        put(col, row, node.glyph, cls, true);
+        put(col, row, node.glyph, `n${bucket(persp)}`, true);
       }
       if (selectedIndex !== undefined) {
         const { col, row } = screen[selectedIndex]!;
@@ -546,12 +566,13 @@ const RESUME = { experiences, skills, socials };
 
       // Pass 2: labels. Experiences and socials are labeled; nearer (larger
       // persp) entries win the contested cells. Skills stay unlabeled unless
-      // selected to keep the field sparse.
+      // selected to keep the field sparse. Labels carry a readability floor so
+      // distant text stays legible.
       for (const index of [...order].reverse()) {
         const node = this.nodes[index]!;
         if (node.kind === "skill") continue;
-        const { col, row } = screen[index]!;
-        putLabel(col, row, node.label, "m");
+        const { col, row, persp } = screen[index]!;
+        putLabel(col, row, node.label, `l${Math.max(2, bucket(persp))}`);
       }
 
       if (selectedIndex !== undefined) {
@@ -596,13 +617,32 @@ const RESUME = { experiences, skills, socials };
       }
     }
 
+    private spanFor(token: string): { cls: string; style: string } {
+      if (!token) return { cls: "", style: "" };
+      // Fixed shades.
+      if (token === "b") return { cls: "text-border", style: "" };
+      if (token === "a") return { cls: "text-accent", style: "" };
+      if (token === "al")
+        return { cls: "text-accent", style: "opacity:0.55" };
+
+      const kind = token[0];
+      const level = Number(token.slice(1));
+      const t = DEPTH_LEVELS > 1 ? level / (DEPTH_LEVELS - 1) : 1;
+      if (kind === "n") {
+        // Star glyphs: bright near, fade toward background when far.
+        const op = (0.34 + 0.66 * t).toFixed(3);
+        return { cls: "text-foreground", style: `opacity:${op}` };
+      }
+      if (kind === "l") {
+        const op = (0.42 + 0.58 * t).toFixed(3);
+        return { cls: "text-muted-foreground", style: `opacity:${op}` };
+      }
+      // Edges/lines: subtler so they read as connective tissue.
+      const op = (0.12 + 0.42 * t).toFixed(3);
+      return { cls: "text-muted-foreground", style: `opacity:${op}` };
+    }
+
     private toHtml(ch: string[][], cl: string[][]) {
-      const classFor: Record<string, string> = {
-        b: "text-border",
-        m: "text-muted-foreground",
-        f: "text-foreground",
-        a: "text-accent",
-      };
       const lines: string[] = [];
       for (let r = 0; r < ch.length; r++) {
         let line = "";
@@ -610,9 +650,13 @@ const RESUME = { experiences, skills, socials };
         let runCls = "";
         const flush = () => {
           if (!run) return;
-          line += runCls
-            ? `<span class="${classFor[runCls]}">${esc(run)}</span>`
-            : esc(run);
+          if (runCls) {
+            const { cls, style } = this.spanFor(runCls);
+            const styleAttr = style ? ` style="${style}"` : "";
+            line += `<span class="${cls}"${styleAttr}>${esc(run)}</span>`;
+          } else {
+            line += esc(run);
+          }
           run = "";
         };
         for (let c = 0; c < ch[r]!.length; c++) {
