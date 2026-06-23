@@ -1,9 +1,11 @@
 ---
+import { Image } from "astro:assets";
+
 const { src = "", alt = "", class: className, ...attrs } = Astro.props;
 ---
 
 <span class="my-6 block" data-theme-transition-static>
-  <img
+  <Image
     {...attrs}
     src={src}
     alt={alt}

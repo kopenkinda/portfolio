@@ -1,8 +1,8 @@
 ---
-title: 'Markdown Kitchen Sink'
-description: 'Every supported element in one place — headings, lists, tables, quotes, images, highlighted code, and a styled callout component.'
-pubDate: '2026-06-23'
-tags: ['reference', 'mdx', 'typography']
+title: "Markdown Kitchen Sink"
+description: "Every supported element in one place — headings, lists, tables, quotes, images, highlighted code, and a styled callout component."
+pubDate: "2026-06-23"
+tags: ["reference", "mdx", "typography"]
 ---
 
 This post exists to exercise the full rendering pipeline: GitHub-flavored
@@ -17,7 +17,7 @@ here, it looks right everywhere.
 
 ## Text and inline marks
 
-Body copy supports **bold**, _italic_, ***bold italic***, ~~strikethrough~~,
+Body copy supports **bold**, _italic_, **_bold italic_**, ~~strikethrough~~,
 inline `code`, and [internal links](/blog) as well as
 [external links](https://nextjs.org). Footnote-style references and tight line
 length keep everything readable in monospace.
@@ -61,12 +61,12 @@ Task lists (GFM) render with checkboxes:
 
 GitHub-flavored tables render as a tight monospace grid:
 
-| Element   | Source        | Styled by         |
-| --------- | ------------- | ----------------- |
-| Headings  | markdown `##` | `mdx-components`  |
-| Code      | fenced block  | `rehype-pretty`   |
-| Callout   | JSX component | `Callout`         |
-| Tables    | `remark-gfm`  | `prose-terminal`  |
+| Element  | Source        | Styled by        |
+| -------- | ------------- | ---------------- |
+| Headings | markdown `##` | `mdx-components` |
+| Code     | fenced block  | `rehype-pretty`  |
+| Callout  | JSX component | `Callout`        |
+| Tables   | `remark-gfm`  | `prose-terminal` |
 
 ## Code with highlighting
 
@@ -75,12 +75,12 @@ TypeScript with lines 2 and 6 flagged:
 
 ```ts {2,6}
 export function layout(text: string, width: number) {
-  const segments = prepareWithSegments(text)
-  const lines = layoutWithLines(segments, width)
+  const segments = prepareWithSegments(text);
+  const lines = layoutWithLines(segments, width);
   return {
     lineCount: lines.length,
     widest: Math.max(...lines.map((l) => l.width)),
-  }
+  };
 }
 ```
 
@@ -94,21 +94,21 @@ pnpm dev
 Highlighting a specific term with the `/segments/` syntax:
 
 ```js /segments/
-const segments = prepareWithSegments(input)
-render(segments)
+const segments = prepareWithSegments(input);
+render(segments);
 ```
 
 <Callout type="warn" title="! gotcha">
   `rehype-pretty-code` emits its styles in the same layer as the typography
-  plugin. The `prose-terminal` overrides are intentionally unlayered so they
-  win the cascade — see `app/globals.css`.
+  plugin. The `prose-terminal` overrides are intentionally unlayered so they win
+  the cascade — see `app/globals.css`.
 </Callout>
 
 ## Image
 
 Images get a thin frame and a muted caption:
 
-![A minimal terminal illustration in paper and ink](/images/kitchen-sink.png)
+![A minimal terminal illustration in paper and ink](../../assets/blog/kitchen-sink.png)
 
 ## Horizontal rule
 
@@ -120,7 +120,6 @@ That is the whole vocabulary. Anything you write in a post will land on one of
 these styles, all on the same three-color paper/ink palette.
 
 <Callout type="tip">
-  Want a new element style? It only needs to be defined once in
-  `prose-terminal` or added to the component map — every post inherits it
-  automatically.
+  Want a new element style? It only needs to be defined once in `prose-terminal`
+  or added to the component map — every post inherits it automatically.
 </Callout>
