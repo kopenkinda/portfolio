@@ -161,6 +161,7 @@
       document.documentElement.classList.add("theme-commit");
       this.setTheme(theme);
 
+      // Keep transition kill-switch active for two frames so the theme swap paints cleanly.
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           document.documentElement.classList.remove("theme-commit");
