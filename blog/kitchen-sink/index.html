@@ -1,0 +1,147 @@
+<!DOCTYPE html><html lang="en"><head><script>
+  (() => {
+    const storageKey = "theme";
+    const savedTheme = localStorage.getItem(storageKey);
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+      .matches
+      ? "dark"
+      : "light";
+    const theme = savedTheme || systemTheme;
+
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.dataset.theme = theme;
+  })();
+</script><!-- Global Metadata --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" href="/favicon.ico"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="kopenkin dmitrii — full-stack ai developer" href="https://kopenkin.tech/rss.xml"><meta name="generator" content="Astro v7.0.0"><style>@font-face{font-family:"JetBrains Mono-de231857aed82d7d";src:url("/_astro/fonts/d39725b5b6a6f2ec.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:400;font-style:normal;}@font-face{font-family:"JetBrains Mono-de231857aed82d7d";src:url("/_astro/fonts/d39725b5b6a6f2ec.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:normal;}@font-face{font-family:"JetBrains Mono-de231857aed82d7d";src:url("/_astro/fonts/d39725b5b6a6f2ec.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:700;font-style:normal;}@font-face{font-family:"JetBrains Mono-de231857aed82d7d fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:400;font-style:normal;size-adjust:99.9837%;ascent-override:102.0166%;descent-override:30.0049%;}@font-face{font-family:"JetBrains Mono-de231857aed82d7d fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:500;font-style:normal;size-adjust:99.9837%;ascent-override:102.0166%;descent-override:30.0049%;}@font-face{font-family:"JetBrains Mono-de231857aed82d7d fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:700;font-style:normal;size-adjust:99.9837%;ascent-override:102.0166%;descent-override:30.0049%;}:root{--font-jetbrains-mono:"JetBrains Mono-de231857aed82d7d","JetBrains Mono-de231857aed82d7d fallback: Courier New",monospace;}</style><link rel="preload" href="/_astro/fonts/d39725b5b6a6f2ec.woff2" as="font" type="font/woff2" crossorigin><meta name="theme-color" content="#f0ece1"><!-- Canonical URL --><link rel="canonical" href="https://kopenkin.tech/blog/kitchen-sink/"><!-- Primary Meta Tags --><title>Markdown Kitchen Sink — kopenkin dmitrii — full-stack ai developer</title><meta name="title" content="Markdown Kitchen Sink — kopenkin dmitrii — full-stack ai developer"><meta name="description" content="Every supported element in one place — headings, lists, tables, quotes, images, highlighted code, and a styled callout component."><!-- Open Graph / Facebook --><meta property="og:type" content="article"><meta property="og:url" content="https://kopenkin.tech/blog/kitchen-sink/"><meta property="og:title" content="Markdown Kitchen Sink — kopenkin dmitrii — full-stack ai developer"><meta property="og:description" content="Every supported element in one place — headings, lists, tables, quotes, images, highlighted code, and a styled callout component."><meta property="og:image" content="https://kopenkin.tech/_astro/_placeholder.CB3Xi-gp.jpg"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://kopenkin.tech/blog/kitchen-sink/"><meta property="twitter:title" content="Markdown Kitchen Sink — kopenkin dmitrii — full-stack ai developer"><meta property="twitter:description" content="Every supported element in one place — headings, lists, tables, quotes, images, highlighted code, and a styled callout component."><meta property="twitter:image" content="https://kopenkin.tech/_astro/_placeholder.CB3Xi-gp.jpg"><meta property="article:published_time" content="2026-06-23T00:00:00.000Z"><meta property="article:tag" content="reference"><meta property="article:tag" content="mdx"><meta property="article:tag" content="typography"><link rel="stylesheet" href="/_astro/ThemeInit.DvufPwtP.css"></head><body><script type="module">var e=`!<>-_\\/[]{}—=+*^?#________`,t=class extends HTMLElement{frame=0;text=``;reduceMotion=!1;connectedCallback(){let e=this.querySelector(`[data-scramble-text]`);e&&(this.text=e.textContent??``,this.reduceMotion=window.matchMedia(`(prefers-reduced-motion: reduce)`).matches,this.addEventListener(`mouseenter`,this.start),this.addEventListener(`mouseleave`,this.stop),this.addEventListener(`focusin`,this.start),this.addEventListener(`focusout`,this.stop))}disconnectedCallback(){this.stop(),this.removeEventListener(`mouseenter`,this.start),this.removeEventListener(`mouseleave`,this.stop),this.removeEventListener(`focusin`,this.start),this.removeEventListener(`focusout`,this.stop)}start=()=>{if(this.reduceMotion)return;let t=this.querySelector(`[data-scramble-text]`);if(!t)return;let n=performance.now(),r=i=>{let a=Math.min((i-n)/360,1),o=Math.floor(a*this.text.length);t.textContent=Array.from(this.text,(t,n)=>n<o||t===` `?t:e[Math.random()*26|0]).join(``),a<1?this.frame=requestAnimationFrame(r):t.textContent=this.text};this.stop(),this.frame=requestAnimationFrame(r)};stop=()=>{this.frame&&cancelAnimationFrame(this.frame),this.frame=0;let e=this.querySelector(`[data-scramble-text]`);e&&(e.textContent=this.text)}};customElements.get(`scramble-link`)||customElements.define(`scramble-link`,t);</script><script type="module" src="/_astro/ThemeSwitcher.astro_astro_type_script_index_0_lang.BWnetpab.js"></script><script type="module">var e=class extends HTMLElement{doneText=`done`;failText=`fail`;idleText=`copy`;resetTimer;connectedCallback(){let e=this.querySelector(`[data-copy-code]`),t=this.querySelector(`[data-copy-source]`);!e||!t||e.dataset.copyReady||(e.dataset.copyReady=`true`,e.addEventListener(`click`,async()=>{window.clearTimeout(this.resetTimer);try{await this.copy(t.textContent??``),e.textContent=this.doneText}catch{e.textContent=this.failText}this.resetTimer=window.setTimeout(()=>{e.textContent=this.idleText},1400)}))}async copy(e){if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(e);return}let t=document.createElement(`textarea`);t.value=e,t.setAttribute(`readonly`,``),t.style.position=`fixed`,t.style.inset=`-9999px auto auto -9999px`,document.body.append(t),t.select();try{document.execCommand(`copy`)}finally{t.remove()}}};customElements.get(`code-copy-frame`)||customElements.define(`code-copy-frame`,e);</script><keyboard-navigator class="block">
+  
+      <div class="min-h-dvh bg-background"><header class="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur"><nav class="mx-auto flex max-w-3xl items-center justify-between px-5 py-2 text-xs text-muted-foreground" aria-label="primary navigation"><scramble-link class="inline-block">
+  <a href="/"><span class="tabular-nums" data-scramble-text>~/kopenkin.tech</span></a>
+</scramble-link><div class="flex items-center gap-4"><span class="hidden sm:inline"><span class="text-foreground">↑↓/jk</span> focus · <span class="text-foreground">enter</span> activate · <span class="text-foreground">t</span> theme</span><theme-switcher class="inline-flex">
+  <button type="button" class="bg-transparent p-0 text-foreground underline decoration-border decoration-dotted underline-offset-4 outline-none hover:text-accent hover:decoration-accent focus-visible:text-accent focus-visible:decoration-accent" aria-label="toggle dark mode" data-theme-toggle>theme:<span data-theme-label>light</span></button>
+</theme-switcher><scramble-link class="inline-block">
+  <a href="/"><span class="tabular-nums" data-scramble-text>home</span></a>
+</scramble-link></div></nav></header><main class="mx-auto max-w-3xl px-5 pt-10 pb-16 sm:pt-14"><article><header class="mb-8"><p class="mb-3 text-xs text-muted-foreground"><span class="text-accent">$</span> cat ./mind-palace/kitchen-sink.mdx</p><h1 class="text-3xl leading-tight font-bold tracking-tight text-pretty text-foreground sm:text-4xl">markdown kitchen sink</h1><div class="mt-4 text-xs leading-relaxed text-muted-foreground"><time datetime="2026-06-23T00:00:00.000Z">Jun 23, 2026</time><span class="px-2 text-border">·</span><span>3 min read</span><span class="px-2 text-border">·</span><span><span class="text-border">#</span>reference</span><span class="px-2 text-border">·</span><span><span class="text-border">#</span>mdx</span><span class="px-2 text-border">·</span><span><span class="text-border">#</span>typography</span><span class="px-2 text-border">·</span><scramble-link class="inline-block">
+  <a href="/blog/"><span class="tabular-nums" data-scramble-text>all posts</span></a>
+</scramble-link></div></header><div class="prose-terminal prose" data-theme-transition-rich-static>
+  <p>This post exists to exercise the full rendering pipeline: GitHub-flavored
+markdown via <code>remark-gfm</code>, syntax highlighting via <code>rehype-pretty-code</code> with a
+custom paper/ink Shiki theme, and a styled MDX component. If it looks right
+here, it looks right everywhere.</p>
+<aside class="my-6 border border-l-2 border-border border-l-accent bg-muted/50 px-4 py-3"><p class="mb-1 text-xs font-bold tracking-[0.18em] text-accent uppercase">! note</p><div class="text-sm leading-relaxed text-foreground [&amp;&gt;:last-child]:mb-0 [&amp;&gt;p]:mb-2"><p>Callouts are a custom MDX component, not markdown. They are imported into the
+component map and used directly in <code>.mdx</code> files — no extra syntax required.</p></div></aside>
+<h2 id="text-and-inline-marks" class="group mt-12 mb-4 flex items-baseline gap-2 text-base font-bold tracking-wide text-foreground"><span aria-hidden="true" class="text-accent">##</span><span>Text and inline marks</span></h2>
+<p>Body copy supports <strong>bold</strong>, <em>italic</em>, <strong><em>bold italic</em></strong>, <del>strikethrough</del>,
+inline <code>code</code>, and <a href="/blog">internal links</a> as well as
+<a href="https://nextjs.org" target="_blank" rel="noopener noreferrer">external links<span aria-hidden="true"> ↗</span></a>. Footnote-style references and tight line
+length keep everything readable in monospace.</p>
+<h3 id="heading-level-three" class="mt-8 mb-3 flex items-baseline gap-2 text-sm font-bold tracking-wide text-foreground"><span aria-hidden="true" class="text-accent">###</span><span>Heading level three</span></h3>
+<p>Smaller sections nest under their parents with the <code>###</code> ASCII marker, so the
+document outline reads like a file tree even before you parse the content.</p>
+<h2 id="lists" class="group mt-12 mb-4 flex items-baseline gap-2 text-base font-bold tracking-wide text-foreground"><span aria-hidden="true" class="text-accent">##</span><span>Lists</span></h2>
+<p>Unordered lists use a terminal-style em-dash marker:</p>
+<ul>
+<li>First item, no nesting</li>
+<li>Second item with a nested list
+<ul>
+<li>Nested child one</li>
+<li>Nested child two</li>
+</ul>
+</li>
+<li>Third item with inline <code>code</code></li>
+</ul>
+<p>Ordered lists get accent-tinted numbers:</p>
+<ol>
+<li>Install the dependencies</li>
+<li>Wire up the rehype plugin</li>
+<li>Frame the output as a terminal</li>
+<li>Ship it</li>
+</ol>
+<p>Task lists (GFM) render with checkboxes:</p>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled/> Syntax highlighting</li>
+<li class="task-list-item"><input type="checkbox" checked disabled/> Terminal frame</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Dark mode (someday)</li>
+</ul>
+<h2 id="blockquote" class="group mt-12 mb-4 flex items-baseline gap-2 text-base font-bold tracking-wide text-foreground"><span aria-hidden="true" class="text-accent">##</span><span>Blockquote</span></h2>
+<blockquote>
+<p>Design is not just what it looks like and feels like.
+Design is how it works.</p>
+<p>— paraphrasing the usual suspect</p>
+</blockquote>
+<h2 id="table" class="group mt-12 mb-4 flex items-baseline gap-2 text-base font-bold tracking-wide text-foreground"><span aria-hidden="true" class="text-accent">##</span><span>Table</span></h2>
+<p>GitHub-flavored tables render as a tight monospace grid:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Element</th><th>Source</th><th>Styled by</th></tr></thead><tbody><tr><td>Headings</td><td>markdown <code>##</code></td><td><code>mdx-components</code></td></tr><tr><td>Code</td><td>fenced block</td><td><code>rehype-pretty</code></td></tr><tr><td>Callout</td><td>JSX component</td><td><code>Callout</code></td></tr><tr><td>Tables</td><td><code>remark-gfm</code></td><td><code>prose-terminal</code></td></tr></tbody></table>
+<h2 id="code-with-highlighting" class="group mt-12 mb-4 flex items-baseline gap-2 text-base font-bold tracking-wide text-foreground"><span aria-hidden="true" class="text-accent">##</span><span>Code with highlighting</span></h2>
+<p>Inline highlighting, line highlighting, and language labels all work. Here is
+TypeScript with lines 2 and 6 flagged:</p>
+<code-copy-frame class="my-6 block overflow-hidden border border-border bg-background" data-theme-transition-static="true">
+  <div class="flex min-h-9 items-center gap-3 border-b border-border bg-muted px-3 py-2"><span class="min-w-0 flex-1 truncate text-[0.7rem] tracking-[0.18em] text-muted-foreground" data-code-language>.ts</span><button type="button" class="text-[0.7rem] tracking-[0.16em] text-muted-foreground underline decoration-border decoration-dotted underline-offset-4 hover:text-accent hover:decoration-accent focus-visible:text-accent focus-visible:decoration-accent focus-visible:outline-none" data-copy-code aria-label="copy .ts code">copy</button></div>
+  <pre style="background-color:var(--astro-code-background);color:var(--astro-code-foreground);overflow-x:auto" tabindex="0" data-language="ts" class="astro-code css-variables !my-0 overflow-x-auto !border-0 !bg-transparent !px-0 !py-3 text-[0.8125rem] leading-relaxed" data-copy-source><code><span class="line"><span style="color:var(--astro-code-token-keyword)">export</span><span style="color:var(--astro-code-token-keyword)"> function</span><span style="color:var(--astro-code-token-function)"> layout</span><span style="color:var(--astro-code-foreground)">(text</span><span style="color:var(--astro-code-token-keyword)">:</span><span style="color:var(--astro-code-token-constant)"> string</span><span style="color:var(--astro-code-token-punctuation)">,</span><span style="color:var(--astro-code-foreground)"> width</span><span style="color:var(--astro-code-token-keyword)">:</span><span style="color:var(--astro-code-token-constant)"> number</span><span style="color:var(--astro-code-foreground)">) {</span></span>
+<span class="line highlighted"><span style="color:var(--astro-code-token-keyword)">  const</span><span style="color:var(--astro-code-token-constant)"> segments</span><span style="color:var(--astro-code-token-keyword)"> =</span><span style="color:var(--astro-code-token-function)"> prepareWithSegments</span><span style="color:var(--astro-code-foreground)">(text);</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">  const</span><span style="color:var(--astro-code-token-constant)"> lines</span><span style="color:var(--astro-code-token-keyword)"> =</span><span style="color:var(--astro-code-token-function)"> layoutWithLines</span><span style="color:var(--astro-code-foreground)">(segments</span><span style="color:var(--astro-code-token-punctuation)">,</span><span style="color:var(--astro-code-foreground)"> width);</span></span>
+<span class="line"><span style="color:var(--astro-code-token-keyword)">  return</span><span style="color:var(--astro-code-foreground)"> {</span></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">    lineCount</span><span style="color:var(--astro-code-token-keyword)">:</span><span style="color:var(--astro-code-token-constant)"> lines</span><span style="color:var(--astro-code-foreground)">.</span><span style="color:var(--astro-code-token-constant)">length</span><span style="color:var(--astro-code-token-punctuation)">,</span></span>
+<span class="line highlighted"><span style="color:var(--astro-code-foreground)">    widest</span><span style="color:var(--astro-code-token-keyword)">:</span><span style="color:var(--astro-code-token-constant)"> Math</span><span style="color:var(--astro-code-token-function)">.max</span><span style="color:var(--astro-code-foreground)">(</span><span style="color:var(--astro-code-token-keyword)">...</span><span style="color:var(--astro-code-token-constant)">lines</span><span style="color:var(--astro-code-token-function)">.map</span><span style="color:var(--astro-code-foreground)">((l) </span><span style="color:var(--astro-code-token-keyword)">=&gt;</span><span style="color:var(--astro-code-token-constant)"> l</span><span style="color:var(--astro-code-foreground)">.width))</span><span style="color:var(--astro-code-token-punctuation)">,</span></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">  };</span></span>
+<span class="line"><span style="color:var(--astro-code-foreground)">}</span></span></code></pre>
+</code-copy-frame>
+<p>A shell snippet (note the language tab in the window chrome):</p>
+<code-copy-frame class="my-6 block overflow-hidden border border-border bg-background" data-theme-transition-static="true">
+  <div class="flex min-h-9 items-center gap-3 border-b border-border bg-muted px-3 py-2"><span class="min-w-0 flex-1 truncate text-[0.7rem] tracking-[0.18em] text-muted-foreground" data-code-language>.bash</span><button type="button" class="text-[0.7rem] tracking-[0.16em] text-muted-foreground underline decoration-border decoration-dotted underline-offset-4 hover:text-accent hover:decoration-accent focus-visible:text-accent focus-visible:decoration-accent focus-visible:outline-none" data-copy-code aria-label="copy .bash code">copy</button></div>
+  <pre style="background-color:var(--astro-code-background);color:var(--astro-code-foreground);overflow-x:auto" tabindex="0" data-language="bash" class="astro-code css-variables !my-0 overflow-x-auto !border-0 !bg-transparent !px-0 !py-3 text-[0.8125rem] leading-relaxed" data-copy-source><code><span class="line"><span style="color:var(--astro-code-token-function)">pnpm</span><span style="color:var(--astro-code-token-string)"> add</span><span style="color:var(--astro-code-token-string)"> rehype-pretty-code</span><span style="color:var(--astro-code-token-string)"> shiki</span></span>
+<span class="line"><span style="color:var(--astro-code-token-function)">pnpm</span><span style="color:var(--astro-code-token-string)"> dev</span></span></code></pre>
+</code-copy-frame>
+<p>Highlighting a specific term with the <code>/segments/</code> syntax:</p>
+<code-copy-frame class="my-6 block overflow-hidden border border-border bg-background" data-theme-transition-static="true">
+  <div class="flex min-h-9 items-center gap-3 border-b border-border bg-muted px-3 py-2"><span class="min-w-0 flex-1 truncate text-[0.7rem] tracking-[0.18em] text-muted-foreground" data-code-language>.js</span><button type="button" class="text-[0.7rem] tracking-[0.16em] text-muted-foreground underline decoration-border decoration-dotted underline-offset-4 hover:text-accent hover:decoration-accent focus-visible:text-accent focus-visible:decoration-accent focus-visible:outline-none" data-copy-code aria-label="copy .js code">copy</button></div>
+  <pre style="background-color:var(--astro-code-background);color:var(--astro-code-foreground);overflow-x:auto" tabindex="0" data-language="js" class="astro-code css-variables !my-0 overflow-x-auto !border-0 !bg-transparent !px-0 !py-3 text-[0.8125rem] leading-relaxed" data-copy-source><code><span class="line"><span style="color:var(--astro-code-token-keyword)">const</span><span style="color:var(--astro-code-token-constant)"> </span><span style="color:var(--astro-code-token-constant)" class="highlighted-word">segments</span><span style="color:var(--astro-code-token-keyword)"> =</span><span style="color:var(--astro-code-token-function)"> prepareWithSegments</span><span style="color:var(--astro-code-foreground)">(input);</span></span>
+<span class="line"><span style="color:var(--astro-code-token-function)">render</span><span style="color:var(--astro-code-foreground)">(</span><span style="color:var(--astro-code-foreground)" class="highlighted-word">segments</span><span style="color:var(--astro-code-foreground)">);</span></span></code></pre>
+</code-copy-frame>
+<aside class="my-6 border border-l-2 border-border border-l-accent bg-muted/50 px-4 py-3"><p class="mb-1 text-xs font-bold tracking-[0.18em] text-accent uppercase">! gotcha</p><div class="text-sm leading-relaxed text-foreground [&amp;&gt;:last-child]:mb-0 [&amp;&gt;p]:mb-2"><p><code>rehype-pretty-code</code> emits its styles in the same layer as the typography
+plugin. The <code>prose-terminal</code> overrides are intentionally unlayered so they win
+the cascade — see <code>app/globals.css</code>.</p></div></aside>
+<h2 id="image" class="group mt-12 mb-4 flex items-baseline gap-2 text-base font-bold tracking-wide text-foreground"><span aria-hidden="true" class="text-accent">##</span><span>Image</span></h2>
+<p>Images get a thin frame and a muted caption:</p>
+<p><span class="my-6 block" data-theme-transition-static><img src="/_astro/kitchen-sink.B9xbKR4R_1BnWFP.webp" alt="A minimal terminal illustration in paper and ink" loading="lazy" decoding="async" width="1024" height="1024" class="block w-full border border-border"><span class="mt-2 block text-xs text-muted-foreground"><span class="text-accent">// </span>A minimal terminal illustration in paper and ink</span></span></p>
+<h2 id="horizontal-rule" class="group mt-12 mb-4 flex items-baseline gap-2 text-base font-bold tracking-wide text-foreground"><span aria-hidden="true" class="text-accent">##</span><span>Horizontal rule</span></h2>
+<p>Below is a thematic break, then a closing line.</p>
+<hr/>
+<p>That is the whole vocabulary. Anything you write in a post will land on one of
+these styles, all on the same three-color paper/ink palette.</p>
+<aside class="my-6 border border-l-2 border-border border-l-accent bg-muted/50 px-4 py-3"><p class="mb-1 text-xs font-bold tracking-[0.18em] text-accent uppercase">$ tip</p><div class="text-sm leading-relaxed text-foreground [&amp;&gt;:last-child]:mb-0 [&amp;&gt;p]:mb-2"><p>Want a new element style? It only needs to be defined once in <code>prose-terminal</code>
+or added to the component map — every post inherits it automatically.</p></div></aside>
+</div></article></main></div>
+      <footer class="mx-auto max-w-3xl px-5 pt-6 pb-10 text-xs text-muted-foreground"><div class="border-t border-border pt-6"><p><span class="text-accent">$</span> echo &quot;let&#39;s build something&quot; — <scramble-link class="inline-block">
+  <a href="mailto:hi@kopenkin.tech"><span class="tabular-nums" data-scramble-text>hi@kopenkin.tech</span></a>
+</scramble-link></p><p class="mt-2">© 2026 kopenkin dmitrii</p></div></footer>
+    
+</keyboard-navigator><script type="module">var e=class extends HTMLElement{selector=`a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])`;connectedCallback(){window.addEventListener(`keydown`,this.onKeyDown),requestAnimationFrame(()=>{let e=this.querySelector(`[data-initial-keyboard-focus]`)??this.items[0];e&&document.activeElement===document.body&&e.focus({preventScroll:!0})})}disconnectedCallback(){window.removeEventListener(`keydown`,this.onKeyDown)}get items(){return Array.from(this.querySelectorAll(this.selector)).filter(e=>!e.hidden&&e.getAttribute(`aria-hidden`)!==`true`&&e.offsetParent!==null)}onKeyDown=e=>{if(this.isTyping(e.target))return;let t=this.items;if(!t.length)return;let n=document.activeElement,r=n instanceof HTMLElement?t.indexOf(n):-1,i=t.findIndex(e=>e.hasAttribute(`data-initial-keyboard-focus`)),a=i>=0?i:0,o;e.key===`ArrowDown`||e.key===`j`?o=r<0?a:Math.min(t.length-1,r+1):e.key===`ArrowUp`||e.key===`k`?o=r<0?a:Math.max(0,r-1):e.key===`g`?o=0:e.key===`G`&&(o=t.length-1),o!==void 0&&(e.preventDefault(),t[o]?.focus(),t[o]?.scrollIntoView({block:`nearest`,behavior:window.matchMedia(`(prefers-reduced-motion: reduce)`).matches?`auto`:`smooth`}))};isTyping(e){return e instanceof HTMLElement&&(e.tagName===`INPUT`||e.tagName===`TEXTAREA`||e.tagName===`SELECT`||e.isContentEditable)}};customElements.get(`keyboard-navigator`)||customElements.define(`keyboard-navigator`,e);</script></body></html>
