@@ -68,11 +68,11 @@ const RESUME = { experiences, skills, socials };
       class="pointer-events-none absolute right-4 bottom-4 left-4 z-10 text-center font-mono text-[10px] tracking-wide text-border sm:text-xs"
       data-legend
     >
-      ← → rotate · ↑ ↓ tilt · j k select · ⏎ inspect · esc close
+      drag rotate · click star · ← → ↑ ↓ · j k select · ⏎ inspect · esc close
     </div>
 
     <div
-      class="absolute top-1/2 left-1/2 z-20 hidden w-[min(92vw,30rem)] -translate-x-1/2 -translate-y-1/2 border border-accent bg-background/95 px-5 py-4 font-mono text-[13px] leading-relaxed shadow-[0_0_0_1px_var(--background)]"
+      class="constellation-panel absolute inset-y-0 right-0 z-20 hidden w-[min(88vw,24rem)] overflow-y-auto border-l border-accent bg-background/95 px-6 py-8 font-mono text-[13px] leading-relaxed backdrop-blur-sm"
       data-panel
     >
     </div>
@@ -103,8 +103,32 @@ const RESUME = { experiences, skills, socials };
     }
   }
 
+  .constellation-panel:not(.hidden) {
+    animation: panel-in 220ms ease-out;
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateX(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  [data-field] {
+    cursor: grab;
+  }
+
+  [data-field].is-dragging {
+    cursor: grabbing;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .constellation-overlay[data-open] {
+    .constellation-overlay[data-open],
+    .constellation-panel:not(.hidden) {
       animation: none;
     }
   }
@@ -124,8 +148,8 @@ const RESUME = { experiences, skills, socials };
     raw: RawNode;
   }
 
-  const FOV = 4;
-  const MAX_EXTENT = 6.95;
+  const FOV = 6;
+  const MAX_EXTENT = 4.7;
 
   const esc = (value: string) =>
     value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -185,6 +209,12 @@ const RESUME = { experiences, skills, socials };
     private lastDraw = 0;
     private reduceMotion = false;
 
+    private dragging = false;
+    private dragMoved = false;
+    private dragX = 0;
+    private dragY = 0;
+    private screenNodes: Array<{ index: number; col: number; row: number }> = [];
+
     connectedCallback() {
       this.overlay = this.querySelector("[data-overlay]") ?? undefined;
       this.field = this.querySelector("[data-field]") ?? undefined;
@@ -200,12 +230,26 @@ const RESUME = { experiences, skills, socials };
       window.addEventListener("globe:secret-unlock", this.onUnlock);
       window.addEventListener("keydown", this.onKeyDown, true);
       window.addEventListener("resize", this.onResize);
+
+      if (this.field) {
+        this.field.style.pointerEvents = "auto";
+        this.field.addEventListener("pointerdown", this.onPointerDown);
+        this.field.addEventListener("pointermove", this.onPointerMove);
+        this.field.addEventListener("pointerup", this.onPointerUp);
+        this.field.addEventListener("pointercancel", this.onPointerUp);
+      }
     }
 
     disconnectedCallback() {
       window.removeEventListener("globe:secret-unlock", this.onUnlock);
       window.removeEventListener("keydown", this.onKeyDown, true);
       window.removeEventListener("resize", this.onResize);
+      if (this.field) {
+        this.field.removeEventListener("pointerdown", this.onPointerDown);
+        this.field.removeEventListener("pointermove", this.onPointerMove);
+        this.field.removeEventListener("pointerup", this.onPointerUp);
+        this.field.removeEventListener("pointercancel", this.onPointerUp);
+      }
       cancelAnimationFrame(this.frame);
     }
 
@@ -381,13 +425,10 @@ const RESUME = { experiences, skills, socials };
       const { cols, rows } = this;
       const cx = cols / 2;
       const cy = rows / 2;
-      const scalePix =
-        Math.min(
-          (cols * 0.5 - 2) * this.charWidth,
-          (rows * 0.5 - 1) * this.lineHeight,
-        ) / MAX_EXTENT;
-      const spreadX = scalePix / this.charWidth;
-      const spreadY = scalePix / this.lineHeight;
+      // Fill each axis independently so the field spans the full viewport
+      // instead of collapsing to a narrow central band on wide screens.
+      const spreadX = (cx - 4) / MAX_EXTENT;
+      const spreadY = (cy - 2) / MAX_EXTENT;
 
       const ch: string[][] = [];
       const cl: string[][] = [];
@@ -463,6 +504,12 @@ const RESUME = { experiences, skills, socials };
           persp,
         };
       });
+
+      this.screenNodes = this.selectable.map((index) => ({
+        index,
+        col: screen[index]!.col,
+        row: screen[index]!.row,
+      }));
 
       const selectedIndex = this.selectable[this.selectionPos];
       for (const [a, b] of this.edges) {
@@ -603,6 +650,66 @@ const RESUME = { experiences, skills, socials };
       this.selectionPos = (this.selectionPos + step + total) % total;
       this.faceSelected();
       this.updateStatus();
+    }
+
+    private onPointerDown = (event: PointerEvent) => {
+      if (!this.open) return;
+      this.dragging = true;
+      this.dragMoved = false;
+      this.dragX = event.clientX;
+      this.dragY = event.clientY;
+      this.field?.classList.add("is-dragging");
+      this.field?.setPointerCapture(event.pointerId);
+    };
+
+    private onPointerMove = (event: PointerEvent) => {
+      if (!this.dragging) return;
+      const dx = event.clientX - this.dragX;
+      const dy = event.clientY - this.dragY;
+      if (Math.hypot(dx, dy) > 4) this.dragMoved = true;
+      this.targetYaw += dx * 0.006;
+      this.targetPitch = Math.max(
+        -1.2,
+        Math.min(1.2, this.targetPitch + dy * 0.006),
+      );
+      this.dragX = event.clientX;
+      this.dragY = event.clientY;
+    };
+
+    private onPointerUp = (event: PointerEvent) => {
+      if (!this.dragging) return;
+      this.dragging = false;
+      this.field?.classList.remove("is-dragging");
+      if (this.field?.hasPointerCapture(event.pointerId)) {
+        this.field.releasePointerCapture(event.pointerId);
+      }
+      if (this.dragMoved) return;
+      this.pickAt(event.clientX, event.clientY);
+    };
+
+    private pickAt(clientX: number, clientY: number) {
+      if (this.charWidth === 0 || this.lineHeight === 0) return;
+      const col = clientX / this.charWidth;
+      const row = clientY / this.lineHeight;
+      let best = -1;
+      let bestDist = 3.5; // max click radius in cells
+      for (const node of this.screenNodes) {
+        const dist = Math.hypot(node.col - col, (node.row - row) * 1.6);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = node.index;
+        }
+      }
+      if (best === -1) {
+        if (this.panelOpen) this.closePanel();
+        return;
+      }
+      const pos = this.selectable.indexOf(best);
+      if (pos === -1) return;
+      this.selectionPos = pos;
+      this.faceSelected();
+      this.updateStatus();
+      this.openPanel();
     }
 
     private openPanel() {
