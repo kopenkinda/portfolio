@@ -8,7 +8,8 @@ const monthFmt = new Intl.DateTimeFormat("en", {
 const fmt = (date: Date) => monthFmt.format(date).toLowerCase();
 const range = (entry: (typeof USER.experiences.entries)[number]) =>
   `${fmt(entry.startDate)} — ${entry.endDate ? fmt(entry.endDate) : "present"}`;
-const tidy = (token: string) => token.replace("githubactions", "github-actions");
+const tidy = (token: string) =>
+  token.replace("githubactions", "github-actions");
 
 const experiences = USER.experiences.entries.map((entry) => ({
   id: `exp-${entry.id}`,
@@ -24,7 +25,9 @@ const skillMap = new Map<string, string[]>();
 for (const entry of USER.experiences.entries) {
   for (const token of entry.technologies ?? []) {
     if (!skillMap.has(token)) skillMap.set(token, []);
-    skillMap.get(token)!.push((entry.company.name ?? "independent").toLowerCase());
+    skillMap
+      .get(token)!
+      .push((entry.company.name ?? "independent").toLowerCase());
   }
 }
 const skills = [...skillMap.entries()].map(([token, roles], index) => ({
@@ -41,7 +44,7 @@ const socials = USER.socials.map((social, index) => ({
 }));
 socials.push({ id: "soc-blog", name: "mind palace", href: "/blog/" });
 
-const RESUME = { experiences, skills, socials };
+const RESUME = { experiences, skills, socials, birthday: USER.birthday };
 ---
 
 <constellation-resume>
@@ -56,12 +59,14 @@ const RESUME = { experiences, skills, socials };
     <pre
       class="absolute inset-0 m-0 overflow-hidden font-mono text-[15px] leading-[1.35] font-normal whitespace-pre text-muted-foreground select-none"
       aria-hidden="true"
-      data-field></pre>
+      data-field>
+    </pre>
 
     <div
       class="pointer-events-none absolute top-4 left-4 z-10 font-mono text-xs tracking-wide text-accent"
       data-status
     >
+      captain timer offline
     </div>
 
     <div
@@ -81,6 +86,7 @@ const RESUME = { experiences, skills, socials };
   </div>
 
   <script
+    is:inline
     type="application/json"
     data-constellation-data
     set:html={JSON.stringify(RESUME)}
@@ -213,6 +219,8 @@ const RESUME = { experiences, skills, socials };
     private status?: HTMLElement;
     private panel?: HTMLElement;
     private announce?: HTMLElement;
+    private birthday?: string;
+    private clockTimer = 0;
 
     private nodes: SkyNode[] = [];
     private edges: Array<[number, number]> = [];
@@ -240,7 +248,8 @@ const RESUME = { experiences, skills, socials };
     private dragMoved = false;
     private dragX = 0;
     private dragY = 0;
-    private screenNodes: Array<{ index: number; col: number; row: number }> = [];
+    private screenNodes: Array<{ index: number; col: number; row: number }> =
+      [];
 
     // Width (in character cells) the open side panel occupies, used to shift
     // the rendered field left so it stays centred in the visible area.
@@ -277,6 +286,7 @@ const RESUME = { experiences, skills, socials };
     }
 
     disconnectedCallback() {
+      window.clearInterval(this.clockTimer);
       window.removeEventListener("globe:secret-unlock", this.onUnlock);
       window.removeEventListener("keydown", this.onKeyDown, true);
       window.removeEventListener("resize", this.onResize);
@@ -297,7 +307,9 @@ const RESUME = { experiences, skills, socials };
         experiences: RawNode[];
         skills: RawNode[];
         socials: RawNode[];
+        birthday: string;
       };
+      this.birthday = data.birthday;
 
       const idIndex = new Map<string, number>();
       const push = (node: SkyNode) => {
@@ -356,7 +368,8 @@ const RESUME = { experiences, skills, socials };
           );
           if (skill) {
             const skillIndex = idIndex.get(skill.id);
-            if (skillIndex !== undefined) this.edges.push([expIndex, skillIndex]);
+            if (skillIndex !== undefined)
+              this.edges.push([expIndex, skillIndex]);
           }
         }
       });
@@ -383,6 +396,7 @@ const RESUME = { experiences, skills, socials };
       this.overlay.focus({ preventScroll: true });
       this.measure();
       this.updateStatus();
+      this.startCaptainClock();
       this.loop(performance.now());
     }
 
@@ -395,6 +409,8 @@ const RESUME = { experiences, skills, socials };
       this.overlay.removeAttribute("data-open");
       if (this.panel) this.panel.classList.add("hidden");
       document.documentElement.style.overflow = "";
+      window.clearInterval(this.clockTimer);
+      if (this.status) this.status.textContent = "captain timer offline";
     }
 
     private onResize = () => {
@@ -416,7 +432,10 @@ const RESUME = { experiences, skills, socials };
         this.charWidth = fontSize * 0.6;
       }
       this.cols = Math.max(20, Math.floor(window.innerWidth / this.charWidth));
-      this.rows = Math.max(12, Math.floor(window.innerHeight / this.lineHeight));
+      this.rows = Math.max(
+        12,
+        Math.floor(window.innerHeight / this.lineHeight),
+      );
 
       const random = mulberry(this.cols * 7349 + this.rows * 911);
       const density = Math.floor(this.cols * this.rows * 0.03);
@@ -570,7 +589,10 @@ const RESUME = { experiences, skills, socials };
       for (const [a, b] of this.edges) {
         const isLinked = a === selectedIndex || b === selectedIndex;
         // Lines fade with the depth of their farther endpoint.
-        const lvl = Math.min(bucket(screen[a]!.persp), bucket(screen[b]!.persp));
+        const lvl = Math.min(
+          bucket(screen[a]!.persp),
+          bucket(screen[b]!.persp),
+        );
         this.drawLine(
           screen[a]!.col,
           screen[a]!.row,
@@ -672,8 +694,7 @@ const RESUME = { experiences, skills, socials };
       // Fixed shades.
       if (token === "b") return { cls: "text-border", style: "" };
       if (token === "a") return { cls: "text-accent", style: "" };
-      if (token === "al")
-        return { cls: "text-accent", style: "opacity:0.55" };
+      if (token === "al") return { cls: "text-accent", style: "opacity:0.55" };
 
       const kind = token[0];
       const level = Number(token.slice(1));
@@ -736,10 +757,35 @@ const RESUME = { experiences, skills, socials };
 
     private updateStatus() {
       const index = this.selectable[this.selectionPos];
-      if (index === undefined || !this.status) return;
+      if (index === undefined) return;
       const node = this.nodes[index]!;
-      this.status.textContent = `@ ${node.label}`;
       if (this.announce) this.announce.textContent = `selected ${node.label}`;
+    }
+
+    private startCaptainClock() {
+      window.clearInterval(this.clockTimer);
+      this.renderCaptainClock();
+      this.clockTimer = window.setInterval(
+        () => this.renderCaptainClock(),
+        1000,
+      );
+    }
+
+    private renderCaptainClock() {
+      if (!this.status || !this.birthday) return;
+
+      const birthday = new Date(`${this.birthday}T00:00:00`);
+      const elapsedSeconds = Math.max(
+        0,
+        Math.floor((Date.now() - birthday.getTime()) / 1000),
+      );
+      const seconds = elapsedSeconds % 60;
+      const minutes = Math.floor(elapsedSeconds / 60) % 60;
+      const hours = Math.floor(elapsedSeconds / 3600) % 24;
+      const days = Math.floor(elapsedSeconds / 86400);
+      const pad = (value: number) => String(value).padStart(2, "0");
+
+      this.status.textContent = `captain of this ship for ${days}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
     }
 
     private move(step: number) {
@@ -945,9 +991,7 @@ const RESUME = { experiences, skills, socials };
       }
       const href = String(node.raw.href);
       const key = href.startsWith("http") ? "link" : "path";
-      return (
-        head + section(key) + this.linkItem(href) + this.panelHint(true)
-      );
+      return head + section(key) + this.linkItem(href) + this.panelHint(true);
     }
 
     private panelHint(hasItems: boolean) {

@@ -29,6 +29,7 @@ export const USER = {
   name: "Kopenkin Dmitrii",
   role: "full-stack ai developer",
   location: "andorra",
+  birthday: "2000-10-02",
   headline: `For ${new Date().getFullYear() - CONFIG.meta.experienceStartDate.getFullYear()} years i've been stacking typescript, react, next.js, postgres, and now ai into digital playgrounds - where every click feels inevitable, nothing breaks when you're not looking, and the software sometimes thinks ahead of you.`,
   asciiGlobe: {
     label: "andorra",
