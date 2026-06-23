@@ -5,7 +5,7 @@ import BasePage from "../../components/BasePage.astro";
 import FormattedDate from "../../components/FormattedDate.astro";
 import ScrambleLink from "../../components/ScrambleLink.astro";
 import SectionLabel from "../../components/SectionLabel.astro";
-import { BLOG, CONFIG } from "../../consts";
+import { BLOG, CONFIG, USER } from "../../consts";
 
 const posts = (await getCollection("blog")).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
@@ -22,6 +22,7 @@ const tags = [...tagCounts.keys()].sort((a, b) => a.localeCompare(b));
     <BaseHead
       title={`${BLOG.title.toLowerCase()} | ${CONFIG.meta.title}`}
       description={BLOG.subtitle}
+      imageAlt={USER.name}
     />
   </Fragment>
 

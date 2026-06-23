@@ -24,7 +24,11 @@ const bio = USER.headline;
 
 <BasePage>
   <Fragment slot="head">
-    <BaseHead title={CONFIG.meta.title} description={CONFIG.meta.description} />
+    <BaseHead
+      title={CONFIG.meta.title}
+      description={CONFIG.meta.description}
+      imageAlt={USER.name}
+    />
   </Fragment>
 
   <main class="mx-auto max-w-3xl px-5 pt-12 pb-16 sm:pt-16">

@@ -12,7 +12,7 @@ import { createRequire } from "node:module";
 import { readFile } from "node:fs/promises";
 import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
-import { CONFIG } from "../consts";
+import { BLOG, CONFIG, USER } from "../consts";
 
 // oklch tokens (see global.css :root) → sRGB hex. Satori's CSS engine is
 // happiest with plain hex, so we pre-compute once.
@@ -151,7 +151,15 @@ function fmtDate(d: Date): string {
 const PAD = 72;
 const INNER = OG_WIDTH - PAD * 2;
 
-function header(): VNode {
+const sep = () => h("span", { color: C.border, marginHorizontal: 14 }, "·");
+
+function header(rightLabel?: string): VNode {
+  const left = h(
+    "div",
+    { display: "flex", flexDirection: "row" },
+    h("span", { color: C.accent }, "~"),
+    h("span", {}, `/${CONFIG.meta.siteLabel}`),
+  );
   return h(
     "div",
     {
@@ -165,13 +173,21 @@ function header(): VNode {
       fontSize: 27,
       color: C.mutedForeground,
     },
-    h(
-      "div",
-      { display: "flex", flexDirection: "row" },
-      h("span", { color: C.accent }, "~"),
-      h("span", {}, `/${CONFIG.meta.siteLabel}`),
-    ),
-    h("span", {}, "mind palace"),
+    ...(rightLabel ? [left, h("span", {}, rightLabel)] : [left]),
+  );
+}
+
+function promptRow(command: string): VNode {
+  return h(
+    "div",
+    {
+      display: "flex",
+      flexDirection: "row",
+      fontSize: 27,
+      color: C.mutedForeground,
+    },
+    h("span", { color: C.accent }, "$"),
+    h("span", {}, ` ${command}`),
   );
 }
 
@@ -194,23 +210,7 @@ function titleBlock(title: string): VNode {
   );
 }
 
-function metaLine(input: OgImageInput): VNode {
-  const sep = () => h("span", { color: C.border, marginHorizontal: 14 }, "·");
-  const children: unknown[] = [h("span", {}, fmtDate(input.pubDate))];
-  if (input.reading) {
-    children.push(sep(), h("span", {}, `${input.reading} read`));
-  }
-  for (const tag of input.tags.slice(0, 5)) {
-    children.push(
-      sep(),
-      h(
-        "span",
-        { display: "flex", flexDirection: "row" },
-        h("span", { color: C.accent }, "#"),
-        h("span", {}, tag),
-      ),
-    );
-  }
+function footer(children: unknown[]): VNode {
   return h(
     "div",
     {
@@ -228,7 +228,7 @@ function metaLine(input: OgImageInput): VNode {
   );
 }
 
-function tree(input: OgImageInput): VNode {
+function frame(...children: VNode[]): VNode {
   return h(
     "div",
     {
@@ -241,41 +241,90 @@ function tree(input: OgImageInput): VNode {
       backgroundColor: C.background,
       fontFamily: FONT,
     },
-    header(),
+    ...children,
+  );
+}
+
+// Per-post blog card: ~/kopenkin.tech · mind palace / $ cat … / title /
+// date · reading · #tags.
+function blogTree(input: OgImageInput): VNode {
+  return frame(
+    header(BLOG.title.toLowerCase()),
     h(
       "div",
-      {
-        display: "flex",
-        flexDirection: "column",
-        width: INNER,
-        rowGap: 28,
-      },
-      h(
-        "div",
-        {
-          display: "flex",
-          flexDirection: "row",
-          fontSize: 27,
-          color: C.mutedForeground,
-        },
-        h("span", { color: C.accent }, "$"),
-        h("span", {}, ` cat ./mind-palace/${input.slug}.mdx`),
-      ),
+      { display: "flex", flexDirection: "column", width: INNER, rowGap: 28 },
+      promptRow(`cat ./mind-palace/${input.slug}.mdx`),
       titleBlock(input.title),
     ),
     metaLine(input),
   );
 }
 
+// Site card (homepage / fallback): ~/kopenkin.tech / $ whoami / name /
+// role (tagline) / location · site.
+function siteTree(): VNode {
+  return frame(
+    header(),
+    h(
+      "div",
+      { display: "flex", flexDirection: "column", width: INNER, rowGap: 22 },
+      promptRow(CONFIG.ui.terminalCommand),
+      titleBlock(USER.name),
+      h(
+        "div",
+        {
+          display: "flex",
+          flexDirection: "row",
+          fontSize: 33,
+          color: C.mutedForeground,
+        },
+        USER.role,
+      ),
+    ),
+    footer([
+      h("span", {}, USER.location),
+      sep(),
+      h("span", {}, CONFIG.meta.siteLabel),
+    ]),
+  );
+}
+
+function metaLine(input: OgImageInput): VNode {
+  const children: unknown[] = [h("span", {}, fmtDate(input.pubDate))];
+  if (input.reading) {
+    children.push(sep(), h("span", {}, `${input.reading} read`));
+  }
+  for (const tag of input.tags.slice(0, 5)) {
+    children.push(
+      sep(),
+      h(
+        "span",
+        { display: "flex", flexDirection: "row" },
+        h("span", { color: C.accent }, "#"),
+        h("span", {}, tag),
+      ),
+    );
+  }
+  return footer(children);
+}
+
 // --- public API -----------------------------------------------------------
-export async function renderOgImagePng(
-  input: OgImageInput,
-): Promise<Uint8Array> {
+async function renderPng(node: VNode): Promise<Uint8Array> {
   const fonts = await loadFonts();
-  const svg = await satori(tree(input), {
+  const svg = await satori(node, {
     width: OG_WIDTH,
     height: OG_HEIGHT,
     fonts,
   });
   return new Resvg(svg, { background: C.background }).render().asPng();
+}
+
+export async function renderOgImagePng(
+  input: OgImageInput,
+): Promise<Uint8Array> {
+  return renderPng(blogTree(input));
+}
+
+export async function renderSiteOgImagePng(): Promise<Uint8Array> {
+  return renderPng(siteTree());
 }
