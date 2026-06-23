@@ -1,8 +1,5 @@
 // Place any global data in this file.
 // You can import this data from anywhere in your site by using the `import` keyword.
-import type { AllowedPixelIconType } from "./components/pixel-icon.types";
-import type { TechId } from "./data/technologies";
-
 export const CONFIG: PortfolioConfig = {
   meta: {
     title: "kopenkin dmitrii — full-stack ai developer",
@@ -21,21 +18,6 @@ export const CONFIG: PortfolioConfig = {
       actionLabel: "activate",
       theme: "t",
       themeLabel: "theme",
-    },
-  },
-  game: {
-    title: "Take a little break",
-    description:
-      "A quiet contribution-grid drawing board. Click, drag, fill, unfill.",
-    enabled: true,
-    options: {
-      type: "contribution-drawer",
-      options: {
-        cols: 16,
-        rows: 8,
-        prefilledCells: [],
-        includeAttribution: true,
-      },
     },
   },
 };
@@ -60,22 +42,19 @@ export const USER = {
     initialTheta: 0.485,
   },
   socials: [
-    { icon: "file", label: "cv", href: "/dmitrii-kopenkin-cv.pdf" },
+    { label: "cv", href: "/dmitrii-kopenkin-cv.pdf" },
     {
-      icon: "github",
       label: "github",
       href: "https://github.com/kopenkinda",
       notracking: true,
     },
     {
-      icon: "telegram",
       label: "telegram",
       href: "https://t.me/leroifrancais",
       notracking: true,
     },
-    { icon: "mail", label: "mail", href: "mailto:hi@kopenkin.tech" },
+    { label: "mail", href: "mailto:hi@kopenkin.tech" },
     {
-      icon: "linkedin",
       label: "linkedin",
       href: "https://linkedin.com/in/dmitrii-kopenkin",
       notracking: true,
@@ -278,7 +257,6 @@ export const USER = {
 };
 
 type SocialLink = {
-  icon: AllowedPixelIconType;
   label: string;
   href: string;
   notracking?: boolean;
@@ -304,7 +282,7 @@ type ExperienceEntry = {
         href: undefined;
       };
   bulletpoints: [string] | [string, string] | [string, string, string];
-  technologies?: TechId[];
+  technologies?: string[];
 };
 
 type EducationType = "university" | "course" | "certifications";
@@ -318,20 +296,6 @@ type EducationEntry = {
   endDate?: Date;
   href?: string;
   actionLabel?: string;
-};
-
-export type AutobattlerGame = {
-  type: "autobattler";
-};
-
-export type ContributionDrawerGame = {
-  type: "contribution-drawer";
-  options: {
-    prefilledCells: [col: number, row: number][];
-    rows: number;
-    cols: number;
-    includeAttribution: boolean;
-  };
 };
 
 export type PortfolioConfig = {
@@ -352,12 +316,6 @@ export type PortfolioConfig = {
       theme: string;
       themeLabel: string;
     };
-  };
-  game: {
-    enabled: boolean;
-    title: string;
-    description: string;
-    options: AutobattlerGame | ContributionDrawerGame;
   };
 };
 
