@@ -126,6 +126,30 @@ const RESUME = { experiences, skills, socials };
     cursor: grabbing;
   }
 
+  .panel-item {
+    cursor: pointer;
+    border-left: 1px solid transparent;
+    padding-left: 0.5rem;
+    margin-left: -0.5rem;
+    transition:
+      color 120ms ease,
+      border-color 120ms ease;
+  }
+
+  .panel-item:hover {
+    color: var(--accent);
+  }
+
+  .panel-item.is-active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+
+  .panel-item.is-active .text-border,
+  .panel-item:hover .text-border {
+    color: var(--accent);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .constellation-overlay[data-open],
     .constellation-panel:not(.hidden) {
@@ -218,6 +242,13 @@ const RESUME = { experiences, skills, socials };
     private dragY = 0;
     private screenNodes: Array<{ index: number; col: number; row: number }> = [];
 
+    // Width (in character cells) the open side panel occupies, used to shift
+    // the rendered field left so it stays centred in the visible area.
+    private panelCols = 0;
+    // Interactive rows inside the open panel + the currently highlighted one.
+    private panelItems: HTMLElement[] = [];
+    private panelItemPos = 0;
+
     connectedCallback() {
       this.overlay = this.querySelector("[data-overlay]") ?? undefined;
       this.field = this.querySelector("[data-field]") ?? undefined;
@@ -241,6 +272,8 @@ const RESUME = { experiences, skills, socials };
         this.field.addEventListener("pointerup", this.onPointerUp);
         this.field.addEventListener("pointercancel", this.onPointerUp);
       }
+
+      this.panel?.addEventListener("click", this.onPanelClick);
     }
 
     disconnectedCallback() {
@@ -253,6 +286,7 @@ const RESUME = { experiences, skills, socials };
         this.field.removeEventListener("pointerup", this.onPointerUp);
         this.field.removeEventListener("pointercancel", this.onPointerUp);
       }
+      this.panel?.removeEventListener("click", this.onPanelClick);
       cancelAnimationFrame(this.frame);
     }
 
@@ -426,7 +460,14 @@ const RESUME = { experiences, skills, socials };
     private draw() {
       if (!this.field || this.cols === 0) return;
       const { cols, rows } = this;
-      const cx = cols / 2;
+      // When the side panel is open, shrink the usable width by the panel's
+      // column span and recentre — the constellation slides left instead of
+      // hiding behind the panel.
+      const availCols = Math.max(
+        24,
+        cols - (this.panelOpen ? this.panelCols : 0),
+      );
+      const cx = availCols / 2;
       const cy = rows / 2;
       // Fill each axis independently so the field spans the full viewport
       // instead of collapsing to a narrow central band on wide screens.
@@ -508,12 +549,6 @@ const RESUME = { experiences, skills, socials };
         };
       });
 
-      this.screenNodes = this.selectable.map((index) => ({
-        index,
-        col: screen[index]!.col,
-        row: screen[index]!.row,
-      }));
-
       // Normalize perspective into a 0..1 depth where 1 = closest to camera,
       // then quantize into shade buckets. Tokens look like `n5` (node, level 5)
       // so identical depths coalesce into a single colored span run.
@@ -567,18 +602,33 @@ const RESUME = { experiences, skills, socials };
       // Pass 2: labels. Experiences and socials are labeled; nearer (larger
       // persp) entries win the contested cells. Skills stay unlabeled unless
       // selected to keep the field sparse. Labels carry a readability floor so
-      // distant text stays legible.
+      // distant text stays legible. Only nodes whose label actually rendered
+      // become mouse-clickable, so there are no invisible hit targets.
+      const labeled = new Set<number>();
       for (const index of [...order].reverse()) {
         const node = this.nodes[index]!;
         if (node.kind === "skill") continue;
         const { col, row, persp } = screen[index]!;
-        putLabel(col, row, node.label, `l${Math.max(2, bucket(persp))}`);
+        if (putLabel(col, row, node.label, `l${Math.max(2, bucket(persp))}`)) {
+          labeled.add(index);
+        }
       }
 
       if (selectedIndex !== undefined) {
         const node = this.nodes[selectedIndex]!;
         const { col, row } = screen[selectedIndex]!;
         putLabel(col, row, node.label, "a", true);
+        labeled.add(selectedIndex);
+      }
+
+      // Hit targets = only the nodes with a visible label this frame.
+      this.screenNodes = [];
+      for (const index of labeled) {
+        this.screenNodes.push({
+          index,
+          col: screen[index]!.col,
+          row: screen[index]!.row,
+        });
       }
 
       this.field.innerHTML = this.toHtml(ch, cl);
@@ -628,17 +678,20 @@ const RESUME = { experiences, skills, socials };
       const kind = token[0];
       const level = Number(token.slice(1));
       const t = DEPTH_LEVELS > 1 ? level / (DEPTH_LEVELS - 1) : 1;
+      // Power curve makes the falloff bite harder: far elements drop off fast
+      // while only the nearest few stay near-full brightness.
+      const d = Math.pow(t, 1.8);
       if (kind === "n") {
-        // Star glyphs: bright near, fade toward background when far.
-        const op = (0.34 + 0.66 * t).toFixed(3);
+        // Star glyphs: bright near, fade deep toward background when far.
+        const op = (0.1 + 0.9 * d).toFixed(3);
         return { cls: "text-foreground", style: `opacity:${op}` };
       }
       if (kind === "l") {
-        const op = (0.42 + 0.58 * t).toFixed(3);
+        const op = (0.2 + 0.8 * d).toFixed(3);
         return { cls: "text-muted-foreground", style: `opacity:${op}` };
       }
       // Edges/lines: subtler so they read as connective tissue.
-      const op = (0.12 + 0.42 * t).toFixed(3);
+      const op = (0.05 + 0.35 * d).toFixed(3);
       return { cls: "text-muted-foreground", style: `opacity:${op}` };
     }
 
@@ -760,55 +813,146 @@ const RESUME = { experiences, skills, socials };
       const index = this.selectable[this.selectionPos];
       if (index === undefined || !this.panel) return;
       const node = this.nodes[index]!;
-      this.panel.innerHTML = this.panelHtml(node);
+      this.panel.innerHTML = this.panelHtml(node, index);
       this.panel.classList.remove("hidden");
       this.panelOpen = true;
+      // Measure occupied width so the field can shift left to match.
+      this.panelCols = Math.ceil(
+        (this.panel.offsetWidth || 0) / this.charWidth,
+      );
+      this.panelItems = Array.from(
+        this.panel.querySelectorAll<HTMLElement>("[data-panel-item]"),
+      );
+      this.panelItemPos = 0;
+      this.highlightPanelItem();
     }
 
     private closePanel() {
       if (!this.panel) return;
       this.panel.classList.add("hidden");
       this.panelOpen = false;
+      this.panelCols = 0;
+      this.panelItems = [];
     }
 
-    private panelHtml(node: SkyNode) {
+    private highlightPanelItem() {
+      this.panelItems.forEach((el, i) => {
+        const active = i === this.panelItemPos;
+        el.classList.toggle("is-active", active);
+        if (active) el.scrollIntoView({ block: "nearest" });
+      });
+    }
+
+    private movePanel(step: number) {
+      const total = this.panelItems.length;
+      if (total === 0) return;
+      this.panelItemPos = (this.panelItemPos + step + total) % total;
+      this.highlightPanelItem();
+    }
+
+    private activatePanelItem() {
+      const el = this.panelItems[this.panelItemPos];
+      if (!el) return;
+      const target = el.dataset.target;
+      if (target !== undefined) {
+        this.jumpTo(Number(target));
+        return;
+      }
+      if (el instanceof HTMLAnchorElement) el.click();
+    }
+
+    private jumpTo(targetIndex: number) {
+      const pos = this.selectable.indexOf(targetIndex);
+      if (pos === -1) return;
+      this.selectionPos = pos;
+      this.faceSelected();
+      this.updateStatus();
+      this.openPanel();
+    }
+
+    private onPanelClick = (event: MouseEvent) => {
+      const el = (event.target as HTMLElement)?.closest<HTMLElement>(
+        "[data-panel-item]",
+      );
+      if (!el) return;
+      const target = el.dataset.target;
+      if (target !== undefined) {
+        event.preventDefault();
+        this.jumpTo(Number(target));
+      }
+      // Anchor items without a data-target navigate natively.
+    };
+
+    private connectedIndices(index: number) {
+      const out: number[] = [];
+      for (const [a, b] of this.edges) {
+        if (a === index) out.push(b);
+        else if (b === index) out.push(a);
+      }
+      return out;
+    }
+
+    private jumpItem(targetIndex: number, label: string) {
+      return `<button type="button" class="panel-item mt-1 flex w-full items-center gap-2 text-left text-foreground" data-panel-item data-target="${targetIndex}"><span class="text-border">→</span><span>${esc(
+        label,
+      )}</span></button>`;
+    }
+
+    private linkItem(href: string) {
+      const external = href.startsWith("http");
+      return `<a class="panel-item mt-1 flex w-full items-center gap-2 text-left text-foreground" data-panel-item href="${esc(
+        href,
+      )}"${external ? ' target="_blank" rel="noreferrer"' : ""}><span class="text-border">→</span><span>${esc(
+        href,
+      )}</span></a>`;
+    }
+
+    private panelHtml(node: SkyNode, index: number) {
       const head = `<div class="text-accent">@ ${esc(node.label)}</div>`;
       const row = (key: string, value: string) =>
         `<div class="mt-1 text-muted-foreground">${key}: <span class="text-foreground">${esc(
           value,
         )}</span></div>`;
+      const section = (title: string) =>
+        `<div class="mt-4 text-[10px] tracking-widest text-border uppercase">${title}</div>`;
 
       if (node.kind === "experience") {
         const raw = node.raw;
+        const skills = this.connectedIndices(index);
+        const links = skills
+          .map((i) => this.jumpItem(i, this.nodes[i]!.label))
+          .join("");
         return (
           head +
           row("role", String(raw.role)) +
           row("period", String(raw.period)) +
-          row("stack", (raw.stack as string[]).join(" · ")) +
           row("note", String(raw.note)) +
-          this.panelHint()
+          (links ? section("stack") + links : "") +
+          this.panelHint(skills.length > 0)
         );
       }
       if (node.kind === "skill") {
+        const exps = this.connectedIndices(index);
+        const links = exps
+          .map((i) => this.jumpItem(i, this.nodes[i]!.label))
+          .join("");
         return (
           head +
           row("type", "technology") +
-          row("used", (node.raw.roles as string[]).join(" · ")) +
-          this.panelHint()
+          (links ? section("used in") + links : "") +
+          this.panelHint(exps.length > 0)
         );
       }
       const href = String(node.raw.href);
       const key = href.startsWith("http") ? "link" : "path";
-      const link = `<div class="mt-1 text-muted-foreground">${key}: <a class="text-foreground hover:text-accent" href="${esc(
-        href,
-      )}"${href.startsWith("http") ? ' target="_blank" rel="noreferrer"' : ""}>${esc(
-        href,
-      )}</a></div>`;
-      return head + link + this.panelHint();
+      return (
+        head + section(key) + this.linkItem(href) + this.panelHint(true)
+      );
     }
 
-    private panelHint() {
-      return `<div class="mt-3 text-[10px] tracking-wide text-border">esc · close</div>`;
+    private panelHint(hasItems: boolean) {
+      const nav = hasItems ? "↑ ↓ / j k · move   ⏎ · open   " : "";
+      return `<div class="mt-5 text-[10px] tracking-wide text-border">${nav}esc · close</div>`;
     }
 
     private onKeyDown = (event: KeyboardEvent) => {
@@ -816,10 +960,29 @@ const RESUME = { experiences, skills, socials };
       const key = event.key;
 
       if (this.panelOpen) {
-        if (key === "Escape" || key === "Enter") {
+        let handledPanel = true;
+        switch (key) {
+          case "Escape":
+            this.closePanel();
+            break;
+          case "ArrowDown":
+          case "j":
+            this.movePanel(1);
+            break;
+          case "ArrowUp":
+          case "k":
+            this.movePanel(-1);
+            break;
+          case "Enter":
+            if (this.panelItems.length > 0) this.activatePanelItem();
+            else this.closePanel();
+            break;
+          default:
+            handledPanel = false;
+        }
+        if (handledPanel) {
           event.preventDefault();
           event.stopImmediatePropagation();
-          this.closePanel();
         }
         return;
       }
