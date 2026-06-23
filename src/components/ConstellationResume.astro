@@ -93,7 +93,60 @@ const RESUME = { experiences, skills, socials, birthday: USER.birthday };
   />
 </constellation-resume>
 
-<style>
+<style is:global>
+  .constellation-overlay {
+    --sky-bg: var(--foreground);
+    --sky-fg: var(--background);
+    --sky-muted: color-mix(in oklch, var(--background) 72%, var(--foreground));
+    --sky-border: color-mix(in oklch, var(--background) 42%, var(--foreground));
+    --sky-accent: color-mix(in oklch, var(--accent) 72%, var(--background));
+
+    background: var(--sky-bg) !important;
+    color: var(--sky-fg) !important;
+  }
+
+  .dark .constellation-overlay {
+    --sky-bg: var(--background);
+    --sky-fg: var(--foreground);
+    --sky-muted: var(--muted-foreground);
+    --sky-border: var(--border);
+    --sky-accent: var(--accent);
+  }
+
+  .constellation-overlay [data-field] {
+    color: var(--sky-muted) !important;
+  }
+
+  .constellation-overlay [data-status],
+  .constellation-overlay .text-accent {
+    color: var(--sky-accent) !important;
+  }
+
+  .constellation-overlay .text-foreground {
+    color: var(--sky-fg) !important;
+  }
+
+  .constellation-overlay .text-muted-foreground {
+    color: var(--sky-muted) !important;
+  }
+
+  .constellation-overlay .text-border {
+    color: var(--sky-border) !important;
+  }
+
+  .constellation-overlay .border-accent {
+    border-color: var(--sky-accent) !important;
+  }
+
+  .constellation-panel {
+    background: color-mix(
+      in oklch,
+      var(--sky-bg) 94%,
+      var(--sky-fg)
+    ) !important;
+    color: var(--sky-muted);
+  }
+
   .constellation-overlay[data-open] {
     animation: constellation-in 320ms ease-out;
   }
