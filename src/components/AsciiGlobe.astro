@@ -82,6 +82,12 @@ const placeholderHtml = placeholder
     data-theme-scramble-scope
     set:html={placeholderHtml}
   />
+  <div
+    class="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-background/75 text-center font-mono text-[10px] tracking-wide text-accent opacity-0 transition-opacity duration-200"
+    data-hint
+    aria-hidden="true"
+  >
+  </div>
 </ascii-globe>
 
 <script>
@@ -113,10 +119,27 @@ const placeholderHtml = placeholder
     private phi = 0;
     private theta = 0.485;
     private readonly sourceSize = 220;
+    private hint?: HTMLElement;
+    private clickTimes: number[] = [];
+    private hasDragged = false;
+    private downX = 0;
+    private downY = 0;
+    private resetTimer = 0;
+    private readonly secretWindow = 8000;
+    private readonly secretTarget = 10;
+    private readonly secretHints: Record<number, string> = {
+      4: "[signal detected]",
+      5: "[orbit unstable]",
+      6: "[stars aligning]",
+      7: "[resume map found]",
+      8: "[opening sky]",
+      9: "[last click]",
+    };
     connectedCallback() {
       this.canvas = this.querySelector("[data-canvas]") ?? undefined;
       this.source = this.querySelector("[data-source]") ?? undefined;
       this.placeholder = this.querySelector("[data-placeholder]") ?? undefined;
+      this.hint = this.querySelector("[data-hint]") ?? undefined;
       this.placeholderText = this.placeholder?.textContent ?? "";
       this.phi = this.initialPhi;
       this.theta = this.initialTheta;
@@ -131,6 +154,7 @@ const placeholderHtml = placeholder
 
     disconnectedCallback() {
       cancelAnimationFrame(this.animation);
+      window.clearTimeout(this.resetTimer);
       this.globe?.destroy();
       this.removeEventListener("pointerdown", this.onPointerDown);
       window.removeEventListener("pointermove", this.onPointerMove);
@@ -397,6 +421,9 @@ const placeholderHtml = placeholder
 
     private onPointerDown = (event: PointerEvent) => {
       this.dragging = true;
+      this.hasDragged = false;
+      this.downX = event.clientX;
+      this.downY = event.clientY;
       this.pointerX = event.clientX;
       this.pointerY = event.clientY;
       this.setPointerCapture(event.pointerId);
@@ -404,6 +431,11 @@ const placeholderHtml = placeholder
 
     private onPointerMove = (event: PointerEvent) => {
       if (!this.dragging) return;
+      if (
+        Math.hypot(event.clientX - this.downX, event.clientY - this.downY) > 6
+      ) {
+        this.hasDragged = true;
+      }
       this.phi += (event.clientX - this.pointerX) * 0.01;
       this.theta = Math.max(
         -Math.PI / 2,
@@ -418,9 +450,46 @@ const placeholderHtml = placeholder
     };
 
     private onPointerUp = () => {
+      if (this.dragging && !this.hasDragged) this.registerSecretClick();
       this.dragging = false;
       this.syncPositionAttributes();
     };
+
+    private registerSecretClick() {
+      const now = performance.now();
+      this.clickTimes.push(now);
+      this.clickTimes = this.clickTimes.filter(
+        (time) => now - time <= this.secretWindow,
+      );
+      const count = this.clickTimes.length;
+      window.clearTimeout(this.resetTimer);
+
+      if (count >= this.secretTarget) {
+        this.clickTimes = [];
+        this.setHint("");
+        window.dispatchEvent(
+          new CustomEvent("globe:secret-unlock", { bubbles: true }),
+        );
+        return;
+      }
+
+      const label = this.secretHints[count];
+      this.setHint(label ? `${label} ${this.secretTarget - count} more` : "");
+      this.resetTimer = window.setTimeout(() => {
+        this.clickTimes = [];
+        this.setHint("");
+      }, this.secretWindow);
+    }
+
+    private setHint(text: string) {
+      if (!this.hint) return;
+      if (text) {
+        this.hint.textContent = text;
+        this.hint.style.opacity = "1";
+      } else {
+        this.hint.style.opacity = "0";
+      }
+    }
 
     private syncPositionAttributes() {
       this.dataset.currentPhi = String(this.phi);

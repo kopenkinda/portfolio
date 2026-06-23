@@ -1,0 +1,1139 @@
+---
+import { USER } from "../consts";
+
+const monthFmt = new Intl.DateTimeFormat("en", {
+  month: "short",
+  year: "numeric",
+});
+const fmt = (date: Date) => monthFmt.format(date).toLowerCase();
+const range = (entry: (typeof USER.experiences.entries)[number]) =>
+  `${fmt(entry.startDate)} — ${entry.endDate ? fmt(entry.endDate) : "present"}`;
+const tidy = (token: string) =>
+  token.replace("githubactions", "github-actions");
+
+const experiences = USER.experiences.entries.map((entry) => ({
+  id: `exp-${entry.id}`,
+  name: (entry.company.name ?? "independent").toLowerCase(),
+  role: entry.title.toLowerCase(),
+  period: range(entry),
+  stack: (entry.technologies ?? []).map(tidy),
+  stackTokens: entry.technologies ?? [],
+  note: entry.bulletpoints[0],
+}));
+
+const skillMap = new Map<string, string[]>();
+for (const entry of USER.experiences.entries) {
+  for (const token of entry.technologies ?? []) {
+    if (!skillMap.has(token)) skillMap.set(token, []);
+    skillMap
+      .get(token)!
+      .push((entry.company.name ?? "independent").toLowerCase());
+  }
+}
+const skills = [...skillMap.entries()].map(([token, roles], index) => ({
+  id: `skill-${index}`,
+  token,
+  name: tidy(token),
+  roles: [...new Set(roles)],
+}));
+
+const socials = USER.socials.map((social, index) => ({
+  id: `soc-${index}`,
+  name: social.label,
+  href: social.href,
+}));
+socials.push({ id: "soc-blog", name: "mind palace", href: "/blog/" });
+
+const RESUME = { experiences, skills, socials, birthday: USER.birthday };
+---
+
+<constellation-resume>
+  <div
+    class="constellation-overlay fixed inset-0 z-[200] hidden overflow-hidden bg-background text-foreground"
+    data-overlay
+    role="dialog"
+    aria-modal="true"
+    aria-label="constellation resume"
+    tabindex="-1"
+  >
+    <pre
+      class="absolute inset-0 m-0 overflow-hidden font-mono text-[15px] leading-[1.35] font-normal whitespace-pre text-muted-foreground select-none"
+      aria-hidden="true"
+      data-field>
+    </pre>
+
+    <div
+      class="pointer-events-none absolute top-4 left-4 z-10 font-mono text-xs tracking-wide text-accent"
+      data-status
+    >
+      captain timer offline
+    </div>
+
+    <div
+      class="pointer-events-none absolute right-4 bottom-4 left-4 z-10 text-center font-mono text-[10px] tracking-wide text-border sm:text-xs"
+      data-legend
+    >
+      drag rotate · click star · ← → ↑ ↓ · j k select · ⏎ inspect · esc close
+    </div>
+
+    <div
+      class="constellation-panel absolute inset-y-0 right-0 z-20 hidden w-[min(88vw,24rem)] overflow-y-auto border-l border-accent bg-background/95 px-6 py-8 font-mono text-[13px] leading-relaxed backdrop-blur-sm"
+      data-panel
+    >
+    </div>
+
+    <span class="sr-only" aria-live="polite" data-announce></span>
+  </div>
+
+  <script
+    is:inline
+    type="application/json"
+    data-constellation-data
+    set:html={JSON.stringify(RESUME)}
+  />
+</constellation-resume>
+
+<style is:global>
+  .constellation-overlay {
+    --sky-bg: var(--foreground);
+    --sky-fg: var(--background);
+    --sky-muted: color-mix(in oklch, var(--background) 72%, var(--foreground));
+    --sky-border: color-mix(in oklch, var(--background) 42%, var(--foreground));
+    --sky-accent: color-mix(in oklch, var(--accent) 72%, var(--background));
+
+    background: var(--sky-bg) !important;
+    color: var(--sky-fg) !important;
+  }
+
+  .dark .constellation-overlay {
+    --sky-bg: var(--background);
+    --sky-fg: var(--foreground);
+    --sky-muted: var(--muted-foreground);
+    --sky-border: var(--border);
+    --sky-accent: var(--accent);
+  }
+
+  .constellation-overlay [data-field] {
+    color: var(--sky-muted) !important;
+  }
+
+  .constellation-overlay [data-status],
+  .constellation-overlay .text-accent {
+    color: var(--sky-accent) !important;
+  }
+
+  .constellation-overlay .text-foreground {
+    color: var(--sky-fg) !important;
+  }
+
+  .constellation-overlay .text-muted-foreground {
+    color: var(--sky-muted) !important;
+  }
+
+  .constellation-overlay .text-border {
+    color: var(--sky-border) !important;
+  }
+
+  .constellation-overlay .border-accent {
+    border-color: var(--sky-accent) !important;
+  }
+
+  .constellation-panel {
+    background: color-mix(
+      in oklch,
+      var(--sky-bg) 94%,
+      var(--sky-fg)
+    ) !important;
+    color: var(--sky-muted);
+  }
+
+  .constellation-overlay[data-open] {
+    animation: constellation-in 320ms ease-out;
+  }
+
+  @keyframes constellation-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .constellation-panel:not(.hidden) {
+    animation: panel-in 220ms ease-out;
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateX(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  [data-field] {
+    cursor: grab;
+  }
+
+  [data-field].is-dragging {
+    cursor: grabbing;
+  }
+
+  .panel-item {
+    cursor: pointer;
+    border-left: 1px solid transparent;
+    padding-left: 0.5rem;
+    margin-left: -0.5rem;
+    transition:
+      color 120ms ease,
+      border-color 120ms ease;
+  }
+
+  .panel-item:hover {
+    color: var(--accent);
+  }
+
+  .panel-item.is-active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+
+  .panel-item.is-active .text-border,
+  .panel-item:hover .text-border {
+    color: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .constellation-overlay[data-open],
+    .constellation-panel:not(.hidden) {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  type RawNode = Record<string, unknown>;
+
+  interface SkyNode {
+    id: string;
+    kind: "experience" | "skill" | "social";
+    glyph: string;
+    label: string;
+    x: number;
+    y: number;
+    z: number;
+    raw: RawNode;
+  }
+
+  const FOV = 6;
+  const MAX_EXTENT = 4.7;
+  // Number of discrete depth shades. More levels = smoother fade, but each
+  // level is a distinct span run so we keep it modest for render efficiency.
+  const DEPTH_LEVELS = 8;
+
+  const esc = (value: string) =>
+    value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  function fibonacciSphere(count: number, radius: number) {
+    const points: Array<[number, number, number]> = [];
+    const golden = Math.PI * (3 - Math.sqrt(5));
+    for (let i = 0; i < count; i++) {
+      const y = count <= 1 ? 0 : 1 - (i / (count - 1)) * 2;
+      const ring = Math.sqrt(Math.max(0, 1 - y * y));
+      const theta = golden * i;
+      points.push([
+        Math.cos(theta) * ring * radius,
+        y * radius,
+        Math.sin(theta) * ring * radius,
+      ]);
+    }
+    return points;
+  }
+
+  function mulberry(seed: number) {
+    return () => {
+      seed |= 0;
+      seed = (seed + 0x6d2b79f5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  class ConstellationResume extends HTMLElement {
+    private overlay?: HTMLElement;
+    private field?: HTMLPreElement;
+    private status?: HTMLElement;
+    private panel?: HTMLElement;
+    private announce?: HTMLElement;
+    private birthday?: string;
+    private clockTimer = 0;
+
+    private nodes: SkyNode[] = [];
+    private edges: Array<[number, number]> = [];
+    private selectable: number[] = [];
+    private selectionPos = 0;
+
+    private cols = 0;
+    private rows = 0;
+    private charWidth = 9;
+    private lineHeight = 20;
+    private bgStars: Array<[number, number]> = [];
+
+    private yaw = 0;
+    private pitch = 0;
+    private targetYaw = 0;
+    private targetPitch = 0;
+
+    private open = false;
+    private panelOpen = false;
+    private frame = 0;
+    private lastDraw = 0;
+    private reduceMotion = false;
+
+    private dragging = false;
+    private dragMoved = false;
+    private dragX = 0;
+    private dragY = 0;
+    private screenNodes: Array<{ index: number; col: number; row: number }> =
+      [];
+
+    // Width (in character cells) the open side panel occupies, used to shift
+    // the rendered field left so it stays centred in the visible area.
+    private panelCols = 0;
+    // Interactive rows inside the open panel + the currently highlighted one.
+    private panelItems: HTMLElement[] = [];
+    private panelItemPos = 0;
+
+    connectedCallback() {
+      this.overlay = this.querySelector("[data-overlay]") ?? undefined;
+      this.field = this.querySelector("[data-field]") ?? undefined;
+      this.status = this.querySelector("[data-status]") ?? undefined;
+      this.panel = this.querySelector("[data-panel]") ?? undefined;
+      this.announce = this.querySelector("[data-announce]") ?? undefined;
+      this.reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      this.buildNodes();
+
+      window.addEventListener("globe:secret-unlock", this.onUnlock);
+      window.addEventListener("keydown", this.onKeyDown, true);
+      window.addEventListener("resize", this.onResize);
+
+      if (this.field) {
+        this.field.style.pointerEvents = "auto";
+        this.field.addEventListener("pointerdown", this.onPointerDown);
+        this.field.addEventListener("pointermove", this.onPointerMove);
+        this.field.addEventListener("pointerup", this.onPointerUp);
+        this.field.addEventListener("pointercancel", this.onPointerUp);
+      }
+
+      this.panel?.addEventListener("click", this.onPanelClick);
+    }
+
+    disconnectedCallback() {
+      window.clearInterval(this.clockTimer);
+      window.removeEventListener("globe:secret-unlock", this.onUnlock);
+      window.removeEventListener("keydown", this.onKeyDown, true);
+      window.removeEventListener("resize", this.onResize);
+      if (this.field) {
+        this.field.removeEventListener("pointerdown", this.onPointerDown);
+        this.field.removeEventListener("pointermove", this.onPointerMove);
+        this.field.removeEventListener("pointerup", this.onPointerUp);
+        this.field.removeEventListener("pointercancel", this.onPointerUp);
+      }
+      this.panel?.removeEventListener("click", this.onPanelClick);
+      cancelAnimationFrame(this.frame);
+    }
+
+    private buildNodes() {
+      const script = this.querySelector("[data-constellation-data]");
+      if (!script?.textContent) return;
+      const data = JSON.parse(script.textContent) as {
+        experiences: RawNode[];
+        skills: RawNode[];
+        socials: RawNode[];
+        birthday: string;
+      };
+      this.birthday = data.birthday;
+
+      const idIndex = new Map<string, number>();
+      const push = (node: SkyNode) => {
+        idIndex.set(node.id, this.nodes.length);
+        this.nodes.push(node);
+      };
+
+      const expPos = fibonacciSphere(data.experiences.length, 1.0);
+      data.experiences.forEach((raw, i) =>
+        push({
+          id: String(raw.id),
+          kind: "experience",
+          glyph: "*",
+          label: String(raw.name),
+          x: expPos[i]![0],
+          y: expPos[i]![1],
+          z: expPos[i]![2],
+          raw,
+        }),
+      );
+
+      const skillPos = fibonacciSphere(data.skills.length, 1.78);
+      data.skills.forEach((raw, i) =>
+        push({
+          id: String(raw.id),
+          kind: "skill",
+          glyph: "+",
+          label: String(raw.name),
+          x: skillPos[i]![0],
+          y: skillPos[i]![1],
+          z: skillPos[i]![2],
+          raw,
+        }),
+      );
+
+      const socialPos = fibonacciSphere(data.socials.length, 2.6);
+      data.socials.forEach((raw, i) =>
+        push({
+          id: String(raw.id),
+          kind: "social",
+          glyph: "o",
+          label: String(raw.name),
+          x: socialPos[i]![0],
+          y: socialPos[i]![1],
+          z: socialPos[i]![2],
+          raw,
+        }),
+      );
+
+      data.experiences.forEach((raw) => {
+        const expIndex = idIndex.get(String(raw.id));
+        if (expIndex === undefined) return;
+        for (const token of (raw.stackTokens as string[]) ?? []) {
+          const skill = this.nodes.find(
+            (node) => node.kind === "skill" && node.raw.token === token,
+          );
+          if (skill) {
+            const skillIndex = idIndex.get(skill.id);
+            if (skillIndex !== undefined)
+              this.edges.push([expIndex, skillIndex]);
+          }
+        }
+      });
+
+      this.selectable = this.nodes.map((_, index) => index);
+    }
+
+    private onUnlock = () => {
+      if (this.open) return;
+      this.openSky();
+    };
+
+    private openSky() {
+      if (!this.overlay) return;
+      this.open = true;
+      this.panelOpen = false;
+      this.selectionPos = 0;
+      this.yaw = 0;
+      this.pitch = 0;
+      this.faceSelected();
+      document.documentElement.style.overflow = "hidden";
+      this.overlay.classList.remove("hidden");
+      this.overlay.setAttribute("data-open", "");
+      this.overlay.focus({ preventScroll: true });
+      this.measure();
+      this.updateStatus();
+      this.startCaptainClock();
+      this.loop(performance.now());
+    }
+
+    private closeSky() {
+      if (!this.overlay) return;
+      this.open = false;
+      this.panelOpen = false;
+      cancelAnimationFrame(this.frame);
+      this.overlay.classList.add("hidden");
+      this.overlay.removeAttribute("data-open");
+      if (this.panel) this.panel.classList.add("hidden");
+      document.documentElement.style.overflow = "";
+      window.clearInterval(this.clockTimer);
+      if (this.status) this.status.textContent = "captain timer offline";
+    }
+
+    private onResize = () => {
+      if (!this.open) return;
+      this.measure();
+    };
+
+    private measure() {
+      if (!this.field) return;
+      const computed = getComputedStyle(this.field);
+      const fontSize = Number.parseFloat(computed.fontSize) || 15;
+      this.lineHeight = fontSize * 1.35;
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      if (context) {
+        context.font = `${fontSize}px ${computed.fontFamily}`;
+        this.charWidth = context.measureText("0").width || fontSize * 0.6;
+      } else {
+        this.charWidth = fontSize * 0.6;
+      }
+      this.cols = Math.max(20, Math.floor(window.innerWidth / this.charWidth));
+      this.rows = Math.max(
+        12,
+        Math.floor(window.innerHeight / this.lineHeight),
+      );
+
+      const random = mulberry(this.cols * 7349 + this.rows * 911);
+      const density = Math.floor(this.cols * this.rows * 0.03);
+      this.bgStars = [];
+      for (let i = 0; i < density; i++) {
+        this.bgStars.push([
+          Math.floor(random() * this.cols),
+          Math.floor(random() * this.rows),
+        ]);
+      }
+    }
+
+    private loop = (now: number) => {
+      if (!this.open) return;
+      if (!this.reduceMotion && !this.panelOpen) {
+        this.targetYaw += 0.0007;
+      }
+      this.yaw += (this.targetYaw - this.yaw) * 0.16;
+      this.pitch += (this.targetPitch - this.pitch) * 0.16;
+
+      if (now - this.lastDraw > 45) {
+        this.lastDraw = now;
+        this.draw();
+      }
+      this.frame = requestAnimationFrame(this.loop);
+    };
+
+    private project(node: SkyNode) {
+      const cosY = Math.cos(this.yaw);
+      const sinY = Math.sin(this.yaw);
+      const x1 = node.x * cosY + node.z * sinY;
+      const z1 = -node.x * sinY + node.z * cosY;
+      const cosX = Math.cos(this.pitch);
+      const sinX = Math.sin(this.pitch);
+      const y2 = node.y * cosX - z1 * sinX;
+      const z2 = node.y * sinX + z1 * cosX;
+      const persp = FOV / (FOV - z2);
+      return { px: x1 * persp, py: y2 * persp, persp };
+    }
+
+    private draw() {
+      if (!this.field || this.cols === 0) return;
+      const { cols, rows } = this;
+      // When the side panel is open, shrink the usable width by the panel's
+      // column span and recentre — the constellation slides left instead of
+      // hiding behind the panel.
+      const availCols = Math.max(
+        24,
+        cols - (this.panelOpen ? this.panelCols : 0),
+      );
+      const cx = availCols / 2;
+      const cy = rows / 2;
+      // Fill each axis independently so the field spans the full viewport
+      // instead of collapsing to a narrow central band on wide screens.
+      const spreadX = (cx - 4) / MAX_EXTENT;
+      const spreadY = (cy - 2) / MAX_EXTENT;
+
+      const ch: string[][] = [];
+      const cl: string[][] = [];
+      const solid: boolean[][] = [];
+      for (let r = 0; r < rows; r++) {
+        ch.push(new Array(cols).fill(" "));
+        cl.push(new Array(cols).fill(""));
+        solid.push(new Array(cols).fill(false));
+      }
+
+      const put = (
+        col: number,
+        row: number,
+        char: string,
+        cls: string,
+        isSolid = false,
+      ) => {
+        if (row < 0 || row >= rows || col < 0 || col >= cols) return;
+        if (solid[row]![col] && !isSolid) return;
+        ch[row]![col] = char;
+        cl[row]![col] = cls;
+        if (isSolid) solid[row]![col] = true;
+      };
+
+      const putText = (col: number, row: number, text: string, cls: string) => {
+        for (let i = 0; i < text.length; i++) put(col + i, row, text[i]!, cls);
+      };
+
+      // Place a label to the side of a glyph, claiming its cells as solid so
+      // that connector lines and other labels never overwrite it. Returns
+      // false when there is no collision-free room, in which case the label is
+      // skipped entirely to keep the field readable.
+      const putLabel = (
+        gcol: number,
+        grow: number,
+        text: string,
+        cls: string,
+        force = false,
+      ) => {
+        const candidates = [
+          gcol + 2, // right side
+          gcol - 1 - text.length, // left side
+        ];
+        for (const start of candidates) {
+          if (start < 0 || start + text.length > cols) continue;
+          let blocked = false;
+          if (!force) {
+            for (let i = -1; i <= text.length; i++) {
+              const c = start + i;
+              if (c < 0 || c >= cols) continue;
+              if (solid[grow]![c]) {
+                blocked = true;
+                break;
+              }
+            }
+          }
+          if (blocked) continue;
+          for (let i = 0; i < text.length; i++)
+            put(start + i, grow, text[i]!, cls, true);
+          return true;
+        }
+        if (force) putText(gcol + 2, grow, text, cls);
+        return false;
+      };
+
+      for (const [bx, by] of this.bgStars) put(bx, by, ".", "b");
+
+      const screen = this.nodes.map((node) => {
+        const { px, py, persp } = this.project(node);
+        return {
+          col: Math.round(cx + px * spreadX),
+          row: Math.round(cy - py * spreadY),
+          persp,
+        };
+      });
+
+      // Normalize perspective into a 0..1 depth where 1 = closest to camera,
+      // then quantize into shade buckets. Tokens look like `n5` (node, level 5)
+      // so identical depths coalesce into a single colored span run.
+      let minP = Infinity;
+      let maxP = -Infinity;
+      for (const s of screen) {
+        if (s.persp < minP) minP = s.persp;
+        if (s.persp > maxP) maxP = s.persp;
+      }
+      const bucket = (persp: number) => {
+        const t = maxP > minP ? (persp - minP) / (maxP - minP) : 1;
+        return Math.max(
+          0,
+          Math.min(DEPTH_LEVELS - 1, Math.round(t * (DEPTH_LEVELS - 1))),
+        );
+      };
+
+      const selectedIndex = this.selectable[this.selectionPos];
+      for (const [a, b] of this.edges) {
+        const isLinked = a === selectedIndex || b === selectedIndex;
+        // Lines fade with the depth of their farther endpoint.
+        const lvl = Math.min(
+          bucket(screen[a]!.persp),
+          bucket(screen[b]!.persp),
+        );
+        this.drawLine(
+          screen[a]!.col,
+          screen[a]!.row,
+          screen[b]!.col,
+          screen[b]!.row,
+          isLinked ? "al" : `e${lvl}`,
+          put,
+        );
+      }
+
+      const order = this.nodes
+        .map((_, index) => index)
+        .filter((index) => index !== selectedIndex)
+        .sort((a, b) => screen[a]!.persp - screen[b]!.persp);
+
+      // Pass 1: glyphs (claimed solid so labels and lines can route around).
+      // Color is driven purely by depth — near stars read bright, far stars
+      // recede toward the background.
+      for (const index of order) {
+        const node = this.nodes[index]!;
+        const { col, row, persp } = screen[index]!;
+        put(col, row, node.glyph, `n${bucket(persp)}`, true);
+      }
+      if (selectedIndex !== undefined) {
+        const { col, row } = screen[selectedIndex]!;
+        put(col, row, "@", "a", true);
+      }
+
+      // Pass 2: labels. Experiences and socials are labeled; nearer (larger
+      // persp) entries win the contested cells. Skills stay unlabeled unless
+      // selected to keep the field sparse. Labels carry a readability floor so
+      // distant text stays legible. Only nodes whose label actually rendered
+      // become mouse-clickable, so there are no invisible hit targets.
+      const labeled = new Set<number>();
+      for (const index of [...order].reverse()) {
+        const node = this.nodes[index]!;
+        if (node.kind === "skill") continue;
+        const { col, row, persp } = screen[index]!;
+        if (putLabel(col, row, node.label, `l${Math.max(2, bucket(persp))}`)) {
+          labeled.add(index);
+        }
+      }
+
+      if (selectedIndex !== undefined) {
+        const node = this.nodes[selectedIndex]!;
+        const { col, row } = screen[selectedIndex]!;
+        putLabel(col, row, node.label, "a", true);
+        labeled.add(selectedIndex);
+      }
+
+      // Hit targets = only the nodes with a visible label this frame.
+      this.screenNodes = [];
+      for (const index of labeled) {
+        this.screenNodes.push({
+          index,
+          col: screen[index]!.col,
+          row: screen[index]!.row,
+        });
+      }
+
+      this.field.innerHTML = this.toHtml(ch, cl);
+    }
+
+    private drawLine(
+      x0: number,
+      y0: number,
+      x1: number,
+      y1: number,
+      cls: string,
+      put: (c: number, r: number, ch: string, cls: string) => void,
+    ) {
+      let dx = Math.abs(x1 - x0);
+      let dy = Math.abs(y1 - y0);
+      const sx = x0 < x1 ? 1 : -1;
+      const sy = y0 < y1 ? 1 : -1;
+      let err = dx - dy;
+      let x = x0;
+      let y = y0;
+      let guard = 0;
+      while (guard++ < 600) {
+        if (!(x === x0 && y === y0) && !(x === x1 && y === y1)) {
+          put(x, y, "·", cls);
+        }
+        if (x === x1 && y === y1) break;
+        const e2 = 2 * err;
+        if (e2 > -dy) {
+          err -= dy;
+          x += sx;
+        }
+        if (e2 < dx) {
+          err += dx;
+          y += sy;
+        }
+      }
+    }
+
+    private spanFor(token: string): { cls: string; style: string } {
+      if (!token) return { cls: "", style: "" };
+      // Fixed shades.
+      if (token === "b") return { cls: "text-border", style: "" };
+      if (token === "a") return { cls: "text-accent", style: "" };
+      if (token === "al") return { cls: "text-accent", style: "opacity:0.55" };
+
+      const kind = token[0];
+      const level = Number(token.slice(1));
+      const t = DEPTH_LEVELS > 1 ? level / (DEPTH_LEVELS - 1) : 1;
+      // Power curve makes the falloff bite harder: far elements drop off fast
+      // while only the nearest few stay near-full brightness.
+      const d = Math.pow(t, 1.8);
+      if (kind === "n") {
+        // Star glyphs: bright near, fade deep toward background when far.
+        const op = (0.1 + 0.9 * d).toFixed(3);
+        return { cls: "text-foreground", style: `opacity:${op}` };
+      }
+      if (kind === "l") {
+        const op = (0.2 + 0.8 * d).toFixed(3);
+        return { cls: "text-muted-foreground", style: `opacity:${op}` };
+      }
+      // Edges/lines: subtler so they read as connective tissue.
+      const op = (0.05 + 0.35 * d).toFixed(3);
+      return { cls: "text-muted-foreground", style: `opacity:${op}` };
+    }
+
+    private toHtml(ch: string[][], cl: string[][]) {
+      const lines: string[] = [];
+      for (let r = 0; r < ch.length; r++) {
+        let line = "";
+        let run = "";
+        let runCls = "";
+        const flush = () => {
+          if (!run) return;
+          if (runCls) {
+            const { cls, style } = this.spanFor(runCls);
+            const styleAttr = style ? ` style="${style}"` : "";
+            line += `<span class="${cls}"${styleAttr}>${esc(run)}</span>`;
+          } else {
+            line += esc(run);
+          }
+          run = "";
+        };
+        for (let c = 0; c < ch[r]!.length; c++) {
+          const cls = cl[r]![c]!;
+          if (cls !== runCls) {
+            flush();
+            runCls = cls;
+          }
+          run += ch[r]![c];
+        }
+        flush();
+        lines.push(line);
+      }
+      return lines.join("\n");
+    }
+
+    private faceSelected() {
+      const index = this.selectable[this.selectionPos];
+      if (index === undefined) return;
+      const node = this.nodes[index]!;
+      this.targetYaw = Math.atan2(-node.x, node.z);
+      this.targetPitch = Math.atan2(node.y, Math.hypot(node.x, node.z));
+    }
+
+    private updateStatus() {
+      const index = this.selectable[this.selectionPos];
+      if (index === undefined) return;
+      const node = this.nodes[index]!;
+      if (this.announce) this.announce.textContent = `selected ${node.label}`;
+    }
+
+    private startCaptainClock() {
+      window.clearInterval(this.clockTimer);
+      this.renderCaptainClock();
+      this.clockTimer = window.setInterval(
+        () => this.renderCaptainClock(),
+        1000,
+      );
+    }
+
+    private renderCaptainClock() {
+      if (!this.status || !this.birthday) return;
+
+      const birthday = new Date(`${this.birthday}T00:00:00`);
+      const elapsedSeconds = Math.max(
+        0,
+        Math.floor((Date.now() - birthday.getTime()) / 1000),
+      );
+      const seconds = elapsedSeconds % 60;
+      const minutes = Math.floor(elapsedSeconds / 60) % 60;
+      const hours = Math.floor(elapsedSeconds / 3600) % 24;
+      const days = Math.floor(elapsedSeconds / 86400);
+      const pad = (value: number) => String(value).padStart(2, "0");
+
+      this.status.textContent = `captain of this ship for ${days}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    }
+
+    private move(step: number) {
+      const total = this.selectable.length;
+      this.selectionPos = (this.selectionPos + step + total) % total;
+      this.faceSelected();
+      this.updateStatus();
+    }
+
+    private onPointerDown = (event: PointerEvent) => {
+      if (!this.open) return;
+      this.dragging = true;
+      this.dragMoved = false;
+      this.dragX = event.clientX;
+      this.dragY = event.clientY;
+      this.field?.classList.add("is-dragging");
+      this.field?.setPointerCapture(event.pointerId);
+    };
+
+    private onPointerMove = (event: PointerEvent) => {
+      if (!this.dragging) return;
+      const dx = event.clientX - this.dragX;
+      const dy = event.clientY - this.dragY;
+      if (Math.hypot(dx, dy) > 4) this.dragMoved = true;
+      this.targetYaw += dx * 0.006;
+      this.targetPitch = Math.max(
+        -1.2,
+        Math.min(1.2, this.targetPitch + dy * 0.006),
+      );
+      this.dragX = event.clientX;
+      this.dragY = event.clientY;
+    };
+
+    private onPointerUp = (event: PointerEvent) => {
+      if (!this.dragging) return;
+      this.dragging = false;
+      this.field?.classList.remove("is-dragging");
+      if (this.field?.hasPointerCapture(event.pointerId)) {
+        this.field.releasePointerCapture(event.pointerId);
+      }
+      if (this.dragMoved) return;
+      this.pickAt(event.clientX, event.clientY);
+    };
+
+    private pickAt(clientX: number, clientY: number) {
+      if (this.charWidth === 0 || this.lineHeight === 0) return;
+      const col = clientX / this.charWidth;
+      const row = clientY / this.lineHeight;
+      let best = -1;
+      let bestDist = 3.5; // max click radius in cells
+      for (const node of this.screenNodes) {
+        const dist = Math.hypot(node.col - col, (node.row - row) * 1.6);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = node.index;
+        }
+      }
+      if (best === -1) {
+        if (this.panelOpen) this.closePanel();
+        return;
+      }
+      const pos = this.selectable.indexOf(best);
+      if (pos === -1) return;
+      this.selectionPos = pos;
+      this.faceSelected();
+      this.updateStatus();
+      this.openPanel();
+    }
+
+    private openPanel() {
+      const index = this.selectable[this.selectionPos];
+      if (index === undefined || !this.panel) return;
+      const node = this.nodes[index]!;
+      this.panel.innerHTML = this.panelHtml(node, index);
+      this.panel.classList.remove("hidden");
+      this.panelOpen = true;
+      // Measure occupied width so the field can shift left to match.
+      this.panelCols = Math.ceil(
+        (this.panel.offsetWidth || 0) / this.charWidth,
+      );
+      this.panelItems = Array.from(
+        this.panel.querySelectorAll<HTMLElement>("[data-panel-item]"),
+      );
+      this.panelItemPos = 0;
+      this.highlightPanelItem();
+    }
+
+    private closePanel() {
+      if (!this.panel) return;
+      this.panel.classList.add("hidden");
+      this.panelOpen = false;
+      this.panelCols = 0;
+      this.panelItems = [];
+    }
+
+    private highlightPanelItem() {
+      this.panelItems.forEach((el, i) => {
+        const active = i === this.panelItemPos;
+        el.classList.toggle("is-active", active);
+        if (active) el.scrollIntoView({ block: "nearest" });
+      });
+    }
+
+    private movePanel(step: number) {
+      const total = this.panelItems.length;
+      if (total === 0) return;
+      this.panelItemPos = (this.panelItemPos + step + total) % total;
+      this.highlightPanelItem();
+    }
+
+    private activatePanelItem() {
+      const el = this.panelItems[this.panelItemPos];
+      if (!el) return;
+      const target = el.dataset.target;
+      if (target !== undefined) {
+        this.jumpTo(Number(target));
+        return;
+      }
+      if (el instanceof HTMLAnchorElement) el.click();
+    }
+
+    private jumpTo(targetIndex: number) {
+      const pos = this.selectable.indexOf(targetIndex);
+      if (pos === -1) return;
+      this.selectionPos = pos;
+      this.faceSelected();
+      this.updateStatus();
+      this.openPanel();
+    }
+
+    private onPanelClick = (event: MouseEvent) => {
+      const el = (event.target as HTMLElement)?.closest<HTMLElement>(
+        "[data-panel-item]",
+      );
+      if (!el) return;
+      const target = el.dataset.target;
+      if (target !== undefined) {
+        event.preventDefault();
+        this.jumpTo(Number(target));
+      }
+      // Anchor items without a data-target navigate natively.
+    };
+
+    private connectedIndices(index: number) {
+      const out: number[] = [];
+      for (const [a, b] of this.edges) {
+        if (a === index) out.push(b);
+        else if (b === index) out.push(a);
+      }
+      return out;
+    }
+
+    private jumpItem(targetIndex: number, label: string) {
+      return `<button type="button" class="panel-item mt-1 flex w-full items-center gap-2 text-left text-foreground" data-panel-item data-target="${targetIndex}"><span class="text-border">→</span><span>${esc(
+        label,
+      )}</span></button>`;
+    }
+
+    private linkItem(href: string) {
+      const external = href.startsWith("http");
+      return `<a class="panel-item mt-1 flex w-full items-center gap-2 text-left text-foreground" data-panel-item href="${esc(
+        href,
+      )}"${external ? ' target="_blank" rel="noreferrer"' : ""}><span class="text-border">→</span><span>${esc(
+        href,
+      )}</span></a>`;
+    }
+
+    private panelHtml(node: SkyNode, index: number) {
+      const head = `<div class="text-accent">@ ${esc(node.label)}</div>`;
+      const row = (key: string, value: string) =>
+        `<div class="mt-1 text-muted-foreground">${key}: <span class="text-foreground">${esc(
+          value,
+        )}</span></div>`;
+      const section = (title: string) =>
+        `<div class="mt-4 text-[10px] tracking-widest text-border uppercase">${title}</div>`;
+
+      if (node.kind === "experience") {
+        const raw = node.raw;
+        const skills = this.connectedIndices(index);
+        const links = skills
+          .map((i) => this.jumpItem(i, this.nodes[i]!.label))
+          .join("");
+        return (
+          head +
+          row("role", String(raw.role)) +
+          row("period", String(raw.period)) +
+          row("note", String(raw.note)) +
+          (links ? section("stack") + links : "") +
+          this.panelHint(skills.length > 0)
+        );
+      }
+      if (node.kind === "skill") {
+        const exps = this.connectedIndices(index);
+        const links = exps
+          .map((i) => this.jumpItem(i, this.nodes[i]!.label))
+          .join("");
+        return (
+          head +
+          row("type", "technology") +
+          (links ? section("used in") + links : "") +
+          this.panelHint(exps.length > 0)
+        );
+      }
+      const href = String(node.raw.href);
+      const key = href.startsWith("http") ? "link" : "path";
+      return head + section(key) + this.linkItem(href) + this.panelHint(true);
+    }
+
+    private panelHint(hasItems: boolean) {
+      const nav = hasItems ? "↑ ↓ / j k · move   ⏎ · open   " : "";
+      return `<div class="mt-5 text-[10px] tracking-wide text-border">${nav}esc · close</div>`;
+    }
+
+    private onKeyDown = (event: KeyboardEvent) => {
+      if (!this.open) return;
+      const key = event.key;
+
+      if (
+        key.toLowerCase() === "t" &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+
+      if (this.panelOpen) {
+        let handledPanel = true;
+        switch (key) {
+          case "Escape":
+            this.closePanel();
+            break;
+          case "ArrowDown":
+          case "j":
+            this.movePanel(1);
+            break;
+          case "ArrowUp":
+          case "k":
+            this.movePanel(-1);
+            break;
+          case "Enter":
+            if (this.panelItems.length > 0) this.activatePanelItem();
+            else this.closePanel();
+            break;
+          default:
+            handledPanel = false;
+        }
+        if (handledPanel) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+        return;
+      }
+
+      const step = 0.2;
+      let handled = true;
+      switch (key) {
+        case "ArrowLeft":
+          this.targetYaw -= step;
+          break;
+        case "ArrowRight":
+          this.targetYaw += step;
+          break;
+        case "ArrowUp":
+          this.targetPitch = Math.min(1.2, this.targetPitch + step);
+          break;
+        case "ArrowDown":
+          this.targetPitch = Math.max(-1.2, this.targetPitch - step);
+          break;
+        case "j":
+          this.move(1);
+          break;
+        case "k":
+          this.move(-1);
+          break;
+        case "Enter":
+          this.openPanel();
+          break;
+        case "Escape":
+          this.closeSky();
+          break;
+        default:
+          handled = false;
+      }
+
+      if (handled) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+  }
+
+  if (!customElements.get("constellation-resume")) {
+    customElements.define("constellation-resume", ConstellationResume);
+  }
+</script>

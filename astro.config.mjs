@@ -42,5 +42,13 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "X-Frame-Options": "ALLOWALL",
+      },
+      allowedHosts: true,
+      cors: true,
+    },
   },
 });
