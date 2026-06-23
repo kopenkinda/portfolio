@@ -1,6 +1,7 @@
 // @ts-check
 
 import mdx from "@astrojs/mdx";
+import { unified } from "@astrojs/markdown-remark";
 import sitemap from "@astrojs/sitemap";
 import {
   transformerMetaHighlight,
@@ -9,12 +10,16 @@ import {
 import { defineConfig, fontProviders } from "astro/config";
 
 import tailwindcss from "@tailwindcss/vite";
+import rehypeCodeFrame from "./src/lib/rehype-code-frame.mjs";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://kopenkin.tech",
   integrations: [mdx(), sitemap()],
   markdown: {
+    processor: unified({
+      rehypePlugins: [rehypeCodeFrame],
+    }),
     shikiConfig: {
       theme: "css-variables",
       defaultColor: false,

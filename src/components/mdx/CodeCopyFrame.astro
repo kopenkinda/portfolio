@@ -1,0 +1,56 @@
+<script>
+  class CodeCopyFrame extends HTMLElement {
+    private readonly doneText = "done";
+    private readonly failText = "fail";
+    private readonly idleText = "copy";
+    private resetTimer: number | undefined;
+
+    connectedCallback() {
+      const button = this.querySelector<HTMLButtonElement>("[data-copy-code]");
+      const source = this.querySelector<HTMLElement>("[data-copy-source]");
+
+      if (!button || !source || button.dataset.copyReady) return;
+
+      button.dataset.copyReady = "true";
+      button.addEventListener("click", async () => {
+        window.clearTimeout(this.resetTimer);
+
+        try {
+          await this.copy(source.textContent ?? "");
+          button.textContent = this.doneText;
+        } catch {
+          button.textContent = this.failText;
+        }
+
+        this.resetTimer = window.setTimeout(() => {
+          button.textContent = this.idleText;
+        }, 1400);
+      });
+    }
+
+    private async copy(text: string) {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.inset = "-9999px auto auto -9999px";
+      document.body.append(textarea);
+      textarea.select();
+
+      try {
+        document.execCommand("copy");
+      } finally {
+        textarea.remove();
+      }
+    }
+  }
+
+  if (!customElements.get("code-copy-frame")) {
+    customElements.define("code-copy-frame", CodeCopyFrame);
+  }
+</script>

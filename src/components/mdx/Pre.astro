@@ -6,30 +6,36 @@ const language =
     ? className.match(/language-([^\s]+)/)?.[1]
     : undefined) ??
   "text";
+const label = `.${(language === "text" ? "sh" : language).toLowerCase()}`;
 ---
 
-<div
-  class="my-6 overflow-hidden border border-border bg-muted"
+<code-copy-frame
+  class="my-6 block overflow-hidden border border-border bg-background"
   data-theme-transition-static
 >
   <div
-    class="flex items-center gap-2 border-b border-border bg-background/60 px-3 py-2"
+    class="flex min-h-9 items-center gap-3 border-b border-border bg-muted px-3 py-2"
   >
-    <span class="flex gap-1.5" aria-hidden="true">
-      <span class="size-2.5 border border-muted-foreground/60"></span>
-      <span class="size-2.5 border border-muted-foreground/60"></span>
-      <span class="size-2.5 border border-muted-foreground/60"></span>
-    </span>
     <span
-      class="ml-1 text-[0.7rem] tracking-[0.2em] text-muted-foreground uppercase"
+      class="min-w-0 flex-1 truncate text-[0.7rem] tracking-[0.18em] text-muted-foreground"
+      data-code-language
     >
-      {language === "text" ? "sh" : language}
+      {label}
     </span>
+    <button
+      type="button"
+      class="text-[0.7rem] tracking-[0.16em] text-muted-foreground underline decoration-border decoration-dotted underline-offset-4 hover:text-accent hover:decoration-accent focus-visible:text-accent focus-visible:decoration-accent focus-visible:outline-none"
+      data-copy-code
+      aria-label={`copy ${label} code`}
+    >
+      copy
+    </button>
   </div>
   <pre
     {...attrs}
     class:list={[
       className,
-      "!my-0 overflow-x-auto !border-0 !bg-transparent px-4 py-3 text-[0.8125rem] leading-relaxed",
-    ]}><slot /></pre>
-</div>
+      "!my-0 overflow-x-auto !border-0 !bg-transparent !px-0 !py-3 text-[0.8125rem] leading-relaxed",
+    ]}
+    data-copy-source><slot /></pre>
+</code-copy-frame>

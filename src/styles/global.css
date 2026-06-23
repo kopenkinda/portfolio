@@ -263,33 +263,12 @@
   }
 
   :where(pre) {
-    @apply overflow-x-auto border border-border bg-muted pt-12 pb-3;
+    @apply overflow-x-auto border border-border bg-muted py-3;
     position: relative;
   }
 
-  :where(pre.astro-code)::before {
-    content: "○ ○ ○";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 1.75rem;
-    border-bottom: 1px solid var(--border);
-    background: color-mix(in oklch, var(--background) 60%, transparent);
-    padding: 0.5rem 0.75rem;
-    color: var(--muted-foreground);
-    font-size: 0.7rem;
-    line-height: 1;
-  }
-
-  :where(pre.astro-code)::after {
-    content: attr(data-language);
-    position: absolute;
-    inset-block-start: 0.55rem;
-    inset-inline-start: 5.25rem;
-    color: var(--muted-foreground);
-    font-size: 0.7rem;
-    line-height: 1;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+  :where(code-copy-frame pre) {
+    @apply my-0 border-0 bg-transparent px-0 py-3 text-[0.8125rem] leading-relaxed;
   }
 
   :where(pre code) {
