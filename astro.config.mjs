@@ -2,6 +2,10 @@
 
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
+import {
+  transformerMetaHighlight,
+  transformerMetaWordHighlight,
+} from "@shikijs/transformers";
 import { defineConfig, fontProviders } from "astro/config";
 
 import tailwindcss from "@tailwindcss/vite";
@@ -14,6 +18,10 @@ export default defineConfig({
     shikiConfig: {
       theme: "css-variables",
       defaultColor: false,
+      transformers: [
+        transformerMetaHighlight(),
+        transformerMetaWordHighlight(),
+      ],
     },
   },
   fonts: [

@@ -263,17 +263,28 @@
   }
 
   :where(pre) {
-    @apply overflow-x-auto border border-border bg-muted px-4 pt-14 pb-3;
+    @apply overflow-x-auto border border-border bg-muted pt-12 pb-3;
     position: relative;
   }
 
   :where(pre.astro-code)::before {
-    content: "○ ○ ○   " attr(data-language);
+    content: "○ ○ ○";
     position: absolute;
     inset: 0 0 auto;
+    height: 1.75rem;
     border-bottom: 1px solid var(--border);
     background: color-mix(in oklch, var(--background) 60%, transparent);
     padding: 0.5rem 0.75rem;
+    color: var(--muted-foreground);
+    font-size: 0.7rem;
+    line-height: 1;
+  }
+
+  :where(pre.astro-code)::after {
+    content: attr(data-language);
+    position: absolute;
+    inset-block-start: 0.55rem;
+    inset-inline-start: 5.25rem;
     color: var(--muted-foreground);
     font-size: 0.7rem;
     line-height: 1;
@@ -293,18 +304,29 @@
     background-color: transparent !important;
   }
 
+  :where(pre code .line),
   :where(pre code [data-line]) {
     border-left: 2px solid transparent;
-    padding: 0 0.1rem;
+    padding: 0 1rem;
   }
 
+  :where(pre code .line.highlighted),
   :where(pre code [data-highlighted-line]) {
     border-left-color: var(--accent);
-    background-color: color-mix(in oklch, var(--accent) 9%, transparent);
+    background-color: color-mix(
+      in oklch,
+      var(--accent) 9%,
+      transparent
+    ) !important;
   }
 
+  :where(pre code .highlighted-word),
   :where(mark[data-highlighted-chars]) {
-    background-color: color-mix(in oklch, var(--accent) 16%, transparent);
+    background-color: color-mix(
+      in oklch,
+      var(--accent) 16%,
+      transparent
+    ) !important;
     color: var(--foreground);
     padding: 0.05rem 0.1rem;
   }
