@@ -98,6 +98,25 @@
   --border: oklch(0.84 0.011 78);
   --primary: oklch(0.235 0.008 70);
   --primary-foreground: oklch(0.962 0.009 85);
+  --astro-code-foreground: var(--foreground);
+  --astro-code-background: transparent;
+  --astro-code-token-constant: var(--accent);
+  --astro-code-token-string: color-mix(
+    in oklch,
+    var(--accent) 72%,
+    var(--foreground)
+  );
+  --astro-code-token-comment: var(--muted-foreground);
+  --astro-code-token-keyword: var(--accent);
+  --astro-code-token-parameter: var(--foreground);
+  --astro-code-token-function: var(--foreground);
+  --astro-code-token-string-expression: color-mix(
+    in oklch,
+    var(--accent) 62%,
+    var(--foreground)
+  );
+  --astro-code-token-punctuation: var(--muted-foreground);
+  --astro-code-token-link: var(--accent);
 }
 
 .theme-preview-dark {
@@ -111,6 +130,25 @@
   --border: oklch(0.34 0.01 76);
   --primary: oklch(0.9 0.01 85);
   --primary-foreground: oklch(0.18 0.008 70);
+  --astro-code-foreground: var(--foreground);
+  --astro-code-background: transparent;
+  --astro-code-token-constant: var(--accent);
+  --astro-code-token-string: color-mix(
+    in oklch,
+    var(--accent) 70%,
+    var(--foreground)
+  );
+  --astro-code-token-comment: var(--muted-foreground);
+  --astro-code-token-keyword: var(--accent);
+  --astro-code-token-parameter: var(--foreground);
+  --astro-code-token-function: var(--foreground);
+  --astro-code-token-string-expression: color-mix(
+    in oklch,
+    var(--accent) 58%,
+    var(--foreground)
+  );
+  --astro-code-token-punctuation: var(--muted-foreground);
+  --astro-code-token-link: var(--accent);
 }
 
 @layer base {
