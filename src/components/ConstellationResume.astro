@@ -416,6 +416,43 @@ const RESUME = { experiences, skills, socials };
         for (let i = 0; i < text.length; i++) put(col + i, row, text[i]!, cls);
       };
 
+      // Place a label to the side of a glyph, claiming its cells as solid so
+      // that connector lines and other labels never overwrite it. Returns
+      // false when there is no collision-free room, in which case the label is
+      // skipped entirely to keep the field readable.
+      const putLabel = (
+        gcol: number,
+        grow: number,
+        text: string,
+        cls: string,
+        force = false,
+      ) => {
+        const candidates = [
+          gcol + 2, // right side
+          gcol - 1 - text.length, // left side
+        ];
+        for (const start of candidates) {
+          if (start < 0 || start + text.length > cols) continue;
+          let blocked = false;
+          if (!force) {
+            for (let i = -1; i <= text.length; i++) {
+              const c = start + i;
+              if (c < 0 || c >= cols) continue;
+              if (solid[grow]![c]) {
+                blocked = true;
+                break;
+              }
+            }
+          }
+          if (blocked) continue;
+          for (let i = 0; i < text.length; i++)
+            put(start + i, grow, text[i]!, cls, true);
+          return true;
+        }
+        if (force) putText(gcol + 2, grow, text, cls);
+        return false;
+      };
+
       for (const [bx, by] of this.bgStars) put(bx, by, ".", "b");
 
       const screen = this.nodes.map((node) => {
@@ -445,6 +482,7 @@ const RESUME = { experiences, skills, socials };
         .filter((index) => index !== selectedIndex)
         .sort((a, b) => screen[a]!.persp - screen[b]!.persp);
 
+      // Pass 1: glyphs (claimed solid so labels and lines can route around).
       for (const index of order) {
         const node = this.nodes[index]!;
         const { col, row, persp } = screen[index]!;
@@ -453,14 +491,26 @@ const RESUME = { experiences, skills, socials };
         if (node.kind === "experience") cls = persp > 1.1 ? "f" : "m";
         if (dim) cls = "b";
         put(col, row, node.glyph, cls, true);
-        if (node.kind !== "skill") putText(col + 2, row, node.label, "m");
+      }
+      if (selectedIndex !== undefined) {
+        const { col, row } = screen[selectedIndex]!;
+        put(col, row, "@", "a", true);
+      }
+
+      // Pass 2: labels. Experiences and socials are labeled; nearer (larger
+      // persp) entries win the contested cells. Skills stay unlabeled unless
+      // selected to keep the field sparse.
+      for (const index of [...order].reverse()) {
+        const node = this.nodes[index]!;
+        if (node.kind === "skill") continue;
+        const { col, row } = screen[index]!;
+        putLabel(col, row, node.label, "m");
       }
 
       if (selectedIndex !== undefined) {
         const node = this.nodes[selectedIndex]!;
         const { col, row } = screen[selectedIndex]!;
-        put(col, row, "@", "a", true);
-        putText(col + 2, row, node.label, "a");
+        putLabel(col, row, node.label, "a", true);
       }
 
       this.field.innerHTML = this.toHtml(ch, cl);
