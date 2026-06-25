@@ -296,8 +296,8 @@ TypeScript, React, Node, Python, Go, Postgres. Nine years of shipping, from scra
         href: "https://anime.home.kopenkin.tech/",
         github: undefined,
         technologies: [
-          "next.js 16",
-          "react 19",
+          "next.js",
+          "react",
           "postgres",
           "drizzle",
           "docker",
@@ -313,7 +313,7 @@ TypeScript, React, Node, Python, Go, Postgres. Nine years of shipping, from scra
         github: undefined,
         technologies: [
           "typescript",
-          "react 19",
+          "react",
           "hono",
           "trpc",
           "drizzle",
