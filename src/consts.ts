@@ -216,6 +216,47 @@ export const USER = {
       },
     ] satisfies ExperienceEntry[],
   },
+  projects: {
+    entries: [
+      {
+        id: iota(),
+        name: "kopenkin.tech",
+        description:
+          "this very portfolio. a text-first, keyboard-driven TUI in the browser - built as a playground for terminal affordances, theme sweeps, and ascii rendering.",
+        status: "live",
+        highlighted: true,
+        href: "https://kopenkin.tech",
+        github: "https://github.com/kopenkinda/portfolio",
+        technologies: ["astro", "typescript", "tailwindcss"],
+      },
+      {
+        id: iota(),
+        name: "salut mercado",
+        description:
+          "ai-assisted point-of-sale and ordering platform i'm building from scratch as cto - receipts, inventory, and a brain that thinks ahead of the cashier.",
+        status: "active",
+        href: "https://salutmercado.com",
+        technologies: ["react", "supabase", "python", "fastapi", "escpos"],
+      },
+      {
+        id: iota(),
+        name: "quik trading bot",
+        description:
+          "custom trading bot bridging QUIK terminal and a live monitoring dashboard. lua on one end, typescript on the other, money in the middle.",
+        status: "archived",
+        technologies: ["hono", "lua", "react", "sqlite"],
+      },
+      {
+        id: iota(),
+        name: "llm toolkit",
+        description:
+          "a personal kit of skills, prompts, and small agents i keep sharpening. half tooling, half experiment in how far i can offload to the machine.",
+        status: "experiment",
+        github: "https://github.com/kopenkinda",
+        technologies: ["typescript", "openai", "python"],
+      },
+    ] satisfies ProjectEntry[],
+  },
   education: {
     entries: [
       {
@@ -283,6 +324,22 @@ type ExperienceEntry = {
         href: undefined;
       };
   bulletpoints: [string] | [string, string] | [string, string, string];
+  technologies?: string[];
+};
+
+export type ProjectStatus = "live" | "active" | "archived" | "experiment";
+
+type ProjectEntry = {
+  id: number;
+  name: string;
+  description: string;
+  status: ProjectStatus;
+  /** optional live/demo url */
+  href?: string;
+  /** optional github repository link */
+  github?: string;
+  /** only one entry should be highlighted */
+  highlighted?: boolean;
   technologies?: string[];
 };
 
