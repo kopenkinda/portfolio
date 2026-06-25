@@ -2,9 +2,9 @@
 // You can import this data from anywhere in your site by using the `import` keyword.
 export const CONFIG: PortfolioConfig = {
   meta: {
-    title: "kopenkin dmitrii — full-stack ai developer",
+    title: "kopenkin dmitrii — full-stack product engineer",
     description:
-      "A minimal, text-first portfolio for Kopenkin Dmitrii: full-stack AI developer working with TypeScript, React, Postgres, Python, and product prototypes.",
+      "Kopenkin Dmitrii builds complete products with TypeScript, React, Node, Python, Go, and Postgres.",
     siteLabel: "kopenkin.tech",
     experienceStartDate: new Date("2017-01-01"),
   },
@@ -27,10 +27,14 @@ const iota = () => id++;
 
 export const USER = {
   name: "Kopenkin Dmitrii",
-  role: "full-stack ai developer",
+  role: "full-stack product engineer",
   location: "andorra",
   birthday: "2000-10-02",
-  headline: `For ${new Date().getFullYear() - CONFIG.meta.experienceStartDate.getFullYear()} years i've been stacking typescript, react, next.js, postgres, and now ai into digital playgrounds - where every click feels inevitable, nothing breaks when you're not looking, and the software sometimes thinks ahead of you.`,
+  headline: `I build complete products. Not just the frontend or the API, the whole thing. Database schema to shipped feature.
+
+Past year I've been running point on a retail ERP for independent supermarkets, shipping it to real stores in Barcelona. Before that I built CAD viewers used by 7,500+ companies, put ML models into surgical triage across 100+ hospitals, and wrote my fair share of prototypes that went nowhere and a few that did.
+
+TypeScript, React, Node, Python, Go, Postgres. Nine years of shipping, from scratch.`,
   asciiGlobe: {
     label: "andorra",
     marker: "@",
@@ -75,22 +79,29 @@ export const USER = {
           shortname: "Salut",
           href: "https://salutmercado.com",
         },
-        bulletpoints: ["Lead the development of a new product from scratch."],
+        bulletpoints: [
+          "I co-founded Salut and built the platform from the ground up. It's an ERP for independent supermarkets, covering POS, inventory, supplier ordering, catalog management, receipts, analytics, and admin workflows. About 15 business domains with tenant-scoped access control and generated API contracts.",
+          "We went live with our first store in Barcelona this year. I'm the sole engineer in a team of three, so I own everything from the database schema through to the CI pipeline.",
+          "One piece I'm particularly happy with is the catalog onboarding. Store owners were spending around ten minutes entering each product manually. I built an AI-assisted flow using the Vercel AI SDK, OpenFoodFacts, and automated background removal. Per-SKU onboarding dropped to about 30 seconds.",
+          "On the hardware side, there's a native Electron desktop app that talks to ESC/POS thermal printers and cash drawers over USB. No driver layers, no middleware, direct integration with retail hardware in production. I'm currently adding a native RS-232 binding to support serial devices: 20x2 customer-facing displays, weighing scales, and barcode scanners.",
+          "The whole thing runs on a Turborepo monorepo with 160+ test files, CI/CD on GitHub Actions, Docker, and GHCR.",
+        ],
         technologies: [
-          "openai",
           "typescript",
           "react",
-          "supabase",
+          "next.js",
           "python",
           "fastapi",
-          "escpos",
+          "go",
+          "supabase",
+          "electron",
         ],
       },
       {
         id: iota(),
         title: "Software Engineer",
-        startDate: new Date("2024-12-15"),
-        endDate: new Date("2025-12-21"),
+        startDate: new Date("2024-12-01"),
+        endDate: new Date("2025-12-01"),
         company: {
           location: "Remote",
           name: "MoveWorkForward",
@@ -98,24 +109,30 @@ export const USER = {
           href: "https://moveworkforward.com",
         },
         bulletpoints: [
-          "Prototyped PoC's to data security and privacy solutions for AI features in multi-tenant environments.",
-          "Maintained multiple applications using React, Typescript, Node.js, and AWS.",
-          "Participated in mutiple conferences/workshops leading to the creation and ownership of a new product.",
+          "I owned a CAD 2D/3D Model Viewer for Confluence. UI, embedded viewer, model catalogue, revision tracking, the lot. Started from a prototype and shipped it to Platinum status on the Atlassian Marketplace with 7,500+ organisations using it. It handled 70+ CAD formats.",
+          "I also co-built the Jira version in a two-person team and led refactors on three other apps (Google Chat for Jira, MS Teams Connector, GitHub Links). Plus a couple months prototyping privacy-first AI features: PII filtering, relationship-aware access control, vector search.",
         ],
-        technologies: ["react", "typescript", "openai", "aws", "nodejs"],
+        technologies: [
+          "react",
+          "typescript",
+          "atlassian forge",
+          "aws",
+          "dynamodb",
+          "lambda",
+        ],
       },
       {
         id: iota(),
-        title: "Fullstack developer",
-        startDate: new Date("2024-10-31"),
-        endDate: new Date("2024-12-15"),
+        title: "Fullstack Developer",
+        startDate: new Date("2024-10-01"),
+        endDate: new Date("2024-12-01"),
         company: {
           location: "Remote / Andorra",
           name: "Freelance",
           shortname: "Freelance",
         },
         bulletpoints: [
-          "Created a custom trading bot for a client, integrated into QUIK, with a dashboard for monitoring and managing trades.",
+          "A client needed an algorithmic trading bot for QUIK, the Russian trading terminal. I built it in TypeScript on top of Hono, with Lua glue for the terminal integration, real-time currency-pair arbitrage detection, position management, and a monitoring dashboard.",
         ],
         technologies: ["hono", "lua", "react", "typescript", "sqlite"],
       },
@@ -131,9 +148,18 @@ export const USER = {
         endDate: new Date("2024-10-31"),
         title: "Fullstack Developer",
         bulletpoints: [
-          "Developed three full stack AI-enhanced applications. Integrated external systems, machine learning, and improved performance by 20% through DDD, CQRS, and API integrations.",
+          "Digikare makes digital care pathways for orthopedic surgery. I worked on Orthense, which is deployed in over 100 hospitals, and on Renacot, a version commissioned by the French government for CNP-COT.",
+          "The interesting part was the ML. Surgeons photograph implants during procedures. I embedded a Keras model that pulls metadata straight off those photos and feeds it into the triage system. If the model is over 90% confident, it auto-approves. Below that, a human checks it. I also built the dashboard tracking how the model was doing: success rates, where it failed, confidence distribution. The AI features drove a 20% efficiency gain.",
+          "DDD and CQRS on the backend, integrations with a government surgeon database, mailing, analytics.",
         ],
-        technologies: ["typescript", "angular", "nodejs", "nestjs", "mongodb"],
+        technologies: [
+          "typescript",
+          "angular",
+          "nestjs",
+          "python",
+          "keras",
+          "postgres",
+        ],
       },
       {
         id: iota(),
@@ -147,7 +173,7 @@ export const USER = {
         endDate: new Date("2023-08-01"),
         title: "Senior Mentor",
         bulletpoints: [
-          "Mentored over 150 first and second year students, providing guidance and support throughout their study program. Created and graded exams for multiple courses, ensuring accuracy and fairness in evaluation processes leading to an average exam score improvement of 15% among students.",
+          "I taught. About 150 students across first and second year, 90% of them stuck with it. Created and graded exams. The cohort I worked with saw a 30% bump in academic performance.",
         ],
       },
       {
@@ -162,16 +188,29 @@ export const USER = {
         endDate: new Date("2023-05-01"),
         title: "Lead Full-Stack Developer",
         bulletpoints: [
-          'Developed a job "dating" organization platform for students and companies. Integrated a chat system, user profiles, and a job board.',
-          "Organized, managed and led the development of a CTF (Capture The Flag) event for students. Created a platform for challenges and scoring. Assembled and managed a team of 5 developers, insuring on-time delivery of the platform.",
+          "Built and led a small team to replace manual campus operations with software. Three platforms came out of it: event management, automated grading, and CTF infrastructure. Took the operational overhead down by about 50%.",
         ],
         technologies: [
           "typescript",
-          "astro",
-          "githubactions",
-          "sanity",
-          "tailwindcss",
+          "next.js",
+          "react",
+          "docker",
+          "gitlab ci",
           "postgres",
+        ],
+      },
+      {
+        id: iota(),
+        company: {
+          name: "Separate Contract",
+          shortname: "Contract",
+          location: "Hybrid / Toulouse, France",
+        },
+        startDate: new Date("2023-01-01"),
+        endDate: new Date("2023-05-01"),
+        title: "Job-Dating Platform",
+        bulletpoints: [
+          "Contract work: built a job-dating platform for the campus that matched students with companies for recruitment events. Chat, profiles, job board.",
         ],
       },
       {
@@ -185,9 +224,9 @@ export const USER = {
         startDate: new Date("2020-09-01"),
         endDate: new Date("2021-05-01"),
         title: "Full-stack Intern",
-        technologies: ["react", "nodejs", "express", "mongodb"],
+        technologies: ["react", "typescript", "node.js", "mongodb"],
         bulletpoints: [
-          "Optimized the search flow on the platform through database restructuring and algorithms, resulting in a 400% improvement in search performance.",
+          "Hospitalidee helps people find healthcare providers. Their database had no indexes. Large queries were doing full collection scans, so the search was crawling. I added proper indexes and rewrote the heaviest queries to pull only what they needed. Search got about 4x faster. Worked with the PMs on some UX changes that lifted engagement 30% and retention 10%.",
         ],
       },
       {
@@ -201,17 +240,19 @@ export const USER = {
         startDate: new Date("2016-09-01"),
         endDate: new Date("2020-09-01"),
         bulletpoints: [
-          "Implemented custom seamless integration between Wordpress and IIKO systems to streamline online ordering processes, resulting in a 20% increase in customer orders.",
-          "Developed multiple static and dynamic websites for clients, including e-commerce platforms and blogs.",
+          "A mix of client work and my own projects over four years.",
+          "The biggest client project was Tochno Pizza, a restaurant that needed online ordering wired straight into their IIKO POS system. Orders flowed in without anyone touching them. That drove about 20% more orders. I also rebuilt the responsive UX, cut bounce rate 40%, and doubled page-load speed. Built it three times over the years as my skills evolved, from WordPress to NestJS to Next.js.",
+          "For other clients I built a bunch of static SEO-optimised marketing sites.",
+          "On my own time, I ran a bunch of Steam trading bots and cross-site margin catchers. Automated bots that watched CSGO marketplaces and gambling sites, caught price differences between them, and traded on the spread. That one paid for itself.",
         ],
         title: "Freelancer",
         technologies: [
-          "gulp",
-          "react",
+          "wordpress",
           "php",
           "javascript",
           "mysql",
-          "wordpress",
+          "react",
+          "typescript",
         ],
       },
     ] satisfies ExperienceEntry[],
@@ -220,40 +261,65 @@ export const USER = {
     entries: [
       {
         id: iota(),
-        name: "kopenkin.tech",
+        name: "Steam Authenticator",
         description:
-          "this very portfolio. a text-first, keyboard-driven TUI in the browser - built as a playground for terminal affordances, theme sweeps, and ascii rendering.",
-        status: "live",
-        highlighted: true,
-        href: "https://kopenkin.tech",
-        github: "https://github.com/kopenkinda/portfolio",
-        technologies: ["astro", "typescript", "tailwindcss"],
-      },
-      {
-        id: iota(),
-        name: "salut mercado",
-        description:
-          "ai-assisted point-of-sale and ordering platform i'm building from scratch as cto - receipts, inventory, and a brain that thinks ahead of the cashier.",
+          "Open-source Steam Guard companion app. Multi-account vault, TOTP generation, QR login, and trade confirmations. The main app is React Native and handles the full feature set. There's also a lightweight PWA companion that just generates auth codes, for when you need a quick code without opening the app. Everything stored locally, nothing leaves the device.",
         status: "active",
-        href: "https://salutmercado.com",
-        technologies: ["react", "supabase", "python", "fastapi", "escpos"],
+        highlighted: true,
+        href: undefined,
+        github: "https://github.com/kopenkinda/steam-2fa",
+        technologies: ["react native", "typescript", "react", "vite"],
       },
       {
         id: iota(),
-        name: "quik trading bot",
+        name: "Deep Research",
         description:
-          "custom trading bot bridging QUIK terminal and a live monitoring dashboard. lua on one end, typescript on the other, money in the middle.",
-        status: "archived",
-        technologies: ["hono", "lua", "react", "sqlite"],
-      },
-      {
-        id: iota(),
-        name: "llm toolkit",
-        description:
-          "a personal kit of skills, prompts, and small agents i keep sharpening. half tooling, half experiment in how far i can offload to the machine.",
+          "When OpenAI shipped deep research, I wanted to see how hard it would be to replicate the workflow. Built this in about a day. Recursive research pipeline, SERP queries, markdown report generation, event-driven backend. It actually worked pretty well.",
         status: "experiment",
-        github: "https://github.com/kopenkinda",
-        technologies: ["typescript", "openai", "python"],
+        href: undefined,
+        github: undefined,
+        technologies: [
+          "bun",
+          "typescript",
+          "trpc",
+          "hono",
+          "langchain",
+          "openai",
+        ],
+      },
+      {
+        id: iota(),
+        name: "Naruto Based",
+        description:
+          "A site I like publishes episode mirrors but the UI is rough. I scraped it, normalised the data into Postgres, and built a clean catalog with a timeline, search, and player.",
+        status: "archived",
+        href: undefined,
+        github: undefined,
+        technologies: [
+          "next.js 16",
+          "react 19",
+          "postgres",
+          "drizzle",
+          "docker",
+        ],
+      },
+      {
+        id: iota(),
+        name: "SEC Stock Analysis — Architecture Advisor",
+        description:
+          "A monorepo for pulling SEC filings, running DCF analysis, and serving it through a React frontend. I set up the initial architecture: Python extractors for SEC data, a Hono + tRPC BFF, Drizzle on Postgres, Yahoo fallback service. Now I advise on it and step in for the harder pieces when the main developer gets stuck.",
+        status: "active",
+        href: undefined,
+        github: undefined,
+        technologies: [
+          "typescript",
+          "react 19",
+          "hono",
+          "trpc",
+          "drizzle",
+          "python",
+          "postgres",
+        ],
       },
     ] satisfies ProjectEntry[],
   },
@@ -323,7 +389,7 @@ type ExperienceEntry = {
         shortname: undefined;
         href: undefined;
       };
-  bulletpoints: [string] | [string, string] | [string, string, string];
+  bulletpoints: string[];
   technologies?: string[];
 };
 
