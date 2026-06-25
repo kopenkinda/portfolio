@@ -267,7 +267,7 @@ TypeScript, React, Node, Python, Go, Postgres. Nine years of shipping, from scra
         status: "live",
         highlighted: true,
         href: undefined,
-        github: "https://github.com/kopenkinda/steam-2fa",
+        github: "https://github.com/kopenkinda/steam-2fa/tree/new",
         technologies: ["react native", "typescript", "react", "vite"],
       },
       {
@@ -293,7 +293,7 @@ TypeScript, React, Node, Python, Go, Postgres. Nine years of shipping, from scra
         description:
           "A site I like publishes episode mirrors but the UI is rough. I scraped it, normalised the data into Postgres, and built a clean catalog with a timeline, search, and player.",
         status: "live",
-        href: undefined,
+        href: "https://anime.home.kopenkin.tech/",
         github: undefined,
         technologies: [
           "next.js 16",
