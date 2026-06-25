@@ -118,6 +118,10 @@ const placeholderHtml = placeholder
     private pointerY = 0;
     private phi = 0;
     private theta = 0.485;
+    private hovered = false;
+    private themeTransitionRunning = false;
+    private lastFrame = 0;
+    private readonly autoRotateRadiansPerSecond = -0.08;
     private readonly sourceSize = 220;
     private hint?: HTMLElement;
     private clickTimes: number[] = [];
@@ -145,9 +149,13 @@ const placeholderHtml = placeholder
       this.theta = this.initialTheta;
       this.syncPositionAttributes();
 
+      this.addEventListener("pointerenter", this.onPointerEnter);
+      this.addEventListener("pointerleave", this.onPointerLeave);
       this.addEventListener("pointerdown", this.onPointerDown);
       window.addEventListener("pointermove", this.onPointerMove);
       window.addEventListener("pointerup", this.onPointerUp);
+      window.addEventListener("theme-transition:start", this.onThemeStart);
+      window.addEventListener("theme-transition:end", this.onThemeEnd);
 
       this.init();
     }
@@ -156,9 +164,13 @@ const placeholderHtml = placeholder
       cancelAnimationFrame(this.animation);
       window.clearTimeout(this.resetTimer);
       this.globe?.destroy();
+      this.removeEventListener("pointerenter", this.onPointerEnter);
+      this.removeEventListener("pointerleave", this.onPointerLeave);
       this.removeEventListener("pointerdown", this.onPointerDown);
       window.removeEventListener("pointermove", this.onPointerMove);
       window.removeEventListener("pointerup", this.onPointerUp);
+      window.removeEventListener("theme-transition:start", this.onThemeStart);
+      window.removeEventListener("theme-transition:end", this.onThemeEnd);
     }
 
     private async init() {
@@ -174,7 +186,7 @@ const placeholderHtml = placeholder
       this.sampleCanvas.height = this.sourceSize;
 
       this.globe = createGlobe(this.source, this.options());
-      this.tick();
+      this.animation = requestAnimationFrame(this.tick);
     }
 
     private options(): COBEOptions {
@@ -204,8 +216,16 @@ const placeholderHtml = placeholder
       };
     }
 
-    private tick = () => {
+    private tick = (now: number) => {
       if (!this.globe || !this.source) return;
+
+      const elapsed = this.lastFrame ? (now - this.lastFrame) / 1000 : 0;
+      this.lastFrame = now;
+
+      if (!this.autoRotationPaused) {
+        this.phi += elapsed * this.autoRotateRadiansPerSecond;
+        this.syncPositionAttributes();
+      }
 
       this.globe.update({
         phi: this.phi,
@@ -418,6 +438,27 @@ const placeholderHtml = placeholder
 
       return output.map((line) => line.join("").trimEnd());
     }
+
+    private get autoRotationPaused() {
+      return this.hovered || this.dragging || this.themeTransitionRunning;
+    }
+
+    private onPointerEnter = () => {
+      this.hovered = true;
+    };
+
+    private onPointerLeave = () => {
+      this.hovered = false;
+    };
+
+    private onThemeStart = () => {
+      this.themeTransitionRunning = true;
+    };
+
+    private onThemeEnd = () => {
+      this.themeTransitionRunning = false;
+      this.lastFrame = performance.now();
+    };
 
     private onPointerDown = (event: PointerEvent) => {
       this.dragging = true;
