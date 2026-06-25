@@ -263,6 +263,10 @@ function blogTree(input: OgImageInput): VNode {
 // Site card (homepage / fallback): ~/kopenkin.tech / $ whoami / name /
 // role (tagline) / location · site.
 function siteTree(): VNode {
+  const emailHref =
+    USER.socials.find((social) => social.label === "mail")?.href ?? "";
+  const [mailProtocol, email] = emailHref.split(/(?<=:)/);
+
   return frame(
     header(),
     h(
@@ -284,7 +288,8 @@ function siteTree(): VNode {
     footer([
       h("span", {}, USER.location),
       sep(),
-      h("span", {}, CONFIG.meta.siteLabel),
+      h("span", {}, mailProtocol),
+      h("span", { color: C.accent }, email),
     ]),
   );
 }
