@@ -4,6 +4,7 @@ import AsciiGlobe from "../components/AsciiGlobe.astro";
 import BasePage from "../components/BasePage.astro";
 import ConstellationResume from "../components/ConstellationResume.astro";
 import ExperienceConsole from "../components/ExperienceConsole.astro";
+import ProjectsManifest from "../components/ProjectsManifest.astro";
 import ScrambleLink from "../components/ScrambleLink.astro";
 import SectionLabel from "../components/SectionLabel.astro";
 import { BLOG, CONFIG, USER } from "../consts";
@@ -96,6 +97,11 @@ const bio = USER.headline;
     <section class="mt-14">
       <SectionLabel label="EXPERIENCE" />
       <ExperienceConsole experiences={USER.experiences.entries} />
+    </section>
+
+    <section class="mt-14">
+      <SectionLabel label="PROJECTS" />
+      <ProjectsManifest projects={USER.projects.entries} />
     </section>
 
     <section class="mt-14">

@@ -81,6 +81,7 @@
       }
 
       ThemeSwitcher.transitionRunning = true;
+      window.dispatchEvent(new CustomEvent("theme-transition:start"));
       this.setControlsDisabled(true);
       this.button?.setAttribute("aria-busy", "true");
 
@@ -138,6 +139,7 @@
         overlay.remove();
         sweep.remove();
         ThemeSwitcher.transitionRunning = false;
+        window.dispatchEvent(new CustomEvent("theme-transition:end"));
         this.setControlsDisabled(false);
         this.button?.removeAttribute("aria-busy");
         this.syncLabel();

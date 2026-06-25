@@ -1,0 +1,69 @@
+---
+import type { ProjectStatus, USER } from "../consts";
+import ScrambleLink from "./ScrambleLink.astro";
+
+interface Props {
+  projects: typeof USER.projects.entries;
+}
+
+const { projects } = Astro.props;
+
+// Highlighted project floats to the top, otherwise original order is kept.
+const ordered = [...projects].sort(
+  (a, b) => Number(Boolean(b.highlighted)) - Number(Boolean(a.highlighted)),
+);
+
+// File-mode-ish project state labels.
+const STATUS: Record<ProjectStatus, { label: string; tone: string }> = {
+  live: { label: "+ shipped", tone: "text-accent" },
+  active: { label: "~ building", tone: "text-foreground" },
+  archived: { label: "- parked", tone: "text-muted-foreground" },
+  experiment: { label: "? lab", tone: "text-muted-foreground" },
+};
+---
+
+<ul class="space-y-5">
+  {
+    ordered.map((project) => {
+      const status = STATUS[project.status];
+      return (
+        <li class="flex flex-col gap-1">
+          <div class="flex flex-wrap items-baseline justify-between gap-x-4">
+            <h3 class="font-medium text-foreground">
+              {project.highlighted && (
+                <span class="mr-1.5 text-accent" title="highlighted">
+                  ★
+                </span>
+              )}
+              {project.name}
+            </h3>
+            <span class:list={["text-xs", status.tone]}>{status.label}</span>
+          </div>
+          <p class="max-w-[64ch] text-sm text-pretty text-muted-foreground">
+            {project.description}
+          </p>
+          <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            {project.href && (
+              <>
+                <ScrambleLink href={project.href} label="visit" external />
+                <span class="text-border">·</span>
+              </>
+            )}
+            {project.github && (
+              <>
+                <ScrambleLink href={project.github} label="github" external />
+                <span class="text-border">·</span>
+              </>
+            )}
+            {project.technologies?.map((technology) => (
+              <span>
+                <span class="text-border">#</span>
+                {technology}
+              </span>
+            ))}
+          </p>
+        </li>
+      );
+    })
+  }
+</ul>
