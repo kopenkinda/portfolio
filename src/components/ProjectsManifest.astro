@@ -13,13 +13,12 @@ const ordered = [...projects].sort(
   (a, b) => Number(Boolean(b.highlighted)) - Number(Boolean(a.highlighted)),
 );
 
-// One chromatic accent only: "live" carries the accent, everything else is
-// distinguished by glyph + weight, never a second color.
-const STATUS: Record<ProjectStatus, { glyph: string; tone: string }> = {
-  live: { glyph: "●", tone: "text-accent" },
-  active: { glyph: "◐", tone: "text-foreground" },
-  archived: { glyph: "○", tone: "text-muted-foreground" },
-  experiment: { glyph: "◌", tone: "text-muted-foreground" },
+// File-mode-ish project state labels.
+const STATUS: Record<ProjectStatus, { label: string; tone: string }> = {
+  live: { label: "+ shipped", tone: "text-accent" },
+  active: { label: "~ building", tone: "text-foreground" },
+  archived: { label: "- parked", tone: "text-muted-foreground" },
+  experiment: { label: "? lab", tone: "text-muted-foreground" },
 };
 ---
 
@@ -38,12 +37,7 @@ const STATUS: Record<ProjectStatus, { glyph: string; tone: string }> = {
               )}
               {project.name}
             </h3>
-            <span
-              class:list={["flex items-center gap-1.5 text-xs", status.tone]}
-            >
-              <span aria-hidden="true">{status.glyph}</span>
-              {project.status}
-            </span>
+            <span class:list={["text-xs", status.tone]}>{status.label}</span>
           </div>
           <p class="max-w-[64ch] text-sm text-pretty text-muted-foreground">
             {project.description}

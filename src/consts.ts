@@ -264,7 +264,7 @@ TypeScript, React, Node, Python, Go, Postgres. Nine years of shipping, from scra
         name: "Steam Authenticator",
         description:
           "Open-source Steam Guard companion app. Multi-account vault, TOTP generation, QR login, and trade confirmations. The main app is React Native and handles the full feature set. There's also a lightweight PWA companion that just generates auth codes, for when you need a quick code without opening the app. Everything stored locally, nothing leaves the device.",
-        status: "active",
+        status: "live",
         highlighted: true,
         href: undefined,
         github: "https://github.com/kopenkinda/steam-2fa",
@@ -292,7 +292,7 @@ TypeScript, React, Node, Python, Go, Postgres. Nine years of shipping, from scra
         name: "Naruto Based",
         description:
           "A site I like publishes episode mirrors but the UI is rough. I scraped it, normalised the data into Postgres, and built a clean catalog with a timeline, search, and player.",
-        status: "archived",
+        status: "live",
         href: undefined,
         github: undefined,
         technologies: [
