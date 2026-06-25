@@ -121,7 +121,7 @@ const placeholderHtml = placeholder
     private hovered = false;
     private themeTransitionRunning = false;
     private lastFrame = 0;
-    private readonly autoRotateRadiansPerSecond = -0.08;
+    private readonly autoRotateRadiansPerSecond = 0.15;
     private readonly sourceSize = 220;
     private hint?: HTMLElement;
     private clickTimes: number[] = [];
@@ -197,7 +197,7 @@ const placeholderHtml = placeholder
         phi: this.phi,
         theta: this.theta,
         diffuse: 1.35,
-        mapSamples: 18000,
+        mapSamples: 40000,
         mapBaseBrightness: 0,
         mapBrightness: 8,
         markerElevation: 0.1,
