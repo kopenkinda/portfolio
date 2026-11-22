@@ -1,5 +1,5 @@
 ---
-import { Image } from "astro:assets";
+import { getImage, Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import WallCaption from "./WallCaption.astro";
 
@@ -12,11 +12,19 @@ interface Props {
 // One image fills the column, two sit side by side, three or more become a rail across the
 // window. Each image can carry its own caption line (source and/or "Apply theme"), or none.
 const { images, entryId } = Astro.props;
-const items = images.map((image, index) => ({
-  ...image,
-  themeId: `${entryId}-${index}`,
-  hasCaption: Boolean(image.source || image.theme),
-}));
+// Every image can be opened large (ImageZoom.astro), from a bigger file than the page shows.
+const items = await Promise.all(
+  images.map(async (image, index) => {
+    const width = Math.min(image.src.width, 2400);
+    const large = await getImage({ src: image.src, width });
+    return {
+      ...image,
+      themeId: `${entryId}-${index}`,
+      hasCaption: Boolean(image.source || image.theme),
+      zoom: { "data-zoom": "", "data-zoom-src": large.src, "data-zoom-width": width },
+    };
+  }),
+);
 const [first] = items;
 ---
 
@@ -24,6 +32,7 @@ const [first] = items;
   items.length === 1 && (
     <figure class="flex flex-col gap-2">
       <Image
+        {...first.zoom}
         src={first.src}
         alt={first.alt}
         widths={[576, 1152]}
@@ -45,6 +54,7 @@ const [first] = items;
       {items.map((item) => (
         <figure class="flex flex-col gap-2">
           <Image
+            {...item.zoom}
             src={item.src}
             alt={item.alt}
             widths={[288, 576]}
@@ -74,6 +84,7 @@ const [first] = items;
         // w-min: the figure is as wide as its image, so a caption wraps under it instead of widening it.
         <figure class="flex w-min flex-none snap-start flex-col gap-2">
           <Image
+            {...item.zoom}
             src={item.src}
             alt={item.alt}
             height={640}

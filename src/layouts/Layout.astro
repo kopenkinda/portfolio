@@ -9,6 +9,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { Font } from "astro:assets";
 import Icon from "../components/Icon.astro";
+import ImageZoom from "../components/ImageZoom.astro";
 import "../styles/global.css";
 
 interface Props {
@@ -168,5 +169,6 @@ const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-
 
       if (!customElements.get("site-controls")) customElements.define("site-controls", SiteControls);
     </script>
+    <ImageZoom />
   </body>
 </html>

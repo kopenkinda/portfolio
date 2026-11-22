@@ -1,0 +1,162 @@
+---
+// Click or tap an image in a post or on the wall to see it large: it flies from its place to the
+// middle of the window over a dark, blurred page, and flies back when closed (a click anywhere,
+// Escape, or scrolling). With more than one image on the page, arrows and the arrow keys step
+// through them. One per page, in Layout.astro.
+//
+// An image takes part when it's in a post's text (`.prose`) or has `data-zoom`. It can name a
+// larger file to show once loaded (`data-zoom-src`, with its width in `data-zoom-width`); otherwise
+// the image's own file is shown, at most at its own size.
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import Icon from "./Icon.astro";
+
+const arrow =
+  "absolute top-1/2 inline-flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-ash transition-colors hover:text-paper";
+---
+
+<image-zoom>
+  <dialog
+    class="fixed inset-0 m-0 size-full max-h-none max-w-none cursor-zoom-out overflow-hidden bg-transparent p-0 backdrop:bg-transparent"
+    tabindex="-1"
+  >
+    <div class="absolute inset-0 bg-ink/75 backdrop-blur-md" data-backdrop></div>
+    <img class="absolute top-0 left-0 origin-top-left rounded-sm select-none" alt="" data-image />
+    <div class="contents" data-nav>
+      <button type="button" class={`${arrow} left-3 sm:left-5`} aria-label="Previous image" data-step="-1">
+        <Icon icon={ArrowLeft01Icon} class="size-6" />
+      </button>
+      <button type="button" class={`${arrow} right-3 sm:right-5`} aria-label="Next image" data-step="1">
+        <Icon icon={ArrowRight01Icon} class="size-6" />
+      </button>
+      <p class="absolute inset-x-0 bottom-5 text-center text-sm text-ash tabular-nums" aria-live="polite" data-count></p>
+    </div>
+  </dialog>
+</image-zoom>
+
+<style is:global>
+  .prose img:not(.not-prose img),
+  img[data-zoom] {
+    cursor: zoom-in;
+  }
+</style>
+
+<script>
+  const ZOOMABLE = ".prose img:not(.not-prose img), img[data-zoom]";
+  const EDGE = 24; // CSS pixels kept clear around the large image
+  const ARROWS = 64; // and beside it, when there are arrows
+  const COUNT = 40; // and under it, for the count
+
+  class ImageZoom extends HTMLElement {
+    connectedCallback() {
+      const dialog = this.querySelector("dialog")!;
+      const backdrop = this.querySelector<HTMLElement>("[data-backdrop]")!;
+      const image = this.querySelector<HTMLImageElement>("[data-image]")!;
+      const nav = this.querySelector<HTMLElement>("[data-nav]")!;
+      const count = this.querySelector<HTMLElement>("[data-count]")!;
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      let images: HTMLImageElement[] = [];
+      let index = 0;
+      let scrolledFrom = 0;
+      let closing = false;
+
+      /** Where the large image goes: as big as fits, but no bigger than its file. */
+      const target = (source: HTMLImageElement) => {
+        const ratio = source.naturalWidth / source.naturalHeight || 1;
+        const side = images.length > 1 ? ARROWS : EDGE;
+        const bottom = images.length > 1 ? COUNT : EDGE;
+        const full = Number(source.dataset.zoomWidth) || source.naturalWidth;
+        const width = Math.min(innerWidth - side * 2, (innerHeight - EDGE - bottom) * ratio, full);
+        const height = width / ratio;
+        return { left: (innerWidth - width) / 2, top: EDGE + (innerHeight - EDGE - bottom - height) / 2, width, height };
+      };
+      /** The transform that puts the large image over `box` on the page. */
+      const over = (box: DOMRect, at: ReturnType<typeof target>) =>
+        `translate(${box.left - at.left}px, ${box.top - at.top}px) scale(${box.width / at.width}, ${box.height / at.height})`;
+      const onScreen = (box: DOMRect) => box.bottom > 0 && box.top < innerHeight && box.width > 0;
+
+      /** Show image `i` in the dialog; the one on the page hides, so it looks lifted from there. */
+      const show = (i: number) => {
+        images[index].style.visibility = "";
+        index = (i + images.length) % images.length;
+        const source = images[index];
+        source.style.visibility = "hidden";
+        const at = target(source);
+        Object.assign(image.style, { left: `${at.left}px`, top: `${at.top}px`, width: `${at.width}px`, height: `${at.height}px` });
+        image.src = source.currentSrc || source.src;
+        image.alt = source.alt;
+        dialog.ariaLabel = source.alt;
+        count.textContent = `${index + 1} / ${images.length}`;
+        // The larger file, once it's here: the small one stays until then, so nothing goes blank.
+        const large = source.dataset.zoomSrc;
+        if (large) {
+          const next = new Image();
+          next.src = large;
+          next.decode().then(
+            () => images[index] === source && (image.src = large),
+            () => {},
+          );
+        }
+        return { source, at };
+      };
+
+      const open = (clicked: HTMLImageElement) => {
+        images = [...document.querySelectorAll<HTMLImageElement>(ZOOMABLE)];
+        index = images.indexOf(clicked);
+        closing = false;
+        nav.hidden = images.length < 2;
+        dialog.showModal();
+        dialog.focus();
+        scrolledFrom = scrollY;
+        const { source, at } = show(index);
+        const timing = { duration: still ? 150 : 320, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" };
+        backdrop.animate([{ opacity: 0 }, { opacity: 1 }], timing);
+        image.animate(still ? [{ opacity: 0 }, { opacity: 1 }] : [{ transform: over(source.getBoundingClientRect(), at) }, { transform: "none" }], timing);
+      };
+
+      const close = async () => {
+        if (closing || !dialog.open) return;
+        closing = true;
+        const source = images[index];
+        const box = source.getBoundingClientRect();
+        const at = target(source);
+        const timing = { duration: still ? 150 : 280, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", fill: "forwards" as const };
+        // Back to its place if that's on screen; otherwise it just fades.
+        const back = !still && onScreen(box) ? [{ transform: "none" }, { transform: over(box, at) }] : [{ opacity: 1 }, { opacity: 0 }];
+        backdrop.animate([{ opacity: 1 }, { opacity: 0 }], timing);
+        nav.animate([{ opacity: 1 }, { opacity: 0 }], timing);
+        await image.animate(back, timing).finished;
+        source.style.visibility = "";
+        dialog.close();
+        for (const animation of [...image.getAnimations(), ...backdrop.getAnimations(), ...nav.getAnimations()]) animation.cancel();
+      };
+
+      const step = (by: number) => {
+        if (closing) return;
+        show(index + by);
+        if (!still) image.animate([{ opacity: 0, translate: `${by * 24}px 0` }, { opacity: 1, translate: "0 0" }], { duration: 220, easing: "ease-out" });
+      };
+
+      document.addEventListener("click", (event) => {
+        const clicked = event.target instanceof HTMLImageElement && event.target.matches(ZOOMABLE) ? event.target : null;
+        if (clicked && !dialog.open) open(clicked);
+      });
+      dialog.addEventListener("click", (event) => {
+        const button = event.target instanceof Element ? event.target.closest<HTMLElement>("[data-step]") : null;
+        if (button) step(Number(button.dataset.step));
+        else void close();
+      });
+      dialog.addEventListener("cancel", (event) => {
+        event.preventDefault(); // Escape: close with the animation, not at once
+        void close();
+      });
+      dialog.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") step(event.key === "ArrowLeft" ? -1 : 1);
+      });
+      addEventListener("scroll", () => dialog.open && Math.abs(scrollY - scrolledFrom) > 40 && close(), { passive: true });
+      addEventListener("resize", () => dialog.open && !closing && show(index));
+    }
+  }
+
+  if (!customElements.get("image-zoom")) customElements.define("image-zoom", ImageZoom);
+</script>
