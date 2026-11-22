@@ -1,0 +1,359 @@
+---
+// The painted map at the top of the home page: Escaldes-Engordany around Caldea, from the real
+// OpenStreetMap layout. The painting is a static image (src/pages/andorra.svg.ts), rendered once
+// by the browser. Everything that moves is drawn on one canvas above it, in a single pass per
+// frame: traffic on the real streets, people on the riverside walks, flowing water, cloud
+// shadows, birds and a glint on Caldea's spire. Pokes: clicking the river makes ripples, clicking
+// land startles birds.
+import { caldeaSpire, HEIGHT, map, trafficRoutes, walkRoutes, WIDTH } from "./scene";
+
+// Only the geometry the moving layer needs goes to the browser, not the whole map.
+const geometry = {
+  traffic: trafficRoutes.map((r) => ({ pts: r.pts, oneway: r.oneway })),
+  // The longest walks get people on them; a handful is enough to feel alive.
+  walks: [...walkRoutes].sort((a, b) => b.pts.length - a.pts.length).slice(0, 10).map((w) => w.pts),
+  rivers: map.rivers,
+  water: map.water,
+  spire: caldeaSpire,
+};
+---
+
+<andorra-scene
+  role="img"
+  aria-label="A painted map of Escaldes-Engordany from above: the Gran Valira and Valira d'Orient, Caldea's glass dome and spire, Prat del Roure, with traffic and people moving through the streets. Map data from OpenStreetMap."
+  class="relative left-1/2 block aspect-[12/5] min-h-52 w-[min(100vw,46rem)] -translate-x-1/2 cursor-pointer touch-manipulation overflow-hidden select-none"
+>
+  <img src="/andorra.svg" alt="" width={WIDTH} height={HEIGHT} decoding="async" class="absolute inset-0 size-full object-cover" />
+  <canvas class="absolute inset-0 size-full"></canvas>
+  <script is:inline type="application/json" set:html={JSON.stringify(geometry)} />
+</andorra-scene>
+
+<style>
+  /* Soft, feathered edges, like a painting on paper. */
+  andorra-scene {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 100' preserveAspectRatio='none'%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='3'/%3E%3C/filter%3E%3Crect x='6' y='6' width='228' height='88' rx='12' filter='url(%23b)'/%3E%3C/svg%3E");
+    mask-size: 100% 100%;
+  }
+</style>
+
+<script>
+  type Point = [number, number];
+  type Geometry = { traffic: { pts: Point[]; oneway: boolean }[]; walks: Point[][]; rivers: Point[][]; water: Point[][]; spire: Point };
+
+  const WIDTH = 1200;
+  const HEIGHT = 500;
+  const between = (a: number, b: number) => a + Math.random() * (b - a);
+  const pickFrom = <T,>(items: T[]) => items[Math.floor(Math.random() * items.length)];
+
+  /** A polyline measured once, so a position along it is a quick lookup. */
+  class Route {
+    readonly length: number;
+    private readonly marks: number[];
+    constructor(readonly pts: Point[]) {
+      this.marks = [0];
+      for (let i = 1; i < pts.length; i++) {
+        this.marks.push(this.marks[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+      }
+      this.length = this.marks.at(-1)!;
+    }
+    /** Position and direction of travel at a distance along the route. */
+    at(distance: number) {
+      let lo = 0;
+      let hi = this.marks.length - 1;
+      while (hi - lo > 1) {
+        const mid = (lo + hi) >> 1;
+        if (this.marks[mid] <= distance) lo = mid;
+        else hi = mid;
+      }
+      const [a, b] = [this.pts[lo], this.pts[hi]];
+      const span = this.marks[hi] - this.marks[lo] || 1;
+      const t = Math.max(0, Math.min(1, (distance - this.marks[lo]) / span));
+      return { x: a[0] + (b[0] - a[0]) * t, y: a[1] + (b[1] - a[1]) * t, dx: (b[0] - a[0]) / span, dy: (b[1] - a[1]) / span };
+    }
+  }
+
+  type Mover = {
+    route: Route;
+    at: number;
+    speed: number;
+    /** Sideways from the route's centre, to the right of travel. */
+    lane: number;
+    color: string;
+    kind: "car" | "walker";
+  };
+  type Bird = { x: number; y: number; vx: number; vy: number; age: number; life: number; phase: number };
+  type Ripple = { x: number; y: number; age: number };
+
+  class AndorraScene extends HTMLElement {
+    connectedCallback() {
+      const canvas = this.querySelector("canvas")!;
+      const ctx = canvas.getContext("2d")!;
+      const geometry: Geometry = JSON.parse(this.querySelector("script[type='application/json']")!.textContent!);
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      const movers: Mover[] = [];
+      const carColors = ["#c94f3d", "#f2efe6", "#3f6fa8", "#e2b23c", "#2f3438", "#8fa3ad", "#f2efe6"];
+      for (const { pts, oneway } of geometry.traffic) {
+        const route = new Route(pts);
+        // Two-way streets get both directions, each keeping right; one speed per lane, so cars
+        // never run into each other.
+        for (const direction of oneway ? [1] : [1, -1]) {
+          const count = Math.max(1, Math.round(route.length / 170));
+          const speed = between(30, 42) * direction;
+          for (let i = 0; i < count; i++) {
+            const at = (route.length / count) * (i + Math.random() * 0.6);
+            movers.push({ route, at, speed, lane: oneway ? 0 : 4, color: pickFrom(carColors), kind: "car" });
+          }
+        }
+      }
+      const shirts = ["#c75b4a", "#3d6fa3", "#e7d9b8", "#5c7d4a", "#e2a83a", "#7b5aa0"];
+      for (const pts of geometry.walks) {
+        const route = new Route(pts);
+        for (let i = 0; i < Math.min(3, Math.ceil(route.length / 150)); i++) {
+          const speed = between(5, 9) * (Math.random() < 0.5 ? 1 : -1);
+          movers.push({ route, at: between(4, route.length - 4), speed, lane: between(-1.5, 1.5), color: pickFrom(shirts), kind: "walker" });
+        }
+      }
+
+      const water = geometry.water.map((ring) => new Path2D(`M${ring.map((p) => p.join(" ")).join("L")}Z`));
+      const rivers = geometry.rivers.map((line) => new Path2D(`M${line.map((p) => p.join(" ")).join("L")}`));
+      const clouds = [
+        { x: -150, y: 120, rx: 210, ry: 120 },
+        { x: 470, y: 350, rx: 160, ry: 95 },
+      ];
+      const birds: Bird[] = [];
+      const ripples: Ripple[] = [];
+
+      const flock = (x: number, y: number, count: number, heading?: number) => {
+        for (let i = 0; i < count; i++) {
+          const angle = heading === undefined ? between(0, Math.PI * 2) : heading + between(-0.15, 0.15);
+          const speed = between(55, 85);
+          birds.push({
+            x: x + between(-6, 6),
+            y: y + between(-6, 6),
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            age: -i * 0.06,
+            life: heading === undefined ? 2.6 : 30,
+            phase: Math.random() * 6,
+          });
+        }
+      };
+
+      // Scene units to canvas pixels: cover the box, like the image under it (object-fit: cover).
+      let scale = 1;
+      let offsetX = 0;
+      let offsetY = 0;
+      const resize = () => {
+        const dpr = window.devicePixelRatio || 1;
+        const { width, height } = canvas.getBoundingClientRect();
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        scale = Math.max(canvas.width / WIDTH, canvas.height / HEIGHT);
+        offsetX = (canvas.width - WIDTH * scale) / 2;
+        offsetY = (canvas.height - HEIGHT * scale) / 2;
+      };
+
+      let time = 0;
+      let last = 0;
+      let running = false;
+      let nextFlock = between(4, 9);
+
+      const step = (dt: number) => {
+        time += dt;
+        for (const m of movers) {
+          m.at += m.speed * dt;
+          if (m.kind === "walker") {
+            if (m.at < 4 || m.at > m.route.length - 4) {
+              m.speed = -m.speed;
+              m.at = Math.min(m.route.length - 4, Math.max(4, m.at));
+            }
+          } else {
+            m.at = (m.at + m.route.length) % m.route.length;
+          }
+        }
+        for (const c of clouds) {
+          c.x += dt * 9;
+          c.y -= dt * 2;
+          if (c.x > WIDTH + 250) [c.x, c.y] = [-260, between(60, 440)];
+        }
+        nextFlock -= dt;
+        if (nextFlock < 0) {
+          nextFlock = between(10, 18);
+          const fromLeft = Math.random() < 0.5;
+          flock(fromLeft ? -20 : WIDTH + 20, between(60, 300), Math.round(between(3, 6)), fromLeft ? between(-0.2, 0.3) : Math.PI + between(-0.3, 0.2));
+        }
+        for (let i = birds.length - 1; i >= 0; i--) {
+          const b = birds[i];
+          b.age += dt;
+          if (b.age < 0) continue;
+          b.x += b.vx * dt;
+          b.y += b.vy * dt;
+          if (b.age > b.life || b.x < -60 || b.x > WIDTH + 60 || b.y < -60 || b.y > HEIGHT + 60) birds.splice(i, 1);
+        }
+        for (let i = ripples.length - 1; i >= 0; i--) {
+          ripples[i].age += dt;
+          if (ripples[i].age > 2.2) ripples.splice(i, 1);
+        }
+      };
+
+      const draw = () => {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.setTransform(scale, 0, 0, scale, offsetX, offsetY);
+
+        // Flowing water: dashes drifting downstream.
+        ctx.strokeStyle = "rgba(241, 250, 248, .5)";
+        ctx.lineWidth = 1.3;
+        ctx.lineCap = "round";
+        ctx.setLineDash([10, 34]);
+        ctx.lineDashOffset = -time * 22;
+        for (const river of rivers) ctx.stroke(river);
+        ctx.setLineDash([]);
+
+        // Ripples from pokes: three rings each, a little apart.
+        ctx.strokeStyle = "#f4fbfa";
+        ctx.lineWidth = 1.4;
+        for (const r of ripples) {
+          for (let ring = 0; ring < 3; ring++) {
+            const t = (r.age - ring * 0.28) / 1.6;
+            if (t < 0 || t > 1) continue;
+            ctx.globalAlpha = 0.8 * (1 - t);
+            ctx.beginPath();
+            ctx.arc(r.x, r.y, 2 + t * 26, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+        ctx.globalAlpha = 1;
+
+        for (const m of movers) {
+          const p = m.route.at(m.at);
+          const sign = Math.sign(m.speed) || 1;
+          const [dx, dy] = [p.dx * sign, p.dy * sign];
+          ctx.save();
+          ctx.translate(p.x - dy * m.lane, p.y + dx * m.lane);
+          ctx.rotate(Math.atan2(dy, dx));
+          if (m.kind === "car") {
+            // Fade in and out where a street leaves the frame.
+            ctx.globalAlpha = Math.max(0, Math.min(1, m.at / 30, (m.route.length - m.at) / 30));
+            ctx.fillStyle = "rgba(29, 42, 32, .3)";
+            ctx.beginPath();
+            ctx.roundRect(-4, -1.2, 11, 6, 1.8);
+            ctx.fill();
+            ctx.fillStyle = m.color;
+            ctx.beginPath();
+            ctx.roundRect(-5.5, -2.9, 11, 5.8, 1.8);
+            ctx.fill();
+            ctx.fillStyle = "rgba(43, 59, 69, .55)";
+            ctx.beginPath();
+            ctx.roundRect(-1.2, -2.2, 4, 4.4, 1);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = "rgba(29, 42, 32, .3)";
+            ctx.beginPath();
+            ctx.ellipse(1.8, 1.8, 3.4, 2.7, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = m.color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 3.4, 2.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#3a2e28";
+            ctx.beginPath();
+            ctx.arc(0, 0, 1.7, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+
+        // A glint on Caldea's glass every few seconds.
+        const glint = Math.max(0, Math.sin(((time % 7) / 7) * Math.PI * 2)) ** 12;
+        if (glint > 0.01) {
+          ctx.save();
+          ctx.translate(...geometry.spire);
+          ctx.rotate(time * 0.35);
+          ctx.scale(0.6 + 0.5 * glint, 0.6 + 0.5 * glint);
+          ctx.globalAlpha = glint;
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.moveTo(0, -11);
+          for (const [x, y] of [[1.6, -1.6], [11, 0], [1.6, 1.6], [0, 11], [-1.6, 1.6], [-11, 0], [-1.6, -1.6], [0, -11]]) ctx.lineTo(x, y);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        for (const c of clouds) {
+          ctx.save();
+          ctx.translate(c.x, c.y);
+          ctx.scale(1, c.ry / c.rx);
+          const shadow = ctx.createRadialGradient(0, 0, 0, 0, 0, c.rx);
+          shadow.addColorStop(0, "rgba(28, 42, 51, .2)");
+          shadow.addColorStop(0.6, "rgba(28, 42, 51, .1)");
+          shadow.addColorStop(1, "rgba(28, 42, 51, 0)");
+          ctx.fillStyle = shadow;
+          ctx.fillRect(-c.rx, -c.rx, c.rx * 2, c.rx * 2);
+          ctx.restore();
+        }
+
+        // Birds, each with a faint shadow on the ground below and to the right.
+        ctx.lineCap = "round";
+        ctx.lineWidth = 1.4;
+        for (const b of birds) {
+          if (b.age < 0) continue;
+          const flap = 0.45 + 0.55 * Math.abs(Math.sin(b.age * 14 + b.phase));
+          const fade = Math.max(0, Math.min(1, (b.life - b.age) / 0.6));
+          for (const [ox, oy, color, alpha] of [[22, 22, "#1d2a20", 0.18], [0, 0, "#2b302c", 1]] as const) {
+            ctx.globalAlpha = alpha * fade;
+            ctx.strokeStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(b.x + ox - 4, b.y + oy);
+            ctx.quadraticCurveTo(b.x + ox - 2, b.y + oy - 2.5 * flap, b.x + ox, b.y + oy);
+            ctx.quadraticCurveTo(b.x + ox + 2, b.y + oy - 2.5 * flap, b.x + ox + 4, b.y + oy);
+            ctx.stroke();
+          }
+        }
+        ctx.globalAlpha = 1;
+      };
+
+      const frame = (now: number) => {
+        step(Math.min(0.05, (now - (last || now)) / 1000));
+        last = now;
+        draw();
+        if (running) requestAnimationFrame(frame);
+      };
+
+      resize();
+      new ResizeObserver(() => {
+        resize();
+        draw();
+      }).observe(canvas);
+
+      // Reduced motion: a still picture, with everyone in place.
+      if (still) return draw();
+
+      new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting && !running) {
+          running = true;
+          last = 0;
+          requestAnimationFrame(frame);
+        } else if (!entry.isIntersecting) {
+          running = false;
+        }
+      }).observe(this);
+
+      this.addEventListener("click", (event) => {
+        const box = canvas.getBoundingClientRect();
+        const dpr = canvas.width / box.width;
+        const x = ((event.clientX - box.left) * dpr - offsetX) / scale;
+        const y = ((event.clientY - box.top) * dpr - offsetY) / scale;
+        // Hit test in scene units: identity transform, river lines 14 units wide.
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.lineWidth = 14;
+        const onWater = water.some((w) => ctx.isPointInPath(w, x, y)) || rivers.some((r) => ctx.isPointInStroke(r, x, y));
+        if (onWater) ripples.push({ x, y, age: 0 });
+        else flock(x, y, Math.round(between(4, 7)));
+      });
+    }
+  }
+
+  if (!customElements.get("andorra-scene")) customElements.define("andorra-scene", AndorraScene);
+</script>

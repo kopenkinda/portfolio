@@ -16,6 +16,8 @@ See `AGENTS.md` for how the blog, wall, themes and textures work.
 - Link click sound (`public/sounds/snd01-toggle.wav`): the toggle sound from the SND01 kit by
   [SND](https://snd.dev), used under the [SND terms of use](https://snd.dev). It may not be
   redistributed or sold on its own.
+- Home page map: data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors,
+  available under the Open Database Licence.
 - Background patterns adapted from [Hero Patterns](https://heropatterns.com) by Steve Schoger.
 - Icons from [Hugeicons](https://hugeicons.com).
 - Fonts: [Mona Sans](https://github.com/github/mona-sans) and

@@ -63,6 +63,24 @@ until the first click or key press, so the icon shows muted until then; only pre
 saves a choice. Choices are saved in localStorage and re-applied by the inline script in the
 layout's head before paint. Icons show the current state.
 
+## Home scene
+
+The painted map at the top of the home page is Escaldes-Engordany around Caldea, drawn from the real
+OpenStreetMap layout. All of it lives in `src/components/andorra/`:
+
+- `build-map.mjs` fetches the area from OpenStreetMap and writes `map.json` (buildings, streets,
+  river, parks, Caldea's footprint) in scene units: 1200 × 500, 0.75 m each, north up. Run it by
+  hand to refresh the map or move the frame (`CENTER`, `METRES_PER_UNIT`).
+- `scene.ts` loads it and derives what both layers share: Caldea's dome and spire positions, and
+  streets joined into continuous routes for traffic and walkers.
+- `src/pages/andorra.svg.ts` paints the static base at build time (seeded, so it's stable).
+- `AndorraScene.astro` draws what moves on one canvas above the painting, and handles the pokes.
+
+Keep moving parts out of the painting and on the canvas: the painting's watercolour filters are
+expensive and must render once, while the canvas redraws every frame. Don't move animated parts
+into SVG elements over the painting; repainting them re-renders the filtered image underneath. Map data is © OpenStreetMap
+contributors (ODbL), credited in the README and the scene's label.
+
 ## Texture
 
 The background texture is an SVG mask in `src/styles/global.css`, painted in `ash`, so it follows
