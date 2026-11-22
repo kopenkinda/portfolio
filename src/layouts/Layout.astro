@@ -52,7 +52,10 @@ const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-
       try {
         const root = document.documentElement;
         if (localStorage.getItem("mode") === "light") root.dataset.mode = "light";
-        if (localStorage.getItem("sound") === "on") root.dataset.sound = "on";
+        // Sound shows as on once an interaction in this tab has unlocked audio, unless turned off.
+        if (localStorage.getItem("sound") !== "off" && sessionStorage.getItem("sound-unlocked")) {
+          root.dataset.sound = "on";
+        }
         const theme = JSON.parse(localStorage.getItem("theme"));
         if (theme) {
           for (const [token, value] of Object.entries(theme.colors)) {
@@ -150,11 +153,9 @@ const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-
 
           mode.addEventListener("click", () => setMode(getMode() === "light" ? "dark" : "light"));
           reset.addEventListener("click", () => setTheme(null));
-          sound.addEventListener("click", () => {
-            setSound(!isSoundOn());
-            render();
-          });
+          sound.addEventListener("click", () => setSound(!isSoundOn()));
           document.addEventListener("themechange", render);
+          document.addEventListener("soundchange", render);
           render();
         }
       }
