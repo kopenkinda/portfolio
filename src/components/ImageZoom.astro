@@ -41,6 +41,8 @@ const arrow =
 </style>
 
 <script>
+  import { imageClick, preload, swipe, swipeSounds } from "../scripts/sounds";
+
   const ZOOMABLE = ".prose img:not(.not-prose img), img[data-zoom]";
   const EDGE = 24; // CSS pixels kept clear around the large image
   const ARROWS = 64; // and beside it, when there are arrows
@@ -103,6 +105,8 @@ const arrow =
       const open = (clicked: HTMLImageElement) => {
         images = [...document.querySelectorAll<HTMLImageElement>(ZOOMABLE)];
         index = images.indexOf(clicked);
+        imageClick();
+        if (images.length > 1) preload(swipeSounds);
         closing = false;
         nav.hidden = images.length < 2;
         dialog.showModal();
@@ -134,6 +138,7 @@ const arrow =
       const step = (by: number) => {
         if (closing) return;
         show(index + by);
+        swipe();
         if (!still) image.animate([{ opacity: 0, translate: `${by * 24}px 0` }, { opacity: 1, translate: "0 0" }], { duration: 220, easing: "ease-out" });
       };
 
@@ -144,7 +149,10 @@ const arrow =
       dialog.addEventListener("click", (event) => {
         const button = event.target instanceof Element ? event.target.closest<HTMLElement>("[data-step]") : null;
         if (button) step(Number(button.dataset.step));
-        else void close();
+        else if (!closing) {
+          imageClick();
+          void close();
+        }
       });
       dialog.addEventListener("cancel", (event) => {
         event.preventDefault(); // Escape: close with the animation, not at once

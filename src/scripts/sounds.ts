@@ -24,6 +24,7 @@ const SWOOSH = "/sounds/swoosh.m4a";
 const RIP = "/sounds/rip.m4a";
 const PLOP = "/sounds/plop.m4a";
 const COMPLETE = "/sounds/complete.m4a";
+const SWIPES = [1, 2, 3, 4, 5].map((n) => `/sounds/snd01-swipe-${n}.wav`);
 
 /** Whether sound is on right now: wanted, and unlocked by an interaction. */
 export const isSoundOn = () => root.dataset.sound === "on";
@@ -169,6 +170,24 @@ export const complete = () => void playFile(COMPLETE, 0.2);
 
 /** A jigsaw piece of the dots valley going into place: a soft plop. */
 export const snap = () => void playFile(PLOP, 0.25);
+
+// Sounds for a zoomed image (src/components/ImageZoom.astro).
+
+/** Opening or closing it with a click: the link click. */
+export const imageClick = () => void playClick();
+
+/** The swipes, for the zoom to preload when it opens. */
+export const swipeSounds = SWIPES;
+
+let lastSwipe = -1;
+/** Stepping to another image: one of SND01's five swipes, never the same one twice in a row, as
+    SND plays them. */
+export function swipe() {
+  let pick = Math.floor(Math.random() * SWIPES.length);
+  if (pick === lastSwipe) pick = (pick + 1) % SWIPES.length;
+  lastSwipe = pick;
+  void playFile(SWIPES[pick], 0.5);
+}
 
 const linkAt = (target: EventTarget | null) => (target instanceof Element ? target.closest("a[href]") : null);
 

@@ -13,7 +13,8 @@ See `AGENTS.md` for how the blog, wall, themes and textures work.
 
 ## Credits
 
-- Link click sound (`public/sounds/snd01-toggle.wav`): the toggle sound from the SND01 kit by
+- Link click and image swipe sounds (`public/sounds/snd01-toggle.wav`, `public/sounds/snd01-swipe-*.wav`):
+  the toggle and swipe sounds from the SND01 kit by
   [SND](https://snd.dev), used under the [SND terms of use](https://snd.dev). It may not be
   redistributed or sold on its own.
 - Home page scene sounds (`public/sounds/splash-*.m4a`, `public/sounds/wings.m4a`), trimmed
