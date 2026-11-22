@@ -3,8 +3,9 @@
 // picks it). The photo is turned into a grid of dots at build time (grid.ts), which also shades
 // each mountain layer by its distance. Dots start in the text colour, at their own brightness and
 // with a faint hint of their colour; every tap sends a ring outward that gives the dots it passes
-// more of that colour, until the picture is in full colour. Near the cursor, dots turn into ASCII characters and get pushed aside. Above the ridge
-// is a night sky of twinkling stars. On load the dots fly in and assemble; loose particles drift.
+// more of that colour, until the picture is in full colour. Near the cursor, dots turn into ASCII
+// characters and get pushed aside. Above the ridge is a night sky of twinkling stars, with a
+// shooting star now and then. On load the dots fly in and assemble; loose particles drift.
 //
 // All on one canvas. Most frames draw the grid as one tiny image (one pixel per dot) scaled up in
 // a single call; only the intro and the dots near the cursor are drawn one by one.
@@ -42,6 +43,8 @@ import { gridVersion } from "./grid";
   const SKY = 0.15; // extra night sky above the photo, as a share of the height
   const CORNER = 24; // dots: the corner radius of the scene's soft rounded edge
   const FEATHER = 14; // dots: how far in from that edge everything fades
+  const METEOR_LIFE = 0.8; // seconds a shooting star is visible
+  const METEOR_TRAIL = 12; // dots of fading tail behind it
 
   const hash = (n: number) => {
     const s = Math.sin(n * 12.9898) * 43758.5453;
@@ -92,6 +95,8 @@ import { gridVersion } from "./grid";
       let photo = new Float32Array(0); // r, g, b per dot: its colour once fully tapped
       let depth = new Float32Array(0); // 0..1 brightness of the mono dot
       let colorLevel = new Float32Array(0);
+      let sky = new Uint8Array(0); // 1 where the night sky is, so a shooting star can pass behind the ridge
+      let placement = [0, 0, 0, 0]; // where the photo sits on the grid: left, top, cols, rows
       let hitBy = new Int32Array(0);
       let pixels = new ImageData(1, 1);
       let tip = [0, 0];
@@ -112,6 +117,7 @@ import { gridVersion } from "./grid";
         ({ width, height } = canvas.getBoundingClientRect());
         // Hidden (another graphic is showing): nothing to lay out until it's shown.
         if (width < CELL || height < CELL) return;
+        const before = { colorLevel, cols, placement };
         canvas.width = Math.round(width * dpr);
         canvas.height = Math.round(height * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -129,7 +135,9 @@ import { gridVersion } from "./grid";
         const photoRows = Math.round((photoCols * reader.height) / reader.width);
         const left = Math.floor((cols - photoCols) / 2);
         tip = [left + GLINT[0] * photoCols, top + GLINT[1] * photoRows];
+        placement = [left, top, photoCols, photoRows];
         stars = [];
+        sky = new Uint8Array(cols * rows);
         strength = new Float32Array(cols * rows).fill(-1);
         photo = new Float32Array(cols * rows * 3);
         depth = new Float32Array(cols * rows);
@@ -147,6 +155,7 @@ import { gridVersion } from "./grid";
             if (py < 0 || src[s + 3] === 0) {
               // Sky (above the photo, or marked in it): a star now and then. Most are faint, a few bright.
               strength[i] = 0;
+              sky[i] = 1;
               if (hash(i * 1.37 + 91) < STARS) stars.push(i, (0.25 + 0.75 * hash(i + 3.1) ** 3) * fade, 0.6 + hash(i + 5.3) * 2.2, hash(i + 8.9) * 6.28);
               continue;
             }
@@ -157,6 +166,22 @@ import { gridVersion } from "./grid";
             // grid.ts puts the layers' shading, so the ridges read with or without colour.
             depth[i] = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
             photo.set([r, g, b], i * 3);
+          }
+        }
+
+        // Keep the colour the taps brought in: each new dot takes it from the old dot at the same
+        // spot in the photo.
+        const [oldLeft, oldTop, oldCols, oldRows] = before.placement;
+        if (oldCols === 0) return;
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            const fx = (x - left) / photoCols;
+            const fy = (y - top) / photoRows;
+            const bx = Math.round(oldLeft + fx * oldCols);
+            const by = Math.round(oldTop + fy * oldRows);
+            if (bx >= 0 && bx < before.cols && by >= 0 && by * before.cols + bx < before.colorLevel.length) {
+              colorLevel[y * cols + x] = before.colorLevel[by * before.cols + bx];
+            }
           }
         }
       };
@@ -176,6 +201,8 @@ import { gridVersion } from "./grid";
       let last = 0;
       let running = false;
       let lastChime = -Infinity;
+      let meteor: { x: number; y: number; vx: number; vy: number; age: number } | null = null;
+      let nextMeteor = ASSEMBLE + 4;
 
       /** A dot's colour: the theme's text colour shaded for depth, mixed toward the photo's colour. */
       const colorOf = (i: number) => {
@@ -268,6 +295,23 @@ import { gridVersion } from "./grid";
           for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) ctx.fillRect(ox + (x + dx) * CELL, oy + (y + dy) * CELL, CELL - GAP, CELL - GAP);
         }
 
+        // A shooting star: a bright head and a fading tail, drawn only on the sky so it passes
+        // behind the mountains.
+        if (meteor) {
+          const glow = Math.sin((meteor.age / METEOR_LIFE) * Math.PI);
+          const speed = Math.hypot(meteor.vx, meteor.vy);
+          let last = -1;
+          for (let k = 0; k < METEOR_TRAIL; k += 0.5) {
+            const x = Math.round(meteor.x - (meteor.vx / speed) * k);
+            const y = Math.round(meteor.y - (meteor.vy / speed) * k);
+            const i = y * cols + x;
+            if (i === last || x < 0 || x >= cols || y < 0 || y >= rows || !sky[i]) continue;
+            last = i;
+            ctx.globalAlpha = glow * (1 - k / METEOR_TRAIL) ** 1.5 * edgeFade(x, y);
+            ctx.fillRect(ox + x * CELL, oy + y * CELL, CELL - GAP, CELL - GAP);
+          }
+        }
+
         for (const p of particles) {
           ctx.globalAlpha = 0.5 * assembled * edgeFade(p.x, p.y);
           ctx.fillRect(ox + p.x * CELL, oy + p.y * CELL, CELL - GAP - 0.6, CELL - GAP - 0.6);
@@ -295,6 +339,18 @@ import { gridVersion } from "./grid";
 
       const step = (dt: number) => {
         time += dt;
+        if (meteor) {
+          meteor.age += dt;
+          meteor.x += meteor.vx * dt;
+          meteor.y += meteor.vy * dt;
+          if (meteor.age > METEOR_LIFE) meteor = null;
+        } else if (time > nextMeteor) {
+          // Every 8 to 20 seconds, high in the sky, falling at a shallow angle either way.
+          const angle = 0.25 + Math.random() * 0.3;
+          const side = Math.random() < 0.5 ? -1 : 1;
+          meteor = { x: cols * (0.2 + Math.random() * 0.6), y: rows * (0.04 + Math.random() * 0.1), vx: side * 70 * Math.cos(angle), vy: 70 * Math.sin(angle), age: 0 };
+          nextMeteor = time + 8 + Math.random() * 12;
+        }
         for (const p of particles) {
           if (pointer) {
             const dx = p.x - pointer.x;
