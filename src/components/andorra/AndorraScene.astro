@@ -24,12 +24,18 @@ const geometry = {
   aria-label="A painted map of Escaldes-Engordany from above: the Gran Valira and Valira d'Orient, Caldea's glass dome and spire, Prat del Roure, with traffic and people moving through the streets. Map data from OpenStreetMap."
   class="relative left-1/2 block aspect-[12/5] min-h-52 w-[min(100vw,46rem)] -translate-x-1/2 cursor-pointer touch-manipulation overflow-hidden select-none"
 >
-  <img src={`/andorra.svg?v=${paintingVersion}`} alt="" width={WIDTH} height={HEIGHT} decoding="async" class="absolute inset-0 size-full object-cover" />
+  <img src={`/andorra.svg?v=${paintingVersion}`} alt="" loading="lazy" width={WIDTH} height={HEIGHT} decoding="async" class="absolute inset-0 size-full object-cover" />
   <canvas class="absolute inset-0 size-full"></canvas>
   <script is:inline type="application/json" set:html={JSON.stringify(geometry)} />
 </andorra-scene>
 
 <style>
+  /* Hidden when the colours pick another graphic (see graphicFor in src/scripts/theme.ts). The
+     painting is lazy-loaded, so a hidden map is never downloaded. */
+  :global(:root[data-graphic="dots"]) andorra-scene {
+    display: none;
+  }
+
   /* Soft, feathered edges, like a painting on paper. */
   /* On load the painting develops like wet paint drying: it comes in soft and pale and settles,
      then the moving parts fade in on top. Only with scripting, so it's never stuck hidden. */

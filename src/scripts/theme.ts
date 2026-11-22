@@ -8,7 +8,12 @@ export type Theme = {
   colors: Record<"ink" | "paper" | "ash" | "accent", string>;
   /** Replaces the page's background texture while the theme is on (see global.css). */
   texture?: "dots" | "bricks";
+  /** The home page graphic to show while the theme is on; otherwise the mode decides. */
+  graphic?: Graphic;
 };
+
+/** The home page graphics: the painted map of Escaldes, or a valley in dots. */
+export type Graphic = "map" | "dots";
 
 export type Mode = "dark" | "light";
 
@@ -25,10 +30,15 @@ export function getTheme(): Theme | null {
 
 export const getMode = (): Mode => (root.dataset.mode === "light" ? "light" : "dark");
 
+/** A theme can pick the home page graphic; otherwise the dark mode shows the valley in dots and the
+    light mode the painted map. The head script in Layout.astro applies the same rule before paint. */
+export const graphicFor = (theme: Theme | null, mode: Mode): Graphic => theme?.graphic ?? (mode === "light" ? "map" : "dots");
+
 /** Changes colours with the same focus-pull as a page switch, then tells the page. */
 function change(update: () => void) {
   const run = () => {
     update();
+    root.dataset.graphic = graphicFor(getTheme(), getMode());
     const ink = getComputedStyle(root).getPropertyValue("--color-ink").trim();
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", ink);
     document.dispatchEvent(new CustomEvent("themechange"));

@@ -83,6 +83,19 @@ expensive and must render once, while the canvas redraws every frame. Don't move
 into SVG elements over the painting; repainting them re-renders the filtered image underneath. Map data is © OpenStreetMap
 contributors (ODbL), credited in the README and the scene's label.
 
+## Home graphics
+
+The home page shows one graphic, picked by `graphicFor` in `src/scripts/theme.ts` (and the same rule
+in Layout's head script, as `data-graphic` on `<html>`): a wall theme's `graphic` if it sets one,
+otherwise the painted map in light mode and the dots valley in dark mode. To add a graphic, add its
+name to the `Graphic` type and the theme schema, and hide it unless `data-graphic` names it.
+
+The dots valley lives in `src/components/dots/`. `grid.ts` turns `photo.jpg` into a small PNG at build
+time (served by `src/pages/dots.png.ts`): one pixel per dot, rgb is the dot's finished colour, alpha
+is its density, and alpha 0 marks the sky, where the canvas draws stars. The mountain layers come
+from seed points placed by hand (`LAYERS`), like the peak glint (`GLINT` in `DotsScene.astro`); place
+both again when the photo changes.
+
 ## Texture
 
 The background texture is an SVG mask in `src/styles/global.css`, painted in `ash`, so it follows

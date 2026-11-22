@@ -1,5 +1,6 @@
 ---
 import AndorraScene from "../components/andorra/AndorraScene.astro";
+import DotsScene from "../components/dots/DotsScene.astro";
 import Layout from "../layouts/Layout.astro";
 
 // Placeholder content. Replace with real entries.
@@ -19,7 +20,9 @@ const link = "underline decoration-accent underline-offset-4 transition-colors h
 ---
 
 <Layout>
+  <!-- One graphic shows, picked by the colours: the painted map or the valley in dots. -->
   <AndorraScene />
+  <DotsScene />
   <h1 class="appear mt-10 font-display text-3xl font-medium tracking-tight" style="--order: 0">Dmitrii Kopenkin</h1>
   <nav class="appear mt-3 text-sm text-ash" style="--order: 1">
     <ul class="flex gap-5">

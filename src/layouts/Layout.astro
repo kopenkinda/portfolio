@@ -69,6 +69,7 @@ const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-
         const from = document.referrer ? new URL(document.referrer).origin : "";
         const reload = performance.getEntriesByType("navigation")[0]?.type === "reload";
         if (from !== location.origin || reload) root.dataset.arrival = "fresh";
+        root.dataset.graphic = theme?.graphic ?? (root.dataset.mode === "light" ? "map" : "dots");
         const ink = theme ? theme.colors.ink : root.dataset.mode === "light" ? "#f2f1ed" : "#0a0a0a";
         document.querySelector('meta[name="theme-color"]').setAttribute("content", ink);
       } catch {}

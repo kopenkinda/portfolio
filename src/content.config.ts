@@ -37,6 +37,8 @@ const theme = z
     ash: hex,
     accent: hex,
     texture: z.enum(["dots", "bricks"]).optional(),
+    /** The home page graphic while the theme is on: the painted "map" or the valley in "dots". */
+    graphic: z.enum(["map", "dots"]).optional(),
   })
   .superRefine((t, ctx) => {
     // The build fails on an unreadable theme, so a picked palette can't ship broken.

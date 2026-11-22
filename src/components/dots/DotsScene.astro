@@ -1,0 +1,386 @@
+---
+// An Andorran valley in dots: the home page graphic for the dark mode (and any wall theme that
+// picks it). The photo is turned into a grid of dots at build time (grid.ts), which also shades
+// each mountain layer by its distance. Dots start in the text colour, at their own brightness and
+// with a faint hint of their colour; every tap sends a ring outward that gives the dots it passes
+// more of that colour, until the picture is in full colour. Near the cursor, dots turn into ASCII characters and get pushed aside. Above the ridge
+// is a night sky of twinkling stars. On load the dots fly in and assemble; loose particles drift.
+//
+// All on one canvas. Most frames draw the grid as one tiny image (one pixel per dot) scaled up in
+// a single call; only the intro and the dots near the cursor are drawn one by one.
+import { gridVersion } from "./grid";
+---
+
+<dots-scene
+  role="img"
+  aria-label="A valley in the Andorran Pyrenees above Pas de la Casa, with switchback roads, the town and snowy peaks under a starry night sky, drawn in dots that take on the photo's colours as you tap."
+  data-grid={`/dots.png?v=${gridVersion}`}
+  class="relative left-1/2 block aspect-[12/5] min-h-52 w-[min(100vw,46rem)] -translate-x-1/2 cursor-crosshair touch-manipulation select-none"
+>
+  <canvas class="absolute inset-0 size-full"></canvas>
+</dots-scene>
+
+<style>
+  /* Only shown when the colours ask for it (see graphicFor in src/scripts/theme.ts). */
+  :global(:root:not([data-graphic="dots"])) dots-scene {
+    display: none;
+  }
+</style>
+
+<script>
+  import { sparkle } from "../../scripts/sounds";
+
+  const CELL = 4; // CSS pixels per dot
+  const GAP = 1; // CSS pixels between dots
+  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
+  const GLYPHS = ".:-=+*#%@";
+  const RADIUS = 9; // dots around the cursor that turn into characters
+  const ASSEMBLE = 1.6; // seconds for the dots to fly in
+  const TAP_COLOR = 0.25; // how much more of the photo's colour each tap brings
+  const GLINT = [0.654, 0.135]; // the snowy peak that catches the light, as fractions of the photo
+  const STARS = 0.045; // share of the sky's dots that are stars
+  const SKY = 0.15; // extra night sky above the photo, as a share of the height
+  const CORNER = 24; // dots: the corner radius of the scene's soft rounded edge
+  const FEATHER = 14; // dots: how far in from that edge everything fades
+
+  const hash = (n: number) => {
+    const s = Math.sin(n * 12.9898) * 43758.5453;
+    return s - Math.floor(s);
+  };
+  const ease = (t: number) => 1 - (1 - t) ** 3;
+  const smooth = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+
+  type Particle = { x: number; y: number; vx: number; vy: number };
+  type Pulse = { id: number; x: number; y: number; age: number };
+
+  class DotsScene extends HTMLElement {
+    async connectedCallback() {
+      const canvas = this.querySelector("canvas")!;
+      const ctx = canvas.getContext("2d")!;
+      const small = document.createElement("canvas");
+      const smallCtx = small.getContext("2d")!;
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // The dot data: one pixel per dot, its colour once fully tapped, alpha for how densely it shows.
+      const source = new Image();
+      source.src = this.dataset.grid!;
+      await source.decode();
+      const reader = document.createElement("canvas");
+      [reader.width, reader.height] = [source.naturalWidth, source.naturalHeight];
+      const readerCtx = reader.getContext("2d", { willReadFrequently: true })!;
+      readerCtx.drawImage(source, 0, 0);
+      const src = readerCtx.getImageData(0, 0, reader.width, reader.height).data;
+
+      // The theme's text colour, as numbers, for the dots before they take on colour.
+      let paper = [232, 232, 229];
+      const readPaper = () => {
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--color-paper").trim() || "#e8e8e5";
+        const hex = ctx.fillStyle;
+        if (hex.startsWith("#")) paper = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+      };
+      readPaper();
+      document.addEventListener("themechange", readPaper);
+
+      // Grid layout, rebuilt on resize: the photo fills the height, centred.
+      let cols = 0;
+      let rows = 0;
+      let width = 0;
+      let height = 0;
+      let ox = 0;
+      let oy = 0;
+      let strength = new Float32Array(0); // 0..1, -1 outside the photo
+      let photo = new Float32Array(0); // r, g, b per dot: its colour once fully tapped
+      let depth = new Float32Array(0); // 0..1 brightness of the mono dot
+      let colorLevel = new Float32Array(0);
+      let hitBy = new Int32Array(0);
+      let pixels = new ImageData(1, 1);
+      let tip = [0, 0];
+      // Stars, as [cell, brightness 0..1, twinkle speed, twinkle phase] in one flat list.
+      let stars: number[] = [];
+
+      /** 1 inside, 0 at the canvas edge: a rounded rectangle with a soft edge, so the scene has no
+          hard sides or square corners. Uses the distance to the rounded rectangle, in dots. */
+      const edgeFade = (x: number, y: number) => {
+        const qx = Math.abs(x + 0.5 - cols / 2) - (cols / 2 - CORNER);
+        const qy = Math.abs(y + 0.5 - rows / 2) - (rows / 2 - CORNER);
+        const distance = Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - CORNER;
+        return smooth(-distance / FEATHER);
+      };
+
+      const resize = () => {
+        const dpr = window.devicePixelRatio || 1;
+        ({ width, height } = canvas.getBoundingClientRect());
+        // Hidden (another graphic is showing): nothing to lay out until it's shown.
+        if (width < CELL || height < CELL) return;
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        cols = Math.floor(width / CELL);
+        rows = Math.floor(height / CELL);
+        ox = (width - cols * CELL) / 2;
+        oy = (height - rows * CELL) / 2;
+        [small.width, small.height] = [cols, rows];
+        pixels = smallCtx.createImageData(cols, rows);
+
+        // The photo sits under a band of extra sky and covers the rest: full width, its bottom running
+        // off into the fade (on narrow screens it fills the height and its sides crop instead).
+        const top = Math.round(rows * SKY);
+        const photoCols = Math.max(cols, Math.round(((rows - top) * reader.width) / reader.height));
+        const photoRows = Math.round((photoCols * reader.height) / reader.width);
+        const left = Math.floor((cols - photoCols) / 2);
+        tip = [left + GLINT[0] * photoCols, top + GLINT[1] * photoRows];
+        stars = [];
+        strength = new Float32Array(cols * rows).fill(-1);
+        photo = new Float32Array(cols * rows * 3);
+        depth = new Float32Array(cols * rows);
+        colorLevel = new Float32Array(cols * rows);
+        hitBy = new Int32Array(cols * rows).fill(-1);
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            const px = x - left;
+            const py = y - top;
+            if (px < 0 || px >= photoCols || py >= photoRows) continue;
+            const s = (Math.floor((Math.max(0, py) / photoRows) * reader.height) * reader.width + Math.floor((px / photoCols) * reader.width)) * 4;
+            const i = y * cols + x;
+            const [r, g, b] = [src[s], src[s + 1], src[s + 2]];
+            const fade = edgeFade(x, y) * smooth((rows - 1 - y) / (rows * 0.3));
+            if (py < 0 || src[s + 3] === 0) {
+              // Sky (above the photo, or marked in it): a star now and then. Most are faint, a few bright.
+              strength[i] = 0;
+              if (hash(i * 1.37 + 91) < STARS) stars.push(i, (0.25 + 0.75 * hash(i + 3.1) ** 3) * fade, 0.6 + hash(i + 5.3) * 2.2, hash(i + 8.9) * 6.28);
+              continue;
+            }
+            // The fade drops dots at random rather than dimming them: a dimmed edge dithers into a
+            // regular lattice of lone dots, a dropped one dissolves.
+            strength[i] = hash(i * 3.7 + 1.3) < fade ? src[s + 3] / 255 : 0;
+            // Before a dot has colour it is as bright as its colour is. That brightness is where
+            // grid.ts puts the layers' shading, so the ridges read with or without colour.
+            depth[i] = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+            photo.set([r, g, b], i * 3);
+          }
+        }
+      };
+
+      const particles: Particle[] = [];
+      const seedParticles = () => {
+        particles.length = 0;
+        for (let i = 0; i < Math.round(cols * 0.45); i++) {
+          particles.push({ x: Math.random() * cols, y: Math.random() * rows, vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 0.8 });
+        }
+      };
+
+      const pulses: Pulse[] = [];
+      let pulseCount = 0;
+      let pointer: { x: number; y: number } | null = null;
+      let time = still ? ASSEMBLE : 0;
+      let last = 0;
+      let running = false;
+      let lastChime = -Infinity;
+
+      /** A dot's colour: the theme's text colour shaded for depth, mixed toward the photo's colour. */
+      const colorOf = (i: number) => {
+        const k = Math.min(1, 0.14 + colorLevel[i]);
+        const d = depth[i];
+        return [0, 1, 2].map((c) => paper[c] * d * (1 - k) + photo[i * 3 + c] * k);
+      };
+
+      const draw = () => {
+        const assembled = Math.min(1, time / ASSEMBLE);
+        const spread = 1 - ease(assembled);
+        ctx.clearRect(0, 0, width, height);
+
+        const near = (x: number, y: number) =>
+          pointer !== null && Math.abs(x - pointer.x) < RADIUS && Math.abs(y - pointer.y) < RADIUS && Math.hypot(x - pointer.x, y - pointer.y) < RADIUS;
+        const inRing = (x: number, y: number) => pulses.some((p) => Math.abs(Math.hypot(x - p.x, y - p.y) - p.age * 55) < 2.5);
+
+        if (spread > 0.001) {
+          // Intro: every dot drawn on its own, flying in from a scattered position.
+          ctx.fillStyle = `rgb(${paper.join(",")})`;
+          for (let i = 0; i < strength.length; i++) {
+            const x = i % cols;
+            const y = (i / cols) | 0;
+            if (strength[i] <= BAYER[(y % 4) * 4 + (x % 4)]) continue;
+            const angle = hash(i) * Math.PI * 2;
+            const far = (8 + hash(i + 7) * 40) * spread;
+            ctx.globalAlpha = depth[i] * assembled;
+            ctx.fillRect(ox + (x + Math.cos(angle) * far) * CELL, oy + (y + Math.sin(angle) * far) * CELL, CELL - GAP, CELL - GAP);
+          }
+          ctx.globalAlpha = 1;
+        } else {
+          // Settled: write one pixel per dot, then scale it up in one draw and cut the gaps.
+          const data = pixels.data;
+          data.fill(0);
+          for (let i = 0; i < strength.length; i++) {
+            const x = i % cols;
+            const y = (i / cols) | 0;
+            if (strength[i] <= BAYER[(y % 4) * 4 + (x % 4)] || near(x, y)) continue;
+            const [r, g, b] = colorOf(i);
+            data[i * 4] = r;
+            data[i * 4 + 1] = g;
+            data[i * 4 + 2] = b;
+            data[i * 4 + 3] = 255;
+          }
+          smallCtx.putImageData(pixels, 0, 0);
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(small, ox, oy, cols * CELL, rows * CELL);
+          ctx.globalCompositeOperation = "destination-out";
+          for (let x = 1; x <= cols; x++) ctx.fillRect(ox + x * CELL - GAP, oy, GAP, rows * CELL);
+          for (let y = 1; y <= rows; y++) ctx.fillRect(ox, oy + y * CELL - GAP, cols * CELL, GAP);
+          ctx.globalCompositeOperation = "source-over";
+
+          // Characters: around the cursor, pushed aside; and along each tap's ring.
+          ctx.font = `${CELL * 2 + 1}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          const glyphAt = (x: number, y: number, dx: number, dy: number) => {
+            const i = y * cols + x;
+            const s = strength[i];
+            if (s < 0.06 || x % 2 || y % 2) return;
+            const [r, g, b] = colorOf(i);
+            ctx.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
+            ctx.fillText(GLYPHS[Math.min(GLYPHS.length - 1, Math.floor(s * GLYPHS.length))], ox + (x + dx + 1) * CELL, oy + (y + dy + 1) * CELL);
+          };
+          if (pointer) {
+            for (let y = Math.max(0, Math.floor(pointer.y - RADIUS)); y < Math.min(rows, pointer.y + RADIUS); y++) {
+              for (let x = Math.max(0, Math.floor(pointer.x - RADIUS)); x < Math.min(cols, pointer.x + RADIUS); x++) {
+                const d = Math.hypot(x - pointer.x, y - pointer.y);
+                if (d >= RADIUS) continue;
+                const push = ((RADIUS - d) / RADIUS) * 1.6;
+                glyphAt(x, y, ((x - pointer.x) / (d || 1)) * push, ((y - pointer.y) / (d || 1)) * push);
+              }
+            }
+          }
+          if (pulses.length) {
+            for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (inRing(x, y) && !near(x, y)) glyphAt(x, y, 0, 0);
+          }
+        }
+
+        // Stars: each twinkles at its own pace; the brightest get a faint cross.
+        ctx.fillStyle = `rgb(${paper.join(",")})`;
+        for (let k = 0; k < stars.length; k += 4) {
+          const [i, bright, speed, phase] = [stars[k], stars[k + 1], stars[k + 2], stars[k + 3]];
+          const [x, y] = [i % cols, (i / cols) | 0];
+          const glow = bright * (0.6 + 0.4 * Math.sin(time * speed + phase)) * assembled;
+          ctx.globalAlpha = glow;
+          ctx.fillRect(ox + x * CELL, oy + y * CELL, CELL - GAP, CELL - GAP);
+          if (bright < 0.8) continue;
+          ctx.globalAlpha = glow * 0.3;
+          for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) ctx.fillRect(ox + (x + dx) * CELL, oy + (y + dy) * CELL, CELL - GAP, CELL - GAP);
+        }
+
+        for (const p of particles) {
+          ctx.globalAlpha = 0.5 * assembled * edgeFade(p.x, p.y);
+          ctx.fillRect(ox + p.x * CELL, oy + p.y * CELL, CELL - GAP - 0.6, CELL - GAP - 0.6);
+        }
+        ctx.globalAlpha = 1;
+
+        // A glint on the snowy peak now and then: a small cross of dots.
+        const glint = Math.max(0, Math.sin(((time % 6) / 6) * Math.PI * 2)) ** 10;
+        if (glint > 0.05 && assembled === 1) {
+          const reach = Math.round(1 + glint * 4);
+          const [tx, ty] = [Math.round(tip[0]), Math.round(tip[1])];
+          ctx.globalAlpha = glint;
+          ctx.fillStyle = "#ffffff";
+          for (let k = -reach; k <= reach; k++) {
+            ctx.fillRect(ox + (tx + k) * CELL, oy + ty * CELL, CELL - GAP, CELL - GAP);
+            ctx.fillRect(ox + tx * CELL, oy + (ty + k) * CELL, CELL - GAP, CELL - GAP);
+          }
+          ctx.globalAlpha = 1;
+          if (glint > 0.9 && time - lastChime > 25 && Math.random() < 0.01) {
+            lastChime = time;
+            sparkle();
+          }
+        }
+      };
+
+      const step = (dt: number) => {
+        time += dt;
+        for (const p of particles) {
+          if (pointer) {
+            const dx = p.x - pointer.x;
+            const dy = p.y - pointer.y;
+            const d = Math.hypot(dx, dy);
+            if (d < RADIUS * 1.5) {
+              p.vx += (dx / (d || 1)) * dt * 30;
+              p.vy += (dy / (d || 1)) * dt * 30;
+            }
+          }
+          p.vx = p.vx * (1 - dt * 0.6) + (Math.random() - 0.5) * dt * 1.5;
+          p.vy = p.vy * (1 - dt * 0.6) + (Math.random() - 0.5) * dt * 1.5;
+          p.x = (p.x + p.vx * dt + cols) % cols;
+          p.y = (p.y + p.vy * dt + rows) % rows;
+        }
+        // Each tap's ring gives the dots it passes more of the photo's colour, once per tap.
+        for (let k = pulses.length - 1; k >= 0; k--) {
+          const p = pulses[k];
+          p.age += dt;
+          const reach = p.age * 55;
+          for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+              const i = y * cols + x;
+              if (hitBy[i] === p.id || Math.hypot(x - p.x, y - p.y) > reach) continue;
+              hitBy[i] = p.id;
+              colorLevel[i] = Math.min(1, colorLevel[i] + TAP_COLOR);
+            }
+          }
+          if (reach > Math.hypot(cols, rows)) pulses.splice(k, 1);
+        }
+      };
+
+      const frame = (now: number) => {
+        step(Math.min(0.05, (now - (last || now)) / 1000));
+        last = now;
+        draw();
+        if (running) requestAnimationFrame(frame);
+      };
+
+      resize();
+      seedParticles();
+      new ResizeObserver(() => {
+        resize();
+        seedParticles();
+        if (!running) draw();
+      }).observe(canvas);
+
+      if (still) {
+        draw();
+      } else {
+        new IntersectionObserver(([entry]) => {
+          if (entry.isIntersecting && !running) {
+            running = true;
+            last = 0;
+            requestAnimationFrame(frame);
+          } else if (!entry.isIntersecting) {
+            running = false;
+          }
+        }).observe(this);
+      }
+
+      const toCells = (event: PointerEvent | MouseEvent) => {
+        const box = canvas.getBoundingClientRect();
+        return { x: (event.clientX - box.left - ox) / CELL, y: (event.clientY - box.top - oy) / CELL };
+      };
+      this.addEventListener("pointermove", (event) => (pointer = toCells(event)));
+      this.addEventListener("pointerleave", () => (pointer = null));
+      this.addEventListener("click", (event) => {
+        const at = toCells(event);
+        pulses.push({ id: pulseCount++, ...at, age: 0 });
+        if (still) {
+          // No ring without motion: just bring the colour in at once.
+          colorLevel.forEach((v, i) => (colorLevel[i] = Math.min(1, v + TAP_COLOR)));
+          pulses.length = 0;
+          draw();
+        }
+        for (const p of particles) {
+          const dx = p.x - at.x;
+          const dy = p.y - at.y;
+          const d = Math.hypot(dx, dy) || 1;
+          p.vx += (dx / d) * (120 / Math.max(4, d));
+          p.vy += (dy / d) * (120 / Math.max(4, d));
+        }
+      });
+    }
+  }
+
+  if (!customElements.get("dots-scene")) customElements.define("dots-scene", DotsScene);
+</script>
