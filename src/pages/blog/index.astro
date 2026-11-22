@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import { postTitleTransition } from "../../content.config";
 import Layout from "../../layouts/Layout.astro";
 
 const posts = (await getCollection("blog")).sort(
@@ -16,7 +17,10 @@ const formatDate = new Intl.DateTimeFormat("en", { month: "short", year: "numeri
     {
       posts.map((post) => (
         <li>
-          <h2 class="font-display text-lg font-medium">
+          <h2
+            class="w-fit font-display text-lg font-medium [view-transition-class:post-title]"
+            style={`view-transition-name: ${postTitleTransition(post.id)}`}
+          >
             <a
               href={`/blog/${post.id}/`}
               class="underline decoration-transparent underline-offset-4 transition-colors hover:decoration-ash/60"

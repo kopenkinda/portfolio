@@ -1,5 +1,6 @@
 ---
 import { type CollectionEntry, getCollection, render } from "astro:content";
+import { postTitleTransition } from "../../content.config";
 import Layout from "../../layouts/Layout.astro";
 
 export async function getStaticPaths() {
@@ -14,7 +15,12 @@ const date = new Intl.DateTimeFormat("en", { dateStyle: "long" }).format(post.da
 
 <Layout title={post.data.title} description={post.data.description} back={{ label: "Blog", href: "/blog/" }}>
   <article>
-    <h1 class="font-display text-3xl font-medium tracking-tight">{post.data.title}</h1>
+    <h1
+      class="w-fit font-display text-3xl font-medium tracking-tight [view-transition-class:post-title]"
+      style={`view-transition-name: ${postTitleTransition(post.id)}`}
+    >
+      {post.data.title}
+    </h1>
     <time datetime={post.data.pubDate.toISOString()} class="mt-2 block text-ash">{date}</time>
     <div class="prose mt-12">
       <Content />

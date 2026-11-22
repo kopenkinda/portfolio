@@ -99,11 +99,15 @@
   navigation: auto;
 }
 
-::view-transition-old(root) {
+/* A post title present on only one of the two pages (e.g. home to blog list) has nothing to move
+   to, so it blurs with the rest of the page instead of staying sharp on top of it. */
+::view-transition-old(root),
+::view-transition-old(.post-title):only-child {
   animation: page-out 160ms ease-in both;
 }
 
-::view-transition-new(root) {
+::view-transition-new(root),
+::view-transition-new(.post-title):only-child {
   animation: page-in 320ms cubic-bezier(0.2, 0.7, 0.2, 1) 90ms both;
 }
 
@@ -121,9 +125,16 @@
   }
 }
 
+/* When both pages have it (blog list and post), the title moves and scales on the page's curve. */
+::view-transition-group(.post-title) {
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
     animation: none;
   }
 }

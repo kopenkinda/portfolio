@@ -12,3 +12,6 @@ const blog = defineCollection({
 });
 
 export const collections = { blog };
+
+/** Shared view-transition name, so a post's title travels from the blog list into the post page. */
+export const postTitleTransition = (id: string) => `post-${id.replace(/[^a-zA-Z0-9-]/g, "-")}`;
