@@ -20,3 +20,10 @@ Consult these guides before working on related tasks:
 - [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
 - [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
 - [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+
+## Blog
+
+Posts are MDX files in `src/content/blog/`. A post's interactive elements live in
+`src/components/blog/<post-slug>/`, one component per element, imported by that post only.
+Write client behaviour as a custom element in a TypeScript `<script>`, and add `not-prose`
+to the component's root so post text styles don't leak into it.

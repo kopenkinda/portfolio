@@ -1,0 +1,20 @@
+---
+// Renders an icon from @hugeicons/core-free-icons. Use only Hugeicons; don't draw icons by hand.
+type IconData = readonly (readonly [string, { readonly [key: string]: string | number }])[];
+
+interface Props {
+  icon: IconData;
+  class?: string;
+}
+
+const { icon, class: className } = Astro.props;
+// Icon data uses React-style camelCase props (strokeWidth); SVG attributes are kebab-case.
+const toAttrs = ({ key: _key, ...props }: { readonly [key: string]: string | number }) =>
+  Object.fromEntries(
+    Object.entries(props).map(([name, value]) => [name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`), value]),
+  );
+---
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true" class={className}>
+  {icon.map(([Tag, props]) => <Tag {...toAttrs(props)} />)}
+</svg>

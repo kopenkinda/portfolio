@@ -1,0 +1,73 @@
+---
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { Font } from "astro:assets";
+import Icon from "../components/Icon.astro";
+import "../styles/global.css";
+
+interface Props {
+  /** Page name; the site name is appended. Omit on the home page. */
+  title?: string;
+  description?: string;
+  /** The page one level up. Subpages get this link instead of a menu; only the home page has one. */
+  back?: { label: string; href: string };
+}
+
+const name = "Dmitrii Kopenkin";
+const email = "hi@kopenkin.tech";
+const { title, description = `${name}, full-stack product engineer in Andorra.`, back } = Astro.props;
+
+const links = [
+  { label: "Email", href: `mailto:${email}` },
+  { label: "GitHub", href: "https://github.com/kopenkinda" },
+  { label: "LinkedIn", href: "https://linkedin.com/in/dmitrii-kopenkin" },
+  { label: "Telegram", href: "https://t.me/leroifrancais" },
+];
+
+const link = "underline decoration-ash/40 underline-offset-4 transition-colors hover:decoration-paper";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title ? `${title} | ${name}` : name}</title>
+    <meta name="description" content={description} />
+    <Font cssVariable="--font-mona-sans" preload />
+    <Font cssVariable="--font-literata" preload />
+  </head>
+  <body class="min-h-dvh">
+    <div class="mx-auto max-w-xl px-4 pt-24 pb-16 sm:pt-32">
+      {
+        back && (
+          <a
+            href={back.href}
+            class="mb-5 -ml-1 inline-flex items-center gap-1 font-display text-sm text-ash transition-colors hover:text-paper"
+          >
+            <Icon icon={ArrowLeft01Icon} class="size-4" />
+            {back.label}
+          </a>
+        )
+      }
+      <main>
+        <slot />
+      </main>
+
+      <footer class="mt-24 flex flex-wrap items-baseline justify-between gap-4 text-sm text-ash">
+        <ul class="flex gap-5">
+          {
+            links.map((item) => (
+              <li>
+                <a href={item.href} class={link}>
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <span>© 2026 {name}</span>
+      </footer>
+    </div>
+  </body>
+</html>

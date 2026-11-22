@@ -1,0 +1,32 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+
+const posts = (await getCollection("blog")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const formatDate = new Intl.DateTimeFormat("en", { month: "short", year: "numeric" }).format;
+---
+
+<Layout title="Blog" description="Notes and experiments by Dmitrii Kopenkin." back={{ label: "Home", href: "/" }}>
+  <h1 class="font-display text-3xl font-medium tracking-tight">Blog</h1>
+  <p class="mt-2 text-ash">Notes and experiments, some of them interactive.</p>
+
+  <ul class="mt-12 space-y-8">
+    {
+      posts.map((post) => (
+        <li>
+          <a href={`/blog/${post.id}/`} class="group block">
+            <span class="font-display text-lg font-medium underline decoration-transparent underline-offset-4 transition-colors group-hover:decoration-ash/60">
+              {post.data.title}
+            </span>
+            <span class="mt-1 block leading-relaxed text-ash">{post.data.description}</span>
+          </a>
+          <time datetime={post.data.pubDate.toISOString()} class="mt-1 block text-sm text-ash">
+            {formatDate(post.data.pubDate)}
+          </time>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>

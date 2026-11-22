@@ -1,0 +1,42 @@
+---
+// Interactive example for the placeholder post: drag to change a paragraph's line length.
+---
+
+<line-length class="not-prose my-8 block border-y border-ash/25 py-6">
+  <label class="flex items-baseline justify-between gap-4 font-display text-sm text-ash">
+    Line length
+    <output class="text-paper tabular-nums" data-readout>65 characters</output>
+  </label>
+  <input
+    type="range"
+    min="25"
+    max="110"
+    value="65"
+    class="mt-3 w-full accent-paper"
+    aria-label="Line length in characters"
+    data-slider
+  />
+  <p class="mt-6 leading-relaxed" style="max-width: 65ch" data-sample>
+    Short lines make the eye jump back too often, long ones make it lose its place on the way back.
+    Somewhere between 45 and 75 characters, reading stops feeling like work. Drag the slider and
+    watch where this paragraph gets comfortable.
+  </p>
+</line-length>
+
+<script>
+  class LineLength extends HTMLElement {
+    connectedCallback() {
+      const slider = this.querySelector<HTMLInputElement>("[data-slider]");
+      const readout = this.querySelector<HTMLOutputElement>("[data-readout]");
+      const sample = this.querySelector<HTMLElement>("[data-sample]");
+      if (!slider || !readout || !sample) return;
+
+      slider.addEventListener("input", () => {
+        sample.style.maxWidth = `${slider.value}ch`;
+        readout.textContent = `${slider.value} characters`;
+      });
+    }
+  }
+
+  if (!customElements.get("line-length")) customElements.define("line-length", LineLength);
+</script>
