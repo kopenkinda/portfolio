@@ -69,15 +69,16 @@ const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-
   <body class="min-h-dvh">
     <div class="mx-auto max-w-xl px-4 pt-6 pb-16">
       <!-- Site controls: colours and sound. While a wall theme is on, its name replaces the mode
-           switch, and pressing it goes back to the mode. Icons show the current state. -->
-      <site-controls class="-mr-2 flex justify-end gap-1">
+           switch, and pressing it goes back to the mode. Icons show the current state. Every icon
+           sits 0.1em low, on the text's optical centre, so icons and the theme name share a line. -->
+      <site-controls class="-mr-2 flex justify-end gap-1 text-sm">
         <button type="button" data-control="mode" class={`${control} inline-flex w-8 in-data-themed:hidden`} aria-label="Light mode" title="Light mode">
-          <Icon icon={Moon02Icon} class="size-4 in-data-[mode=light]:hidden" />
-          <Icon icon={Sun03Icon} class="hidden size-4 in-data-[mode=light]:block" />
+          <Icon icon={Moon02Icon} class="size-4 translate-y-[0.1em] in-data-[mode=light]:hidden" />
+          <Icon icon={Sun03Icon} class="hidden size-4 translate-y-[0.1em] in-data-[mode=light]:block" />
         </button>
-        <button type="button" data-control="reset" class={`${control} hidden px-2 text-sm in-data-themed:inline-flex`} title="Reset theme">
+        <button type="button" data-control="reset" class={`${control} hidden px-2 in-data-themed:inline-flex`} title="Reset theme">
           <span id="theme-name"></span>
-          <Icon icon={Cancel01Icon} class="size-3.5" />
+          <Icon icon={Cancel01Icon} class="size-3.5 translate-y-[0.1em]" />
         </button>
         <script is:inline>
           try {
@@ -86,8 +87,8 @@ const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-
           } catch {}
         </script>
         <button type="button" data-control="sound" class={`${control} inline-flex w-8`} aria-label="Sound" title="Sound">
-          <Icon icon={VolumeMute02Icon} class="size-4 in-data-[sound=on]:hidden" />
-          <Icon icon={VolumeHighIcon} class="hidden size-4 in-data-[sound=on]:block" />
+          <Icon icon={VolumeMute02Icon} class="size-4 translate-y-[0.1em] in-data-[sound=on]:hidden" />
+          <Icon icon={VolumeHighIcon} class="hidden size-4 translate-y-[0.1em] in-data-[sound=on]:block" />
         </button>
       </site-controls>
 
