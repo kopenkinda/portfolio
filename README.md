@@ -1,43 +1,22 @@
-# Astro Starter Kit: Minimal
+# Portfolio
+
+Dmitrii Kopenkin's personal site: a home page, a blog and a wall of things worth keeping.
+Built with [Astro](https://astro.build) and [Tailwind CSS](https://tailwindcss.com).
 
 ```sh
-pnpm create astro@latest -- --template minimal
+pnpm install
+pnpm dev      # local dev server at localhost:4321
+pnpm build    # static site in ./dist
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+See `AGENTS.md` for how the blog, wall, themes and textures work.
 
-## 🚀 Project Structure
+## Credits
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- Link click sound (`public/sounds/snd01-toggle.wav`): the toggle sound from the SND01 kit by
+  [SND](https://snd.dev), used under the [SND terms of use](https://snd.dev). It may not be
+  redistributed or sold on its own.
+- Background patterns adapted from [Hero Patterns](https://heropatterns.com) by Steve Schoger.
+- Icons from [Hugeicons](https://hugeicons.com).
+- Fonts: [Mona Sans](https://github.com/github/mona-sans) and
+  [Literata](https://fonts.google.com/specimen/Literata).
