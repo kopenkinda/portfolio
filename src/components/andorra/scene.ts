@@ -35,10 +35,11 @@ const centroid = (points: Point[]): Point => {
   return [x / points.length, y / points.length];
 };
 
-/** Caldea's footprint centre, and where its two landmarks sit: the lagoon dome and the spire. */
+/** Caldea's footprint centre, and where its two landmarks sit: the lagoon dome in the
+    north-west wing of the building, the spire in the middle of the south-east wing. */
 export const caldeaCentre = centroid(map.caldea.outer[0]);
-export const caldeaDome: Point = [caldeaCentre[0] - 79, caldeaCentre[1] - 55];
-export const caldeaSpire: Point = [caldeaCentre[0] + 20, caldeaCentre[1] + 7];
+export const caldeaDome: Point = [caldeaCentre[0] - 61, caldeaCentre[1] - 37];
+export const caldeaSpire: Point = [caldeaCentre[0] + 44, caldeaCentre[1] + 12];
 
 /**
  * Streets joined into continuous routes (OpenStreetMap splits a street into many pieces), for

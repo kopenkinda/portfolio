@@ -73,7 +73,9 @@ OpenStreetMap layout. All of it lives in `src/components/andorra/`:
   hand to refresh the map or move the frame (`CENTER`, `METRES_PER_UNIT`).
 - `scene.ts` loads it and derives what both layers share: Caldea's dome and spire positions, and
   streets joined into continuous routes for traffic and walkers.
-- `src/pages/andorra.svg.ts` paints the static base at build time (seeded, so it's stable).
+- `painting.ts` paints the static base at build time (seeded, so it's stable); `src/pages/andorra.svg.ts`
+  serves it. The image address carries a hash of the painting, so a cached old painting never
+  shows under a newer moving layer.
 - `AndorraScene.astro` draws what moves on one canvas above the painting, and handles the pokes.
 
 Keep moving parts out of the painting and on the canvas: the painting's watercolour filters are
