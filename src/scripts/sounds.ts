@@ -2,20 +2,27 @@
 // The tick is a few milliseconds of noise through a band filter, synthesised with Web Audio. The
 // click is the toggle sound from SND01 by SND (https://snd.dev), credited in the README.
 //
-// Browsers keep audio off until the visitor clicks or presses a key. Chrome carries that over
-// to the next same-site page, so after the first click hovers can tick straight away. Until audio
-// is on, hovers stay silent: queuing their ticks would play them all at once when it turns on.
+// Sound is off until the visitor turns it on with the speaker button in the top bar; the choice
+// is saved, and the inline script in Layout.astro marks <html data-sound="on"> before paint.
+// Browsers also keep audio off until the visitor clicks or presses a key on the page. Chrome
+// carries that over to the next same-site page; until then hovers stay silent, since queuing their
+// ticks would play them all at once when audio turns on.
 
+const root = document.documentElement;
 let audio: AudioContext | undefined;
 let noise: AudioBuffer | undefined;
-
-// Fetched right away (the browser caches it across pages), decoded once audio exists.
-const clickFile = fetch("/sounds/snd01-toggle.wav").then((response) => response.arrayBuffer());
+let clickFile: Promise<ArrayBuffer> | undefined;
 let click: Promise<AudioBuffer> | undefined;
+
+export const isSoundOn = () => root.dataset.sound === "on";
+
+// The browser caches the file across pages; it's only fetched once sound is on.
+const loadClick = () => (clickFile ??= fetch("/sounds/snd01-toggle.wav").then((response) => response.arrayBuffer()));
+if (isSoundOn()) void loadClick();
 
 function start() {
   audio ??= new AudioContext();
-  click ??= clickFile.then((data) => audio!.decodeAudioData(data));
+  click ??= loadClick().then((data) => audio!.decodeAudioData(data));
   return audio;
 }
 
@@ -27,6 +34,23 @@ async function playClick() {
   level.gain.value = 0.5;
   source.connect(level).connect(context.destination);
   source.start();
+}
+
+/** Turn sound on or off. Called from a click, so audio can start right away; turning it on plays
+    the click once, so the visitor hears what they turned on. */
+export function setSound(on: boolean) {
+  if (on) root.dataset.sound = "on";
+  else delete root.dataset.sound;
+  try {
+    if (on) localStorage.setItem("sound", "on");
+    else localStorage.removeItem("sound");
+  } catch {
+    // Storage blocked: sound stays on for this page only.
+  }
+  if (on) {
+    void start().resume();
+    void playClick();
+  }
 }
 
 /** `band` is where the tick's energy sits (higher is lighter), `length` its decay in seconds. */
@@ -58,18 +82,20 @@ document.addEventListener("pointerover", (event) => {
   const link = linkAt(event.target);
   // Only on entering a link (not moving between its children), and only for a mouse or pen:
   // a tap also fires pointerover, and would click twice.
-  if (!link || link === linkAt(event.relatedTarget) || event.pointerType === "touch") return;
+  if (!isSoundOn() || !link || link === linkAt(event.relatedTarget) || event.pointerType === "touch") return;
   if (start().state === "running") tick(5000, 0.1, 0.012);
 });
 
 document.addEventListener("pointerdown", (event) => {
-  // Any press turns audio on for this page; a press on a link also clicks. Pressing, not the click,
-  // gives the sound a head start before the page navigates away.
+  // Any press lets audio start on this page; a press on a link also clicks. Pressing, not the
+  // click, gives the sound a head start before the page navigates away.
+  if (!isSoundOn()) return;
   void start().resume();
   if (linkAt(event.target)) void playClick();
 });
 
 document.addEventListener("keydown", (event) => {
+  if (!isSoundOn()) return;
   void start().resume();
   if (event.key === "Enter" && linkAt(event.target)) void playClick();
 });

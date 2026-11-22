@@ -53,6 +53,15 @@ An image's `theme` recolours the whole site: `ink` (background), `paper` (text),
 colour doesn't contrast enough with `ink`. Themes change colours only, never fonts.
 A theme can also set `texture` (`dots` or `bricks`) to replace the page's background texture.
 
+## Site controls
+
+The top bar (`site-controls` in `src/layouts/Layout.astro`) has two icon buttons. The first switches
+between the dark and light mode (`data-mode="light"` on `<html>`, palette in `global.css`); while a
+wall theme is on, the theme's name replaces it, and pressing the name resets the theme. The second
+turns link sounds on and off (`data-sound="on"`); sound is off until the visitor turns it on. Both
+choices are saved in localStorage and re-applied by the inline script in the layout's head before
+paint. Icons show the current state.
+
 ## Texture
 
 The background texture is an SVG mask in `src/styles/global.css`, painted in `ash`, so it follows

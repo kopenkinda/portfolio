@@ -12,6 +12,18 @@
   --font-serif: var(--font-literata);
 }
 
+/* Light mode: the same four roles, inverted. A wall theme's inline colours still override these. */
+:root[data-mode="light"] {
+  --color-ink: #f2f1ed;
+  --color-paper: #141413;
+  --color-ash: #66665f;
+  --color-accent: color-mix(in oklab, #66665f 40%, transparent);
+}
+
+:root[data-mode="light"]:not([data-themed]) {
+  color-scheme: light;
+}
+
 /* Background textures. Each SVG is only a mask (its fill-opacity sets how faint it is), and
    body::before paints ash through it, so a texture takes on the theme's colours by itself.
    A page picks one with Layout's `texture` prop; a wall theme can override it. */
@@ -99,6 +111,11 @@
   --astro-code-token-string-expression: color-mix(in oklab, var(--color-paper) 75%, var(--color-ash));
   --astro-code-token-constant: var(--color-paper);
   --astro-code-token-function: color-mix(in oklab, var(--color-paper) 50%, white);
+
+  /* On a light page, emphasis means darker, not whiter. */
+  :root[data-mode="light"]:not([data-themed]) & {
+    --astro-code-token-function: color-mix(in oklab, var(--color-paper) 50%, black);
+  }
   --astro-code-token-parameter: var(--color-paper);
   --astro-code-token-link: var(--color-paper);
 

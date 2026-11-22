@@ -1,5 +1,6 @@
-// Site-wide themes from wall entries. A theme overrides the colour tokens on <html>; the inline
-// script in Layout.astro re-applies the saved one before each page paints.
+// Colours. The site has a dark and a light mode (global.css), and a wall theme can replace both by
+// overriding the colour tokens on <html>. The inline script in Layout.astro re-applies the saved
+// mode and theme before each page paints.
 
 export type Theme = {
   id: string;
@@ -9,39 +10,60 @@ export type Theme = {
   texture?: "dots" | "bricks";
 };
 
-const KEY = "theme";
+export type Mode = "dark" | "light";
+
 const TOKENS = ["ink", "paper", "ash", "accent"] as const;
-const DEFAULT_INK = "#0a0a0a";
+const root = document.documentElement;
 
 export function getTheme(): Theme | null {
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? "null");
+    return JSON.parse(localStorage.getItem("theme") ?? "null");
   } catch {
     return null;
   }
 }
 
-/** Apply a theme, or pass null to go back to black and white. */
+export const getMode = (): Mode => (root.dataset.mode === "light" ? "light" : "dark");
+
+/** Changes colours with the same focus-pull as a page switch, then tells the page. */
+function change(update: () => void) {
+  const run = () => {
+    update();
+    const ink = getComputedStyle(root).getPropertyValue("--color-ink").trim();
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", ink);
+    document.dispatchEvent(new CustomEvent("themechange"));
+  };
+  if (document.startViewTransition) document.startViewTransition(run);
+  else run();
+}
+
+function save(key: string, value: string | null) {
+  try {
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+  } catch {
+    // Storage blocked: the change still applies to this page.
+  }
+}
+
+/** Apply a wall theme, or pass null to go back to the dark or light mode. */
 export function setTheme(theme: Theme | null) {
-  const update = () => {
-    const root = document.documentElement;
+  change(() => {
     for (const token of TOKENS) {
       if (theme) root.style.setProperty(`--color-${token}`, theme.colors[token]);
       else root.style.removeProperty(`--color-${token}`);
     }
     if (theme?.texture) root.style.setProperty("--texture", `var(--texture-${theme.texture})`);
     else root.style.removeProperty("--texture");
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme?.colors.ink ?? DEFAULT_INK);
-    try {
-      if (theme) localStorage.setItem(KEY, JSON.stringify(theme));
-      else localStorage.removeItem(KEY);
-    } catch {
-      // Storage blocked: the theme still applies to this page.
-    }
-    document.dispatchEvent(new CustomEvent("themechange"));
-  };
+    root.toggleAttribute("data-themed", Boolean(theme));
+    save("theme", theme && JSON.stringify(theme));
+  });
+}
 
-  // Same focus-pull as a page switch, where supported.
-  if (document.startViewTransition) document.startViewTransition(update);
-  else update();
+export function setMode(mode: Mode) {
+  change(() => {
+    if (mode === "light") root.dataset.mode = "light";
+    else delete root.dataset.mode;
+    save("mode", mode === "light" ? "light" : null);
+  });
 }

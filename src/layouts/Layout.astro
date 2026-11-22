@@ -1,5 +1,12 @@
 ---
-import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import {
+  ArrowLeft01Icon,
+  Cancel01Icon,
+  Moon02Icon,
+  Sun03Icon,
+  VolumeHighIcon,
+  VolumeMute02Icon,
+} from "@hugeicons/core-free-icons";
 import { Font } from "astro:assets";
 import Icon from "../components/Icon.astro";
 import "../styles/global.css";
@@ -26,6 +33,7 @@ const links = [
 ];
 
 const link = "underline decoration-accent underline-offset-4 transition-colors hover:decoration-paper";
+const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-sm text-ash transition-colors hover:text-paper";
 ---
 
 <html lang="en" data-texture={texture}>
@@ -39,37 +47,68 @@ const link = "underline decoration-accent underline-offset-4 transition-colors h
     <Font cssVariable="--font-mona-sans" preload />
     <Font cssVariable="--font-literata" preload />
     <script is:inline>
-      // Re-apply a theme picked on the wall page before the page paints (see src/scripts/theme.ts).
+      // Re-apply the saved mode, wall theme and sound setting before the page paints
+      // (see src/scripts/theme.ts and src/scripts/sounds.ts).
       try {
+        const root = document.documentElement;
+        if (localStorage.getItem("mode") === "light") root.dataset.mode = "light";
+        if (localStorage.getItem("sound") === "on") root.dataset.sound = "on";
         const theme = JSON.parse(localStorage.getItem("theme"));
         if (theme) {
           for (const [token, value] of Object.entries(theme.colors)) {
-            document.documentElement.style.setProperty(`--color-${token}`, value);
+            root.style.setProperty(`--color-${token}`, value);
           }
-          if (theme.texture) document.documentElement.style.setProperty("--texture", `var(--texture-${theme.texture})`);
-          document.querySelector('meta[name="theme-color"]').setAttribute("content", theme.colors.ink);
+          if (theme.texture) root.style.setProperty("--texture", `var(--texture-${theme.texture})`);
+          root.toggleAttribute("data-themed", true);
         }
+        const ink = theme ? theme.colors.ink : root.dataset.mode === "light" ? "#f2f1ed" : "#0a0a0a";
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", ink);
       } catch {}
     </script>
   </head>
   <body class="min-h-dvh">
-    <div class="mx-auto max-w-xl px-4 pt-24 pb-16 sm:pt-32">
-      {
-        back && (
-          <a
-            href={back.href}
-            class="group mb-5 -ml-1 inline-flex items-center gap-0.5 text-sm text-ash"
-          >
-            <Icon icon={ArrowLeft01Icon} class="size-4 translate-y-[0.1em]" />
-            <span class="underline decoration-accent underline-offset-4 transition-colors group-hover:decoration-paper">
-              {back.label}
-            </span>
-          </a>
-        )
-      }
-      <main>
-        <slot />
-      </main>
+    <div class="mx-auto max-w-xl px-4 pt-6 pb-16">
+      <!-- Site controls: colours and sound. While a wall theme is on, its name replaces the mode
+           switch, and pressing it goes back to the mode. Icons show the current state. -->
+      <site-controls class="-mr-2 flex justify-end gap-1">
+        <button type="button" data-control="mode" class={`${control} inline-flex w-8 in-data-themed:hidden`} aria-label="Light mode" title="Light mode">
+          <Icon icon={Moon02Icon} class="size-4 in-data-[mode=light]:hidden" />
+          <Icon icon={Sun03Icon} class="hidden size-4 in-data-[mode=light]:block" />
+        </button>
+        <button type="button" data-control="reset" class={`${control} hidden px-2 text-sm in-data-themed:inline-flex`} title="Reset theme">
+          <span id="theme-name"></span>
+          <Icon icon={Cancel01Icon} class="size-3.5" />
+        </button>
+        <script is:inline>
+          try {
+            const name = JSON.parse(localStorage.getItem("theme"))?.name;
+            if (name) document.getElementById("theme-name").textContent = name;
+          } catch {}
+        </script>
+        <button type="button" data-control="sound" class={`${control} inline-flex w-8`} aria-label="Sound" title="Sound">
+          <Icon icon={VolumeMute02Icon} class="size-4 in-data-[sound=on]:hidden" />
+          <Icon icon={VolumeHighIcon} class="hidden size-4 in-data-[sound=on]:block" />
+        </button>
+      </site-controls>
+
+      <div class="mt-10 sm:mt-18">
+        {
+          back && (
+            <a
+              href={back.href}
+              class="group mb-5 -ml-1 inline-flex items-center gap-0.5 text-sm text-ash"
+            >
+              <Icon icon={ArrowLeft01Icon} class="size-4 translate-y-[0.1em]" />
+              <span class="underline decoration-accent underline-offset-4 transition-colors group-hover:decoration-paper">
+                {back.label}
+              </span>
+            </a>
+          )
+        }
+        <main>
+          <slot />
+        </main>
+      </div>
 
       <footer class="mt-24 text-sm text-ash">
         <div class="flex flex-wrap items-baseline justify-between gap-4">
@@ -86,33 +125,40 @@ const link = "underline decoration-accent underline-offset-4 transition-colors h
           </ul>
           <span>© 2026 {name}</span>
         </div>
-        <theme-status hidden class="mt-4 block">
-          Theme: <span data-name></span>.
-          <button type="button" class={`cursor-pointer ${link}`}>Reset theme</button>
-        </theme-status>
       </footer>
     </div>
 
     <script>
-      import "../scripts/sounds";
-      import { getTheme, setTheme } from "../scripts/theme";
+      import { isSoundOn, setSound } from "../scripts/sounds";
+      import { getMode, getTheme, setMode, setTheme } from "../scripts/theme";
 
-      // Footer line naming the active theme, with a way back to black and white.
-      class ThemeStatus extends HTMLElement {
+      class SiteControls extends HTMLElement {
         connectedCallback() {
-          const name = this.querySelector("[data-name]");
+          const mode = this.querySelector("[data-control=mode]")!;
+          const reset = this.querySelector("[data-control=reset]")!;
+          const sound = this.querySelector("[data-control=sound]")!;
+          const name = this.querySelector("#theme-name")!;
+
           const render = () => {
+            mode.setAttribute("aria-pressed", String(getMode() === "light"));
+            sound.setAttribute("aria-pressed", String(isSoundOn()));
             const theme = getTheme();
-            this.hidden = !theme;
-            if (name) name.textContent = theme?.name ?? "";
+            name.textContent = theme?.name ?? "";
+            reset.setAttribute("aria-label", theme ? `${theme.name} theme. Reset` : "Reset theme");
           };
-          this.querySelector("button")?.addEventListener("click", () => setTheme(null));
+
+          mode.addEventListener("click", () => setMode(getMode() === "light" ? "dark" : "light"));
+          reset.addEventListener("click", () => setTheme(null));
+          sound.addEventListener("click", () => {
+            setSound(!isSoundOn());
+            render();
+          });
           document.addEventListener("themechange", render);
           render();
         }
       }
 
-      if (!customElements.get("theme-status")) customElements.define("theme-status", ThemeStatus);
+      if (!customElements.get("site-controls")) customElements.define("site-controls", SiteControls);
     </script>
   </body>
 </html>
