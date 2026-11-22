@@ -1,0 +1,42 @@
+---
+import type { Theme } from "../scripts/theme";
+
+interface Props {
+  theme: Theme;
+}
+
+const { theme } = Astro.props;
+---
+
+<theme-button data-theme={JSON.stringify(theme)} class="shrink-0">
+  <button
+    type="button"
+    class="cursor-pointer underline decoration-accent underline-offset-4 transition-colors hover:decoration-paper"
+    data-label
+  >
+    Apply theme
+  </button>
+</theme-button>
+
+<script>
+  import { getTheme, setTheme, type Theme } from "../scripts/theme";
+
+  class ThemeButton extends HTMLElement {
+    connectedCallback() {
+      const theme: Theme = JSON.parse(this.dataset.theme ?? "{}");
+      const button = this.querySelector<HTMLButtonElement>("[data-label]");
+      if (!button) return;
+
+      const isActive = () => getTheme()?.id === theme.id;
+      const render = () => {
+        button.textContent = isActive() ? "Reset theme" : "Apply theme";
+      };
+
+      button.addEventListener("click", () => setTheme(isActive() ? null : theme));
+      document.addEventListener("themechange", render);
+      render();
+    }
+  }
+
+  if (!customElements.get("theme-button")) customElements.define("theme-button", ThemeButton);
+</script>

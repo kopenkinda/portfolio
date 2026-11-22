@@ -23,7 +23,7 @@ const links = [
   { label: "Telegram", href: "https://t.me/leroifrancais" },
 ];
 
-const link = "underline decoration-ash/40 underline-offset-4 transition-colors hover:decoration-paper";
+const link = "underline decoration-accent underline-offset-4 transition-colors hover:decoration-paper";
 ---
 
 <html lang="en">
@@ -36,6 +36,18 @@ const link = "underline decoration-ash/40 underline-offset-4 transition-colors h
     <meta name="description" content={description} />
     <Font cssVariable="--font-mona-sans" preload />
     <Font cssVariable="--font-literata" preload />
+    <script is:inline>
+      // Re-apply a theme picked on the stash page before the page paints (see src/scripts/theme.ts).
+      try {
+        const theme = JSON.parse(localStorage.getItem("theme"));
+        if (theme) {
+          for (const [token, value] of Object.entries(theme.colors)) {
+            document.documentElement.style.setProperty(`--color-${token}`, value);
+          }
+          document.querySelector('meta[name="theme-color"]').setAttribute("content", theme.colors.ink);
+        }
+      } catch {}
+    </script>
   </head>
   <body class="min-h-dvh">
     <div class="mx-auto max-w-xl px-4 pt-24 pb-16 sm:pt-32">
@@ -46,7 +58,7 @@ const link = "underline decoration-ash/40 underline-offset-4 transition-colors h
             class="group mb-5 -ml-1 inline-flex items-center gap-0.5 text-sm text-ash"
           >
             <Icon icon={ArrowLeft01Icon} class="size-4 translate-y-[0.1em]" />
-            <span class="underline decoration-ash/40 underline-offset-4 transition-colors group-hover:decoration-paper">
+            <span class="underline decoration-accent underline-offset-4 transition-colors group-hover:decoration-paper">
               {back.label}
             </span>
           </a>
@@ -56,20 +68,47 @@ const link = "underline decoration-ash/40 underline-offset-4 transition-colors h
         <slot />
       </main>
 
-      <footer class="mt-24 flex flex-wrap items-baseline justify-between gap-4 text-sm text-ash">
-        <ul class="flex gap-5">
-          {
-            links.map((item) => (
-              <li>
-                <a href={item.href} class={link}>
-                  {item.label}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-        <span>© 2026 {name}</span>
+      <footer class="mt-24 text-sm text-ash">
+        <div class="flex flex-wrap items-baseline justify-between gap-4">
+          <ul class="flex gap-5">
+            {
+              links.map((item) => (
+                <li>
+                  <a href={item.href} class={link}>
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+          <span>© 2026 {name}</span>
+        </div>
+        <theme-status hidden class="mt-4 block">
+          Theme: <span data-name></span>.
+          <button type="button" class={`cursor-pointer ${link}`}>Reset theme</button>
+        </theme-status>
       </footer>
     </div>
+
+    <script>
+      import { getTheme, setTheme } from "../scripts/theme";
+
+      // Footer line naming the active theme, with a way back to black and white.
+      class ThemeStatus extends HTMLElement {
+        connectedCallback() {
+          const name = this.querySelector("[data-name]");
+          const render = () => {
+            const theme = getTheme();
+            this.hidden = !theme;
+            if (name) name.textContent = theme?.name ?? "";
+          };
+          this.querySelector("button")?.addEventListener("click", () => setTheme(null));
+          document.addEventListener("themechange", render);
+          render();
+        }
+      }
+
+      if (!customElements.get("theme-status")) customElements.define("theme-status", ThemeStatus);
+    </script>
   </body>
 </html>

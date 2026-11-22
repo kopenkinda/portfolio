@@ -1,0 +1,115 @@
+---
+import { Image } from "astro:assets";
+import { getCollection, getEntry, render } from "astro:content";
+import ThemeButton from "../components/ThemeButton.astro";
+import Layout from "../layouts/Layout.astro";
+
+const entries = await Promise.all(
+  (await getCollection("stash"))
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+    .map(async (entry) => ({
+      ...entry,
+      Content: entry.body?.trim() ? (await render(entry)).Content : null,
+      post: entry.data.post ? await getEntry(entry.data.post) : null,
+    })),
+);
+
+const formatDate = new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format;
+const link = "underline decoration-accent underline-offset-4 transition-colors hover:decoration-paper";
+---
+
+<Layout
+  title="Stash"
+  description="Screenshots, links and other finds by Dmitrii Kopenkin."
+  back={{ label: "Home", href: "/" }}
+>
+  <h1 class="font-display text-3xl font-medium tracking-tight">Stash</h1>
+  <p class="mt-2 text-ash">Screenshots, links, music and other things I found along the way.</p>
+
+  <ol class="mt-14 space-y-16">
+    {
+      entries.map(({ id, data, Content, post }) => (
+        <li>
+          <article class="space-y-3">
+            <time datetime={data.date.toISOString()} class="block text-sm text-ash">
+              {formatDate(data.date)}
+            </time>
+
+            {data.link && (
+              <p>
+                <a href={data.link.url} class={link}>
+                  {data.link.title}
+                </a>
+                <span class="ml-2 text-sm text-ash">{new URL(data.link.url).hostname}</span>
+              </p>
+            )}
+
+            {data.image && (
+              <Image
+                src={data.image}
+                alt={data.imageAlt ?? ""}
+                widths={[576, 1152]}
+                sizes="(min-width: 36rem) 36rem, 100vw"
+                class="w-full rounded-sm"
+              />
+            )}
+
+            {data.quote && (
+              <blockquote class="border-l-2 border-accent pl-4 text-lg leading-relaxed">
+                <p>{data.quote}</p>
+              </blockquote>
+            )}
+
+            {Content && (
+              <div class="prose">
+                <Content />
+              </div>
+            )}
+
+            {(data.source || data.theme) && (
+              <div class="flex items-baseline justify-between gap-4 text-sm text-ash">
+                {data.source ? (
+                  <p>
+                    {data.source.url ? (
+                      <a href={data.source.url} class={link}>
+                        {data.source.title}
+                      </a>
+                    ) : (
+                      data.source.title
+                    )}
+                    {data.source.detail && <span>, {data.source.detail}</span>}
+                  </p>
+                ) : (
+                  <span />
+                )}
+                {data.theme && (
+                  <ThemeButton
+                    theme={{
+                      id,
+                      name: data.theme.name,
+                      colors: {
+                        ink: data.theme.ink,
+                        paper: data.theme.paper,
+                        ash: data.theme.ash,
+                        accent: data.theme.accent,
+                      },
+                    }}
+                  />
+                )}
+              </div>
+            )}
+
+            {post && (
+              <p class="text-sm text-ash">
+                Read the post:{" "}
+                <a href={`/blog/${post.id}/`} class={`text-paper ${link}`}>
+                  {post.data.title}
+                </a>
+              </p>
+            )}
+          </article>
+        </li>
+      ))
+    }
+  </ol>
+</Layout>

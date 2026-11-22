@@ -5,6 +5,8 @@
   --color-ink: #0a0a0a;
   --color-paper: #e8e8e5;
   --color-ash: #8c8c88;
+  /* Link underlines: faint grey in black and white; a stash theme sets a solid colour here. */
+  --color-accent: color-mix(in oklab, #8c8c88 40%, transparent);
 
   --font-display: var(--font-mona-sans);
   --font-serif: var(--font-literata);
@@ -42,19 +44,20 @@
   --tw-prose-bullets: var(--color-ash);
   --tw-prose-counters: var(--color-ash);
   --tw-prose-hr: color-mix(in oklab, var(--color-ash) 25%, transparent);
-  --tw-prose-pre-bg: #141414;
+  --tw-prose-pre-bg: color-mix(in oklab, var(--color-paper) 5%, var(--color-ink));
   max-width: none;
 
-  /* Code highlighting in shades of grey: emphasis comes from brightness, not hue. */
+  /* Code highlighting mixed from the palette tokens, so it follows stash themes too.
+     Emphasis comes from brightness, not hue. */
   --astro-code-foreground: var(--color-paper);
-  --astro-code-background: #141414;
+  --astro-code-background: var(--tw-prose-pre-bg);
   --astro-code-token-keyword: var(--color-ash);
   --astro-code-token-punctuation: var(--color-ash);
-  --astro-code-token-comment: #5c5c59;
-  --astro-code-token-string: #bdbdb9;
-  --astro-code-token-string-expression: #bdbdb9;
+  --astro-code-token-comment: color-mix(in oklab, var(--color-ash) 60%, var(--color-ink));
+  --astro-code-token-string: color-mix(in oklab, var(--color-paper) 75%, var(--color-ash));
+  --astro-code-token-string-expression: color-mix(in oklab, var(--color-paper) 75%, var(--color-ash));
   --astro-code-token-constant: var(--color-paper);
-  --astro-code-token-function: #ffffff;
+  --astro-code-token-function: color-mix(in oklab, var(--color-paper) 50%, white);
   --astro-code-token-parameter: var(--color-paper);
   --astro-code-token-link: var(--color-paper);
 
@@ -64,7 +67,7 @@
   }
 
   :where(a) {
-    text-decoration-color: color-mix(in oklab, var(--color-ash) 40%, transparent);
+    text-decoration-color: var(--color-accent);
     text-underline-offset: 4px;
     font-weight: inherit;
   }
@@ -89,7 +92,7 @@
     font-size: 0.875em;
     padding: 0.15em 0.35em;
     border-radius: 0.25rem;
-    background: #1c1c1c;
+    background: color-mix(in oklab, var(--color-paper) 9%, var(--color-ink));
   }
 }
 
