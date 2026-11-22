@@ -64,6 +64,11 @@ const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-
           if (theme.texture) root.style.setProperty("--texture", `var(--texture-${theme.texture})`);
           root.toggleAttribute("data-themed", true);
         }
+        // A fresh arrival (typed in, a link from elsewhere, or a reload) rather than a page switch
+        // within the site, which already has its own transition. Pages can animate in on this.
+        const from = document.referrer ? new URL(document.referrer).origin : "";
+        const reload = performance.getEntriesByType("navigation")[0]?.type === "reload";
+        if (from !== location.origin || reload) root.dataset.arrival = "fresh";
         const ink = theme ? theme.colors.ink : root.dataset.mode === "light" ? "#f2f1ed" : "#0a0a0a";
         document.querySelector('meta[name="theme-color"]').setAttribute("content", ink);
       } catch {}
