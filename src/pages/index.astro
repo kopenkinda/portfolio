@@ -1,6 +1,7 @@
 ---
 import AndorraScene from "../components/andorra/AndorraScene.astro";
 import DotsScene from "../components/dots/DotsScene.astro";
+import OpenSource from "../components/open-source/OpenSource.astro";
 import Layout from "../layouts/Layout.astro";
 
 // Placeholder content. Replace with real entries.
@@ -62,6 +63,9 @@ const link = "underline decoration-accent underline-offset-4 transition-colors h
       ))
     }
   </ul>
+
+  <h2 class="appear mt-14 font-display text-lg font-medium" style="--order: 6">Open source</h2>
+  <OpenSource />
 </Layout>
 
 <style>
@@ -69,7 +73,8 @@ const link = "underline decoration-accent underline-offset-4 transition-colors h
      to develop. Not when arriving from another page of the site: that already has its own
      transition (see the head script in Layout.astro). */
   @media (prefers-reduced-motion: no-preference) {
-    :global(:root[data-arrival="fresh"]) .appear {
+    /* Global, so the blocks of components on this page (the open source list) come in too. */
+    :global(:root[data-arrival="fresh"] .appear) {
       animation: appear 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
       animation-delay: calc(0.35s + var(--order) * 0.08s);
     }

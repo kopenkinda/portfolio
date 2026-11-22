@@ -106,6 +106,15 @@ counts only on placed pieces, their cursor effect is drawn after the loose piece
 frame, a loose piece draws the effect for the cursor on it itself, and taps wait until the picture
 is whole. Switching to another graphic ends the puzzle.
 
+## Open source
+
+The open source list on the home page lives in `src/components/open-source/`. `projects.ts` lists the
+projects; their cards show a contribution grid and totals of the agent work that went into each.
+`usage.ts` reads that from the Codex, Claude Code and Pi session logs on the author's machine and
+writes `usage.json`, so the site builds anywhere. Run it by hand to refresh the numbers
+(`node src/components/open-source/usage.ts`). It only counts the listed projects and only writes
+totals: tokens per day, sessions and each model's share, never prompts or paths.
+
 ## Texture
 
 The background texture is an SVG mask in `src/styles/global.css`, painted in `ash`, so it follows

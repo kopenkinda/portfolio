@@ -1,0 +1,152 @@
+---
+// The open source list on the home page. Each name links to its repository; hovering it brings up
+// a card that follows the cursor, with what the project is and how much agent work went into it:
+// a contribution grid of tokens per day, then totals and the models that did the work. The numbers
+// come from usage.json (see usage.ts), so the cards are drawn at build time.
+import { projects } from "./projects";
+import usage from "./usage.json";
+
+const WEEKS = 20; // the grid's span, the same for every card so they can be compared
+
+const link = "underline decoration-accent underline-offset-4 transition-colors hover:decoration-paper";
+
+// Days from the Monday WEEKS - 1 weeks before the snapshot's week, to the snapshot. Dates are
+// handled as UTC midnights, so no time zone can shift a day.
+const until = new Date(`${usage.until}T00:00:00Z`);
+const start = new Date(until);
+start.setUTCDate(until.getUTCDate() - ((until.getUTCDay() + 6) % 7) - (WEEKS - 1) * 7);
+const dates = Array.from({ length: WEEKS * 7 }, (_, i) => {
+  const date = new Date(start);
+  date.setUTCDate(start.getUTCDate() + i);
+  return date;
+});
+const iso = (date: Date) => date.toISOString().slice(0, 10);
+// A month's name over the first week that starts in it.
+const months = Array.from({ length: WEEKS }, (_, week) => {
+  const monday = dates[week * 7];
+  const before = week > 0 ? dates[(week - 1) * 7] : null;
+  return !before || before.getUTCMonth() !== monday.getUTCMonth() ? monday.toLocaleString("en", { month: "short", timeZone: "UTC" }) : "";
+});
+
+// Four shades, as on GitHub, split at the quartiles of all the busy days across every project, so
+// a dark square means the same amount of work on every card.
+const busy = Object.values(usage.projects)
+  .flatMap((p) => Object.values(p.days))
+  .sort((a, b) => a - b);
+const quartiles = [0.25, 0.5, 0.75].map((q) => busy[Math.floor(q * (busy.length - 1))]);
+const shade = ["bg-ash/15", "bg-paper/25", "bg-paper/45", "bg-paper/70", "bg-paper"];
+const level = (tokens = 0) => (tokens ? 1 + quartiles.filter((q) => tokens > q).length : 0);
+
+const amount = (tokens: number) => {
+  const [value, unit] = tokens >= 1e9 ? [tokens / 1e9, "B"] : [tokens / 1e6, "M"];
+  return `${value < 10 ? value.toFixed(1) : Math.round(value)}${unit}`;
+};
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+const rows = projects.map((project) => {
+  const u = usage.projects[project.repo as keyof typeof usage.projects];
+  const days: Record<string, number> = u?.days ?? {};
+  return {
+    ...project,
+    id: `project-${project.repo}`,
+    cells: dates.map((date) => ({ date: iso(date), future: date > until, level: level(days[iso(date)]) })),
+    totals: u && `${amount(u.tokens)} tokens · ${plural(u.sessions, "session")} · ${plural(Object.keys(days).length, "day")}`,
+    // The models that did a real share of the work, at most three.
+    models: u?.models
+      .filter(([, tokens]) => tokens / u.tokens >= 0.05)
+      .slice(0, 3)
+      .map(([name, tokens]) => `${name} ${Math.round((tokens / u.tokens) * 100)}%`)
+      .join(" · "),
+  };
+});
+---
+
+<open-source>
+  <ul class="appear mt-4 space-y-3 leading-relaxed" style="--order: 7">
+    {
+      rows.map((project) => (
+        <li class="flex gap-6">
+          <a
+            href={`https://github.com/kopenkinda/${project.repo}`}
+            target="_blank"
+            rel="noreferrer"
+            class={`${link} w-20 shrink-0 self-start`}
+            aria-describedby={project.id}
+            data-card={project.id}
+          >
+            {project.name}
+          </a>
+          <span>{project.line}</span>
+        </li>
+      ))
+    }
+  </ul>
+
+  {/* Outside the list: its load animation blurs it, and a fixed card inside would then be placed
+      relative to the list instead of the window. */}
+  {
+    rows.map((project) => (
+      <div
+        id={project.id}
+        role="tooltip"
+        class="pointer-events-none invisible fixed top-0 left-0 z-50 w-80 max-w-[calc(100vw-1rem)] rounded-sm border border-ash/30 bg-ink p-4 text-sm opacity-0 shadow-lg shadow-ink data-shown:visible data-shown:opacity-100 motion-safe:transition-[opacity,visibility] motion-safe:duration-150"
+      >
+        <p>{project.about}</p>
+        {project.totals && (
+          <>
+            <div class="mt-4 grid w-max auto-cols-[9px] grid-rows-[auto_repeat(7,9px)] gap-[3px]" aria-hidden="true">
+              {months.map((month, week) => (
+                <span class="h-4 w-[9px] overflow-visible text-[10px] leading-none whitespace-nowrap text-ash" style={`grid-area: 1 / ${week + 1}`}>
+                  {month}
+                </span>
+              ))}
+              {project.cells.map((cell, i) => (
+                <span
+                  class:list={["size-[9px] rounded-[2px]", cell.future ? "invisible" : shade[cell.level]]}
+                  style={`grid-area: ${(i % 7) + 2} / ${Math.floor(i / 7) + 1}`}
+                  title={cell.date}
+                />
+              ))}
+            </div>
+            <p class="mt-3 text-ash">{project.totals}</p>
+            <p class="text-ash">{project.models}</p>
+          </>
+        )}
+      </div>
+    ))
+  }
+</open-source>
+
+<script>
+  // The card follows the cursor over a project's name, on the side with room for it. Keyboard
+  // focus shows it under the name instead. Touch has no hover: the list's own line is enough there.
+  class OpenSource extends HTMLElement {
+    connectedCallback() {
+      for (const link of this.querySelectorAll<HTMLAnchorElement>("[data-card]")) {
+        const card = this.querySelector<HTMLElement>(`#${link.dataset.card}`)!;
+        const place = (x: number, y: number) => {
+          const { width, height } = card.getBoundingClientRect();
+          const left = x + 16 + width > innerWidth - 8 ? x - 16 - width : x + 16;
+          const top = y + 20 + height > innerHeight - 8 ? y - 12 - height : y + 20;
+          card.style.translate = `${Math.max(8, left)}px ${Math.max(8, top)}px`;
+        };
+        const show = (x: number, y: number) => {
+          place(x, y);
+          card.dataset.shown = "";
+        };
+        const hide = () => delete card.dataset.shown;
+        link.addEventListener("pointerenter", (event) => event.pointerType !== "touch" && show(event.clientX, event.clientY));
+        link.addEventListener("pointermove", (event) => event.pointerType !== "touch" && place(event.clientX, event.clientY));
+        link.addEventListener("pointerleave", hide);
+        link.addEventListener("focus", () => {
+          if (!link.matches(":focus-visible")) return;
+          const box = link.getBoundingClientRect();
+          show(box.left - 16, box.bottom - 12);
+        });
+        link.addEventListener("blur", hide);
+      }
+    }
+  }
+
+  if (!customElements.get("open-source")) customElements.define("open-source", OpenSource);
+</script>
