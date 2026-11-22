@@ -28,6 +28,8 @@ See `AGENTS.md` for how the blog, wall, themes and textures work.
 - Puzzle piece sound (`public/sounds/plop.m4a`), trimmed from "Simple Plop Sound" by
   [TobiasLudwig](https://freesound.org/people/TobiasLudwig/sounds/420860/) on Freesound, used under
   [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- Puzzle complete sound (`public/sounds/complete.m4a`), trimmed from the CC0 recording
+  "achievement-sparkle" by [SkySpeira](https://freesound.org/people/SkySpeira/sounds/715067/) on Freesound.
 - Home page map: data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors,
   available under the Open Database Licence.
 - Background patterns adapted from [Hero Patterns](https://heropatterns.com) by Steve Schoger.

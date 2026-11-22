@@ -20,11 +20,9 @@ import { gridVersion } from "./grid";
   class="relative left-1/2 block aspect-[12/5] min-h-52 w-[min(100vw,46rem)] -translate-x-1/2 cursor-crosshair touch-manipulation select-none"
 >
   <canvas class="absolute inset-0 size-full"></canvas>
-  <!-- For the jigsaw: the outline of the empty picture while the puzzle is open, and its cuts,
-       which only show for a moment as the solved picture fuses. -->
+  <!-- For the jigsaw: the outline of the empty picture while the puzzle is open. -->
   <svg class="pointer-events-none absolute inset-0 size-full overflow-visible text-ash opacity-0" fill="none" stroke="currentColor" aria-hidden="true">
     <rect width="100%" height="100%"></rect>
-    <path class="opacity-0"></path>
   </svg>
 </dots-scene>
 
@@ -499,7 +497,7 @@ import { gridVersion } from "./grid";
           puzzle = openPuzzle(canvas, grid, still, onPiece, (solved) => {
             puzzle = null;
             taps = 0;
-            // Solved: one more ring, from the middle, sweeps the picture as its seams dissolve.
+            // Solved: one more ring, from the middle, sweeps the picture as the outline fades.
             if (solved && !still) pulses.push({ id: pulseCount++, x: cols / 2, y: rows / 2, age: 0 });
           });
           draw(); // onto the pieces straight away, as the canvas itself is hidden from now

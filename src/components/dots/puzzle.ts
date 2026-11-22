@@ -14,7 +14,7 @@
 // effect on its own canvas, where the cursor is on it, and the scene draws the effect for placed
 // pieces only after the loose ones have taken their copy of the frame.
 
-import { rip, snap, sparkle } from "../../scripts/sounds";
+import { complete, rip, snap } from "../../scripts/sounds";
 
 const COLS = 6;
 const ROWS = 2; // every piece gets a part of the ridge; a third row would be all sky
@@ -96,7 +96,7 @@ function cut(a: Point, b: Point, knob: number, seed: number): Point[] {
 
 /**
  * Break the scene on `canvas` into a jigsaw. `grid` is an svg laid over the canvas: its rect is the
- * outline of the empty picture, its path takes the cuts. `still` is for reduced motion: the pieces
+ * outline of the empty picture. `still` is for reduced motion: the pieces
  * start at the bottom and nothing animates. `hover` draws the cursor's effect at a point of the
  * scene (in its CSS pixels) onto a canvas set up in the scene's coordinates. `onClose` runs when
  * the puzzle ends; `solved` tells whether the visitor finished it.
@@ -247,10 +247,6 @@ export function openPuzzle(
       }
     }
     span = window.innerWidth;
-    const cuts: Point[][] = [];
-    for (let col = 0; col < COLS; col++) for (let row = 1; row < ROWS; row++) cuts.push(across(col, row));
-    for (let col = 1; col < COLS; col++) for (let row = 0; row < ROWS; row++) cuts.push(down(col, row));
-    grid.querySelector("path")!.setAttribute("d", cuts.map((c) => path([c])).join(""));
     reveal();
   };
 
@@ -353,7 +349,7 @@ export function openPuzzle(
     p.el.remove();
     reveal();
     if (loose().length) return;
-    sparkle();
+    complete();
     close(true);
   };
 
@@ -362,12 +358,8 @@ export function openPuzzle(
     layer.remove();
     canvas.style.clipPath = "";
     grid.style.opacity = "";
-    if (solved && !still) {
-      // The seams light up with the outline, then it all dissolves into the picture.
-      const timing = { duration: 1100, easing: "ease-out" };
-      grid.animate([{ opacity: 0.5 }, { opacity: 1, offset: 0.2 }, { opacity: 0 }], timing);
-      grid.querySelector("path")!.animate([{ opacity: 0 }, { opacity: 1, offset: 0.2 }, { opacity: 1 }], timing);
-    }
+    // Solved: the outline fades as the picture comes back whole (the scene sends a ring from the middle).
+    if (solved && !still) grid.animate([{ opacity: 0.5 }, { opacity: 0 }], { duration: 1100, easing: "ease-out" });
     onClose(solved);
   };
 

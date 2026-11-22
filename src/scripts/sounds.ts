@@ -23,6 +23,7 @@ const WINGS = "/sounds/wings.m4a";
 const SWOOSH = "/sounds/swoosh.m4a";
 const RIP = "/sounds/rip.m4a";
 const PLOP = "/sounds/plop.m4a";
+const COMPLETE = "/sounds/complete.m4a";
 
 /** Whether sound is on right now: wanted, and unlocked by an interaction. */
 export const isSoundOn = () => root.dataset.sound === "on";
@@ -42,7 +43,7 @@ export function preload(urls: string[]) {
   if (!wanted()) return;
   for (const url of urls) if (!files.has(url)) files.set(url, fetch(url).then((response) => response.arrayBuffer()));
 }
-preload([CLICK, SWOOSH, RIP, PLOP]);
+preload([CLICK, SWOOSH, RIP, PLOP, COMPLETE]);
 
 function start() {
   audio ??= new AudioContext();
@@ -162,6 +163,9 @@ export const swoosh = () => void playFile(SWOOSH, 0.15);
 
 /** The dots valley breaking into jigsaw pieces: a quick paper rip. */
 export const rip = () => void playFile(RIP, 0.2);
+
+/** The dots valley's jigsaw put back together: a short sparkle. */
+export const complete = () => void playFile(COMPLETE, 0.2);
 
 /** A jigsaw piece of the dots valley going into place: a soft plop. */
 export const snap = () => void playFile(PLOP, 0.25);
