@@ -17,7 +17,8 @@
    A page picks one with Layout's `texture` prop; a wall theme can override it. */
 :root {
   --texture-dots: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Cpath fill-opacity='.16' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
-  --texture-bricks: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='44'%3E%3Cpath fill-opacity='.06' fill-rule='evenodd' d='M0 0h42v44H0V0zm1 1h40v20H1V1zM0 23h20v20H0V23zm22 0h20v20H22V23z'/%3E%3C/svg%3E");
+  /* Bricks, plus a sparse layer of cracked and chipped ones (public/textures/brick-damage.svg). */
+  --texture-bricks: url("/textures/brick-damage.svg"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='44'%3E%3Cpath fill-opacity='.06' fill-rule='evenodd' d='M0 0h42v44H0V0zm1 1h40v20H1V1zM0 23h20v20H0V23zm22 0h20v20H22V23z'/%3E%3C/svg%3E");
   --texture: var(--texture-dots);
 }
 
@@ -49,6 +50,16 @@
     pointer-events: none;
     background-color: var(--color-ash);
     mask-image: var(--texture);
+  }
+
+  /* Every underline on the site is dashed. Tailwind's `underline` only sets the line, so this
+     default holds everywhere; the prose rule below restores it after the typography plugin. */
+  * {
+    text-decoration-style: dashed;
+  }
+
+  a[href] {
+    cursor: alias;
   }
 
   ::selection {
@@ -97,6 +108,7 @@
   }
 
   :where(a) {
+    text-decoration-style: dashed;
     text-decoration-color: var(--color-accent);
     text-underline-offset: 4px;
     font-weight: inherit;

@@ -57,7 +57,8 @@ A theme can also set `texture` (`dots` or `bricks`) to replace the page's backgr
 
 The background texture is an SVG mask in `src/styles/global.css`, painted in `ash`, so it follows
 the theme without its own colours. Pages default to `dots`; the wall uses `bricks` (Layout's
-`texture` prop). Keep textures faint through the SVG's `fill-opacity`: they must never compete with
+`texture` prop), with a sparse damage layer of cracked and chipped bricks in
+`public/textures/brick-damage.svg`, sized to the brick grid. Keep textures faint through the SVG's `fill-opacity`: they must never compete with
 text. To add one, add a `--texture-<name>` variable and the name to the Layout prop and theme schema.
 
 Use Hugeicons (`@hugeicons/core-free-icons` through `src/components/Icon.astro`) for any icon.
