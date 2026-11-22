@@ -16,12 +16,15 @@ const formatDate = new Intl.DateTimeFormat("en", { month: "short", year: "numeri
     {
       posts.map((post) => (
         <li>
-          <a href={`/blog/${post.id}/`} class="group block">
-            <span class="font-display text-lg font-medium underline decoration-transparent underline-offset-4 transition-colors group-hover:decoration-ash/60">
+          <h2 class="font-display text-lg font-medium">
+            <a
+              href={`/blog/${post.id}/`}
+              class="underline decoration-transparent underline-offset-4 transition-colors hover:decoration-ash/60"
+            >
               {post.data.title}
-            </span>
-            <span class="mt-1 block leading-relaxed text-ash">{post.data.description}</span>
-          </a>
+            </a>
+          </h2>
+          <p class="mt-1 leading-relaxed text-ash">{post.data.description}</p>
           <time datetime={post.data.pubDate.toISOString()} class="mt-1 block text-sm text-ash">
             {formatDate(post.data.pubDate)}
           </time>

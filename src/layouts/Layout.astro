@@ -43,10 +43,12 @@ const link = "underline decoration-ash/40 underline-offset-4 transition-colors h
         back && (
           <a
             href={back.href}
-            class="mb-5 -ml-1 inline-flex items-center gap-1 font-display text-sm text-ash transition-colors hover:text-paper"
+            class="group mb-5 -ml-1 inline-flex items-center gap-0.5 text-sm text-ash"
           >
-            <Icon icon={ArrowLeft01Icon} class="size-4" />
-            {back.label}
+            <Icon icon={ArrowLeft01Icon} class="size-4 translate-y-[0.1em]" />
+            <span class="underline decoration-ash/40 underline-offset-4 transition-colors group-hover:decoration-paper">
+              {back.label}
+            </span>
           </a>
         )
       }

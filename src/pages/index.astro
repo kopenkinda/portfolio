@@ -19,12 +19,12 @@ const link = "underline decoration-ash/40 underline-offset-4 transition-colors h
 
 <Layout>
   <h1 class="font-display text-3xl font-medium tracking-tight">Dmitrii Kopenkin</h1>
-  <nav class="mt-3 font-display">
+  <nav class="mt-3 text-sm text-ash">
     <ul class="flex gap-5">
       {
         nav.map((item) => (
           <li>
-            <a href={item.href} class="text-ash transition-colors hover:text-paper">
+            <a href={item.href} class={link}>
               {item.label}
             </a>
           </li>

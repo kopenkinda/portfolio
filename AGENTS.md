@@ -27,3 +27,8 @@ Posts are MDX files in `src/content/blog/`. A post's interactive elements live i
 `src/components/blog/<post-slug>/`, one component per element, imported by that post only.
 Write client behaviour as a custom element in a TypeScript `<script>`, and add `not-prose`
 to the component's root so post text styles don't leak into it.
+
+## Type
+
+Only headings (`h1`–`h6`) use the heading font (`font-display`, Mona Sans). Everything else,
+including navigation, links, labels and captions, uses the body font (Literata).
