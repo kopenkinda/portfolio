@@ -10,11 +10,13 @@ interface Props {
   description?: string;
   /** The page one level up. Subpages get this link instead of a menu; only the home page has one. */
   back?: { label: string; href: string };
+  /** Background texture; a wall theme with its own texture overrides it. */
+  texture?: "dots" | "bricks";
 }
 
 const name = "Dmitrii Kopenkin";
 const email = "hi@kopenkin.tech";
-const { title, description = `${name}, full-stack product engineer in Andorra.`, back } = Astro.props;
+const { title, description = `${name}, full-stack product engineer in Andorra.`, back, texture = "dots" } = Astro.props;
 
 const links = [
   { label: "Email", href: `mailto:${email}` },
@@ -26,7 +28,7 @@ const links = [
 const link = "underline decoration-accent underline-offset-4 transition-colors hover:decoration-paper";
 ---
 
-<html lang="en">
+<html lang="en" data-texture={texture}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -44,6 +46,7 @@ const link = "underline decoration-accent underline-offset-4 transition-colors h
           for (const [token, value] of Object.entries(theme.colors)) {
             document.documentElement.style.setProperty(`--color-${token}`, value);
           }
+          if (theme.texture) document.documentElement.style.setProperty("--texture", `var(--texture-${theme.texture})`);
           document.querySelector('meta[name="theme-color"]').setAttribute("content", theme.colors.ink);
         }
       } catch {}

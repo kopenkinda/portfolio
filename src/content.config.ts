@@ -27,9 +27,17 @@ const contrast = (a: string, b: string) => {
 
 const hex = z.string().regex(/^#[0-9a-f]{6}$/i, "Use a #rrggbb colour");
 
-/** A site-wide recolour: background, text, secondary text and link accent. */
+/** A site-wide recolour: background, text, secondary text and link accent, and optionally a
+    background texture that replaces the page's own. */
 const theme = z
-  .object({ name: z.string(), ink: hex, paper: hex, ash: hex, accent: hex })
+  .object({
+    name: z.string(),
+    ink: hex,
+    paper: hex,
+    ash: hex,
+    accent: hex,
+    texture: z.enum(["dots", "bricks"]).optional(),
+  })
   .superRefine((t, ctx) => {
     // The build fails on an unreadable theme, so a picked palette can't ship broken.
     const minimums = { paper: 7, ash: 4.5, accent: 3 } as const;

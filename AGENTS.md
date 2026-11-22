@@ -51,5 +51,13 @@ Images live in `src/assets/wall/`.
 An image's `theme` recolours the whole site: `ink` (background), `paper` (text), `ash`
 (secondary text) and `accent` (link underlines). Pick the colours by hand; the build fails when a
 colour doesn't contrast enough with `ink`. Themes change colours only, never fonts.
+A theme can also set `texture` (`dots` or `bricks`) to replace the page's background texture.
+
+## Texture
+
+The background texture is an SVG mask in `src/styles/global.css`, painted in `ash`, so it follows
+the theme without its own colours. Pages default to `dots`; the wall uses `bricks` (Layout's
+`texture` prop). Keep textures faint through the SVG's `fill-opacity`: they must never compete with
+text. To add one, add a `--texture-<name>` variable and the name to the Layout prop and theme schema.
 
 Use Hugeicons (`@hugeicons/core-free-icons` through `src/components/Icon.astro`) for any icon.
