@@ -1,4 +1,4 @@
-// Site-wide themes from stash entries. A theme overrides the colour tokens on <html>; the inline
+// Site-wide themes from wall entries. A theme overrides the colour tokens on <html>; the inline
 // script in Layout.astro re-applies the saved one before each page paints.
 
 export type Theme = { id: string; name: string; colors: Record<"ink" | "paper" | "ash" | "accent", string> };

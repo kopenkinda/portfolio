@@ -8,7 +8,7 @@ const blog = defineCollection({
     title: z.string(),
     description: z.string(),
     pubDate: z.coerce.date(),
-    /** Unlisted posts have a page but don't appear on the blog list; link to them from the stash. */
+    /** Unlisted posts have a page but don't appear on the blog list; link to them from the wall. */
     unlisted: z.boolean().default(false),
   }),
 });
@@ -45,30 +45,37 @@ const theme = z
     }
   });
 
-const stash = defineCollection({
-  loader: glob({ base: "./src/content/stash", pattern: "**/*.{md,mdx}" }),
+/** Where something came from, e.g. { title: "Bleach", detail: "Episode 14, 03:54" }. */
+const source = z.object({ title: z.string(), detail: z.string().optional(), url: z.url().optional() });
+
+const wall = defineCollection({
+  loader: glob({ base: "./src/content/wall", pattern: "**/*.{md,mdx}" }),
   schema: ({ image }) =>
     z
       .object({
         date: z.coerce.date(),
-        image: image().optional(),
-        imageAlt: z.string().optional(),
+        /** One image fills the column, two sit side by side, three or more scroll sideways.
+            `alt` is read by screen readers; `source` and `theme` show on a line under the image. */
+        images: z
+          .array(z.object({ src: image(), alt: z.string(), source: source.optional(), theme: theme.optional() }))
+          .min(1)
+          .optional(),
         /** A quote; `source` then says who said it and where. */
         quote: z.string().optional(),
-        /** Where something came from, e.g. { title: "Bleach", detail: "Episode 14, 03:54" }. */
-        source: z.object({ title: z.string(), detail: z.string().optional(), url: z.url().optional() }).optional(),
-        /** Something found on the web. */
+        /** Where the entry came from; for a quote, who said it and where. */
+        source: source.optional(),
+        /** Something found on the web. A link and a post are separate entries. */
         link: z.object({ title: z.string(), url: z.url() }).optional(),
+        /** One of my posts pinned to the wall, usually an unlisted one. */
         post: reference("blog").optional(),
-        theme: theme.optional(),
       })
-      .refine((entry) => !entry.image || entry.imageAlt, {
-        message: "Add imageAlt when an entry has an image",
-        path: ["imageAlt"],
+      .refine((entry) => !(entry.link && entry.post), {
+        message: "A link and a post are separate entries; split them into two files",
+        path: ["post"],
       }),
 });
 
-export const collections = { blog, stash };
+export const collections = { blog, wall };
 
 /** Shared view-transition name, so a post's title travels from the blog list into the post page. */
 export const postTitleTransition = (id: string) => `post-${id.replace(/[^a-zA-Z0-9-]/g, "-")}`;

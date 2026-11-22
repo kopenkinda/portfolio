@@ -28,7 +28,7 @@ const formatDate = new Intl.DateTimeFormat("en", { month: "short", year: "numeri
               {post.data.title}
             </a>
           </h2>
-          <p class="mt-1 leading-relaxed text-ash">{post.data.description}</p>
+          <p class="mt-2 leading-7 text-ash">{post.data.description}</p>
           <time datetime={post.data.pubDate.toISOString()} class="mt-1 block text-sm text-ash">
             {formatDate(post.data.pubDate)}
           </time>

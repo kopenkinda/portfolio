@@ -1,0 +1,47 @@
+---
+import type { CollectionEntry } from "astro:content";
+import ThemeButton from "./ThemeButton.astro";
+
+type WallImage = NonNullable<CollectionEntry<"wall">["data"]["images"]>[number];
+
+interface Props {
+  source?: WallImage["source"];
+  theme?: WallImage["theme"];
+  /** Identifies the theme so its button knows when it's the active one. */
+  themeId?: string;
+}
+
+// The small line under an image or entry: where it came from on the left, "Apply theme" on the right.
+const { source, theme, themeId } = Astro.props;
+const link = "underline decoration-accent underline-offset-4 transition-colors hover:decoration-paper";
+---
+
+<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-sm text-ash">
+  {
+    source ? (
+      <p>
+        {source.url ? (
+          <a href={source.url} class={link}>
+            {source.title}
+          </a>
+        ) : (
+          source.title
+        )}
+        {source.detail && <span>, {source.detail}</span>}
+      </p>
+    ) : (
+      <span />
+    )
+  }
+  {
+    theme && themeId && (
+      <ThemeButton
+        theme={{
+          id: themeId,
+          name: theme.name,
+          colors: { ink: theme.ink, paper: theme.paper, ash: theme.ash, accent: theme.accent },
+        }}
+      />
+    )
+  }
+</div>

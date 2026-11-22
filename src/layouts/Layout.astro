@@ -37,7 +37,7 @@ const link = "underline decoration-accent underline-offset-4 transition-colors h
     <Font cssVariable="--font-mona-sans" preload />
     <Font cssVariable="--font-literata" preload />
     <script is:inline>
-      // Re-apply a theme picked on the stash page before the page paints (see src/scripts/theme.ts).
+      // Re-apply a theme picked on the wall page before the page paints (see src/scripts/theme.ts).
       try {
         const theme = JSON.parse(localStorage.getItem("theme"));
         if (theme) {

@@ -5,7 +5,7 @@
   --color-ink: #0a0a0a;
   --color-paper: #e8e8e5;
   --color-ash: #8c8c88;
-  /* Link underlines: faint grey in black and white; a stash theme sets a solid colour here. */
+  /* Link underlines: faint grey in black and white; a wall theme sets a solid colour here. */
   --color-accent: color-mix(in oklab, #8c8c88 40%, transparent);
 
   --font-display: var(--font-mona-sans);
@@ -19,6 +19,11 @@
     color: var(--color-paper);
     font-family: var(--font-serif);
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Image strips on the wall bleed to the window edge; clip them without a page-wide scrollbar. */
+  body {
+    overflow-x: clip;
   }
 
   ::selection {
@@ -47,7 +52,7 @@
   --tw-prose-pre-bg: color-mix(in oklab, var(--color-paper) 5%, var(--color-ink));
   max-width: none;
 
-  /* Code highlighting mixed from the palette tokens, so it follows stash themes too.
+  /* Code highlighting mixed from the palette tokens, so it follows wall themes too.
      Emphasis comes from brightness, not hue. */
   --astro-code-foreground: var(--color-paper);
   --astro-code-background: var(--tw-prose-pre-bg);

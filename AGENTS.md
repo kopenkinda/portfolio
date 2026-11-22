@@ -27,21 +27,28 @@ Posts are MDX files in `src/content/blog/`. A post's interactive elements live i
 `src/components/blog/<post-slug>/`, one component per element, imported by that post only.
 Write client behaviour as a custom element in a TypeScript `<script>`, and add `not-prose`
 to the component's root so post text styles don't leak into it.
-Set `unlisted: true` on a post that should only be reached from the stash, not the blog list.
+Set `unlisted: true` on a post that should only be reached from the wall, not the blog list.
 
 ## Type
 
 Only headings (`h1`–`h6`) use the heading font (`font-display`, Mona Sans). Everything else,
 including navigation, links, labels and captions, uses the body font (Literata).
 
-## Stash
+## Wall
 
-One file per entry in `src/content/stash/`, newest first on `/stash/`. Every field is optional
-apart from `date`; the page shows whatever an entry has (image, quote, source, link, post, note body).
+One file per entry in `src/content/wall/`. It's a wall, not a timeline: `date` only orders
+entries (newest first) and is never shown. Every other field is optional; the page shows whatever
+an entry has (images, quote, source, link, post, note body). A link and a post are separate
+entries, and the schema rejects one file with both. One image fills the column, two sit side by
+side, three or more become a rail across the window. Each image has required `alt` text (for
+screen readers) and can have its own `source` and `theme`, shown on a line under it.
+
+Keep the text roles consistent: an entry's main line (link or post title, quote) is `text-lg` in
+paper; supporting text (notes, post descriptions) is body size in ash; captions are `text-sm` ash.
 For a quote, `source` is the attribution: who said it, and where.
-Images live in `src/assets/stash/`.
+Images live in `src/assets/wall/`.
 
-An entry's `theme` recolours the whole site: `ink` (background), `paper` (text), `ash`
+An image's `theme` recolours the whole site: `ink` (background), `paper` (text), `ash`
 (secondary text) and `accent` (link underlines). Pick the colours by hand; the build fails when a
 colour doesn't contrast enough with `ink`. Themes change colours only, never fonts.
 

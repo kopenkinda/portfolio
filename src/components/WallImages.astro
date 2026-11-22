@@ -1,0 +1,107 @@
+---
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import WallCaption from "./WallCaption.astro";
+
+interface Props {
+  images: NonNullable<CollectionEntry<"wall">["data"]["images"]>;
+  /** The wall entry's id, used to name each image's theme. */
+  entryId: string;
+}
+
+// One image fills the column, two sit side by side, three or more become a rail across the
+// window. Each image can carry its own caption line (source and/or "Apply theme"), or none.
+const { images, entryId } = Astro.props;
+const items = images.map((image, index) => ({
+  ...image,
+  themeId: `${entryId}-${index}`,
+  hasCaption: Boolean(image.source || image.theme),
+}));
+const [first] = items;
+---
+
+{
+  items.length === 1 && (
+    <figure class="flex flex-col gap-2">
+      <Image
+        src={first.src}
+        alt={first.alt}
+        widths={[576, 1152]}
+        sizes="(min-width: 36rem) 36rem, 100vw"
+        class="w-full rounded-sm"
+      />
+      {first.hasCaption && (
+        <figcaption>
+          <WallCaption source={first.source} theme={first.theme} themeId={first.themeId} />
+        </figcaption>
+      )}
+    </figure>
+  )
+}
+
+{
+  items.length === 2 && (
+    <div class="grid grid-cols-2 items-start gap-2">
+      {items.map((item) => (
+        <figure class="flex flex-col gap-2">
+          <Image
+            src={item.src}
+            alt={item.alt}
+            widths={[288, 576]}
+            sizes="(min-width: 36rem) 18rem, 50vw"
+            class="w-full rounded-sm"
+          />
+          {item.hasCaption && (
+            <figcaption>
+              <WallCaption source={item.source} theme={item.theme} themeId={item.themeId} />
+            </figcaption>
+          )}
+        </figure>
+      ))}
+    </div>
+  )
+}
+
+{
+  items.length > 2 && (
+    <div
+      tabindex="0"
+      role="region"
+      aria-label={`${items.length} images, scroll sideways`}
+      class="wall-rail flex snap-x snap-mandatory items-start gap-2 overflow-x-auto pb-3"
+    >
+      {items.map((item) => (
+        // w-min: the figure is as wide as its image, so a caption wraps under it instead of widening it.
+        <figure class="flex w-min flex-none snap-start flex-col gap-2">
+          <Image
+            src={item.src}
+            alt={item.alt}
+            height={640}
+            class="h-[45vw] w-auto max-w-none rounded-sm sm:h-80"
+          />
+          {item.hasCaption && (
+            <figcaption>
+              <WallCaption source={item.source} theme={item.theme} themeId={item.themeId} />
+            </figcaption>
+          )}
+        </figure>
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .wall-rail {
+    /* A rail across the whole window: it spans edge to edge, but its first image starts at the
+       text column, and images snap back into line with it. The gutter is the space beside the
+       column, from Layout's max-w-xl (36rem) and px-4 (1rem). */
+    --gutter: max(1rem, calc((100vw - 36rem) / 2 + 1rem));
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    scroll-padding-inline: var(--gutter);
+
+    /* A thin, quiet scrollbar: mouse users need one, but it shouldn't shout. */
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--color-ash) 40%, transparent) transparent;
+  }
+</style>

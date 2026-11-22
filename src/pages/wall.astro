@@ -1,0 +1,93 @@
+---
+import { File02Icon, Link04Icon } from "@hugeicons/core-free-icons";
+import { getCollection, getEntry, render } from "astro:content";
+import Icon from "../components/Icon.astro";
+import WallCaption from "../components/WallCaption.astro";
+import WallImages from "../components/WallImages.astro";
+import Layout from "../layouts/Layout.astro";
+
+const entries = await Promise.all(
+  (await getCollection("wall"))
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+    .map(async (entry) => ({
+      ...entry,
+      Content: entry.body?.trim() ? (await render(entry)).Content : null,
+      post: entry.data.post ? await getEntry(entry.data.post) : null,
+    })),
+);
+
+// Every entry uses the same two text roles: a main line (title or quote) in paper at text-lg,
+// and supporting text (notes, post descriptions) in ash at the body size. Captions are text-sm ash.
+const supporting = "leading-7 text-ash";
+const link = "underline decoration-accent underline-offset-4 transition-colors hover:decoration-paper";
+// Link and post titles look alike, so a quiet icon says which is which: a page for my own posts,
+// a chain for links that leave the site. The wrapper is one line tall, so the icon stays centred
+// on the first line when a title wraps.
+const kindIcon = "flex h-7 shrink-0 items-center text-ash";
+---
+
+<Layout
+  title="Wall"
+  description="Screenshots, links, quotes and other things Dmitrii Kopenkin pinned up."
+  back={{ label: "Home", href: "/" }}
+>
+  <h1 class="font-display text-3xl font-medium tracking-tight">Wall</h1>
+  <p class="mt-2 text-ash">Screenshots, links, quotes and anything else I want to keep around.</p>
+
+  <!-- Newest first; dates only order the wall and are never shown. -->
+  <ul class="mt-14 space-y-16">
+    {
+      entries.map(({ id, data, Content, post }) => (
+        <li>
+          <article class="flex flex-col gap-2">
+            {post && (
+              <h2 class="flex gap-2 font-display text-lg font-medium">
+                <span class={kindIcon} aria-hidden="true">
+                  <Icon icon={File02Icon} class="size-4" />
+                </span>
+                <span>
+                  <span class="sr-only">Post: </span>
+                  <a href={`/blog/${post.id}/`} class={link}>
+                    {post.data.title}
+                  </a>
+                </span>
+              </h2>
+            )}
+            {post && <p class={supporting}>{post.data.description}</p>}
+
+            {data.link && (
+              <h2 class="flex gap-2 font-display text-lg font-medium">
+                <span class={kindIcon} aria-hidden="true">
+                  <Icon icon={Link04Icon} class="size-4" />
+                </span>
+                <span>
+                  <span class="sr-only">Link: </span>
+                  <a href={data.link.url} class={link}>
+                    {data.link.title}
+                  </a>
+                  <span class="ml-2 font-serif text-sm font-normal text-ash">{new URL(data.link.url).hostname}</span>
+                </span>
+              </h2>
+            )}
+
+            {data.images && <WallImages images={data.images} entryId={id} />}
+
+            {data.quote && (
+              <blockquote class="border-l-2 border-accent pl-4 text-lg leading-7">
+                <p>{data.quote}</p>
+              </blockquote>
+            )}
+
+            {Content && (
+              <div class={`prose ${supporting} [--tw-prose-body:var(--color-ash)]`}>
+                <Content />
+              </div>
+            )}
+
+            {data.source && <WallCaption source={data.source} />}
+          </article>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>
