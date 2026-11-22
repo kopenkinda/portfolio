@@ -11,9 +11,11 @@ export async function getStaticPaths() {
 const post: CollectionEntry<"blog"> = Astro.props;
 const { Content } = await render(post);
 const date = new Intl.DateTimeFormat("en", { dateStyle: "long" }).format(post.data.pubDate);
+// Unlisted posts are only reachable from the wall, so that's the page one level up.
+const back = post.data.unlisted ? { label: "Wall", href: "/wall/" } : { label: "Blog", href: "/blog/" };
 ---
 
-<Layout title={post.data.title} description={post.data.description} back={{ label: "Blog", href: "/blog/" }}>
+<Layout title={post.data.title} description={post.data.description} back={back}>
   <article>
     <h1
       class="w-fit font-display text-3xl font-medium tracking-tight [view-transition-class:post-title]"
