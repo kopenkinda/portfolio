@@ -30,6 +30,30 @@ const geometry = {
 
 <style>
   /* Soft, feathered edges, like a painting on paper. */
+  /* On load the painting develops like wet paint drying: it comes in soft and pale and settles,
+     then the moving parts fade in on top. Only with scripting, so it's never stuck hidden. */
+  @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+    andorra-scene {
+      opacity: 0;
+      filter: blur(10px) saturate(0.4);
+      scale: 1.015;
+      transition:
+        opacity 0.9s ease-out,
+        filter 1.4s cubic-bezier(0.2, 0.7, 0.2, 1),
+        scale 1.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    andorra-scene canvas {
+      opacity: 0;
+      transition: opacity 0.8s ease-out 0.7s;
+    }
+    andorra-scene[data-revealed],
+    andorra-scene[data-revealed] canvas {
+      opacity: 1;
+      filter: none;
+      scale: 1;
+    }
+  }
+
   andorra-scene {
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 100' preserveAspectRatio='none'%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='3'/%3E%3C/filter%3E%3Crect x='6' y='6' width='228' height='88' rx='12' filter='url(%23b)'/%3E%3C/svg%3E");
     mask-size: 100% 100%;
@@ -117,9 +141,31 @@ const geometry = {
 
       const water = geometry.water.map((ring) => new Path2D(`M${ring.map((p) => p.join(" ")).join("L")}Z`));
       const rivers = geometry.rivers.map((line) => new Path2D(`M${line.map((p) => p.join(" ")).join("L")}`));
+      // Cloud shadows: lumpy shapes with an even shade and soft edges, built from overlapping
+      // puffs and drawn once each into a small image. They start spread across the frame, so one
+      // is always passing over.
+      const cloudShape = (rx: number, ry: number) => {
+        const image = document.createElement("canvas");
+        image.width = rx * 2;
+        image.height = ry * 2;
+        const c = image.getContext("2d")!;
+        for (let i = 0; i < 7; i++) {
+          const r = between(0.32, 0.48) * rx;
+          const x = rx + between(-0.5, 0.5) * rx;
+          const y = ry + between(-0.35, 0.35) * ry;
+          const puff = c.createRadialGradient(x, y, 0, x, y, r);
+          puff.addColorStop(0, "#1c2a33");
+          puff.addColorStop(0.55, "#1c2a33");
+          puff.addColorStop(1, "rgba(28, 42, 51, 0)");
+          c.fillStyle = puff;
+          c.fillRect(0, 0, image.width, image.height);
+        }
+        return image;
+      };
       const clouds = [
-        { x: -150, y: 120, rx: 210, ry: 120 },
-        { x: 470, y: 350, rx: 160, ry: 95 },
+        { x: 200, y: 150, image: cloudShape(220, 130) },
+        { x: 660, y: 370, image: cloudShape(190, 110) },
+        { x: 1090, y: 160, image: cloudShape(210, 125) },
       ];
       const birds: Bird[] = [];
       const ripples: Ripple[] = [];
@@ -173,9 +219,9 @@ const geometry = {
           }
         }
         for (const c of clouds) {
-          c.x += dt * 9;
+          c.x += dt * 14;
           c.y -= dt * 2;
-          if (c.x > WIDTH + 250) [c.x, c.y] = [-260, between(60, 440)];
+          if (c.x > WIDTH + 260) [c.x, c.y] = [-260, between(60, 440)];
         }
         nextFlock -= dt;
         if (nextFlock < 0) {
@@ -281,18 +327,9 @@ const geometry = {
           ctx.restore();
         }
 
-        for (const c of clouds) {
-          ctx.save();
-          ctx.translate(c.x, c.y);
-          ctx.scale(1, c.ry / c.rx);
-          const shadow = ctx.createRadialGradient(0, 0, 0, 0, 0, c.rx);
-          shadow.addColorStop(0, "rgba(28, 42, 51, .2)");
-          shadow.addColorStop(0.6, "rgba(28, 42, 51, .1)");
-          shadow.addColorStop(1, "rgba(28, 42, 51, 0)");
-          ctx.fillStyle = shadow;
-          ctx.fillRect(-c.rx, -c.rx, c.rx * 2, c.rx * 2);
-          ctx.restore();
-        }
+        ctx.globalAlpha = 0.32;
+        for (const c of clouds) ctx.drawImage(c.image, c.x - c.image.width / 2, c.y - c.image.height / 2);
+        ctx.globalAlpha = 1;
 
         // Birds, each with a faint shadow on the ground below and to the right.
         ctx.lineCap = "round";
@@ -320,6 +357,10 @@ const geometry = {
         draw();
         if (running) requestAnimationFrame(frame);
       };
+
+      // Reveal once the painting is ready, so it never develops from an empty frame.
+      const reveal = () => requestAnimationFrame(() => this.toggleAttribute("data-revealed", true));
+      this.querySelector("img")!.decode().then(reveal, reveal);
 
       resize();
       new ResizeObserver(() => {
