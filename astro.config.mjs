@@ -11,18 +11,22 @@ export default defineConfig({
     {
       // Headings
       provider: fontProviders.google(),
-      name: "Encode Sans",
-      cssVariable: "--font-encode-sans",
-      weights: ["100 900"],
+      name: "Mona Sans",
+      cssVariable: "--font-mona-sans",
+      weights: ["200 900"],
+      styles: ["normal"],
       fallbacks: ["sans-serif"],
     },
     {
       // Body text
       provider: fontProviders.google(),
-      name: "Outfit",
-      cssVariable: "--font-outfit",
-      weights: ["100 900"],
-      fallbacks: ["sans-serif"],
+      name: "Literata",
+      cssVariable: "--font-literata",
+      weights: ["200 900"],
+      styles: ["normal"],
+      fallbacks: ["serif"],
+      // Optical size lets the browser tune letterforms to the text size.
+      options: { experimental: { variableAxis: { opsz: [[7, 72]] } } },
     },
   ],
 });

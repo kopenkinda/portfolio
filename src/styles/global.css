@@ -5,8 +5,8 @@
   --color-paper: #e8e8e5;
   --color-ash: #8c8c88;
 
-  --font-display: var(--font-encode-sans);
-  --font-sans: var(--font-outfit);
+  --font-display: var(--font-mona-sans);
+  --font-serif: var(--font-literata);
 }
 
 @layer base {
@@ -14,7 +14,7 @@
     color-scheme: dark;
     background: var(--color-ink);
     color: var(--color-paper);
-    font-family: var(--font-sans);
+    font-family: var(--font-serif);
     -webkit-font-smoothing: antialiased;
   }
 
