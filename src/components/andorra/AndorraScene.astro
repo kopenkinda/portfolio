@@ -61,6 +61,8 @@ const geometry = {
 </style>
 
 <script>
+  import { flutter, preload, sceneSounds, sparkle, splash } from "../../scripts/sounds";
+
   type Point = [number, number];
   type Geometry = { traffic: { pts: Point[]; oneway: boolean }[]; walks: Point[][]; rivers: Point[][]; water: Point[][]; spire: Point };
 
@@ -114,6 +116,7 @@ const geometry = {
       const ctx = canvas.getContext("2d")!;
       const geometry: Geometry = JSON.parse(this.querySelector("script[type='application/json']")!.textContent!);
       const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      preload(sceneSounds);
 
       const movers: Mover[] = [];
       const carColors = ["#c94f3d", "#f2efe6", "#3f6fa8", "#e2b23c", "#2f3438", "#8fa3ad", "#f2efe6"];
@@ -204,6 +207,8 @@ const geometry = {
       let last = 0;
       let running = false;
       let nextFlock = between(4, 9);
+      let lastGlint = -1;
+      let lastChime = -Infinity;
 
       const step = (dt: number) => {
         time += dt;
@@ -223,6 +228,17 @@ const geometry = {
           c.y -= dt * 2;
           if (c.x > WIDTH + 260) [c.x, c.y] = [-260, between(60, 440)];
         }
+        // The glint peaks a quarter of the way through each 7-second cycle. Only now and then does
+        // it chime: about one glint in five, and never within 25 seconds of the last chime.
+        const cycle = Math.floor(time / 7);
+        if (cycle !== lastGlint && time % 7 > 1.3) {
+          lastGlint = cycle;
+          if (time - lastChime > 25 && Math.random() < 0.2) {
+            lastChime = time;
+            sparkle();
+          }
+        }
+
         nextFlock -= dt;
         if (nextFlock < 0) {
           nextFlock = between(10, 18);
@@ -390,8 +406,13 @@ const geometry = {
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.lineWidth = 14;
         const onWater = water.some((w) => ctx.isPointInPath(w, x, y)) || rivers.some((r) => ctx.isPointInStroke(r, x, y));
-        if (onWater) ripples.push({ x, y, age: 0 });
-        else flock(x, y, Math.round(between(4, 7)));
+        if (onWater) {
+          ripples.push({ x, y, age: 0 });
+          splash();
+        } else {
+          flock(x, y, Math.round(between(4, 7)));
+          flutter();
+        }
       });
     }
   }

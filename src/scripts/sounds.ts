@@ -1,6 +1,7 @@
-// A quiet tick when a pointer moves onto a link, and a click when one is pressed.
-// The tick is a few milliseconds of noise through a band filter, synthesised with Web Audio. The
-// click is the toggle sound from SND01 by SND (https://snd.dev), credited in the README.
+// A quiet tick when a pointer moves onto a link, and a click when one is pressed; plus the sounds
+// of the home page scene. The tick and the glint chime are synthesised with Web Audio. The rest
+// are short recordings in public/sounds, credited in the README: the click is the toggle sound
+// from SND01 by SND (https://snd.dev), the splashes and wings are CC0 recordings from Freesound.
 //
 // Sound is on by default, but browsers keep audio off until the visitor clicks or presses a key.
 // So the speaker icon shows muted until that first interaction, which turns sound on for real
@@ -13,8 +14,12 @@
 const root = document.documentElement;
 let audio: AudioContext | undefined;
 let noise: AudioBuffer | undefined;
-let clickFile: Promise<ArrayBuffer> | undefined;
-let click: Promise<AudioBuffer> | undefined;
+const files = new Map<string, Promise<ArrayBuffer>>();
+const decoded = new Map<string, Promise<AudioBuffer>>();
+
+const CLICK = "/sounds/snd01-toggle.wav";
+const SPLASHES = ["/sounds/splash-1.m4a", "/sounds/splash-2.m4a", "/sounds/splash-3.m4a", "/sounds/splash-4.m4a"];
+const WINGS = "/sounds/wings.m4a";
 
 /** Whether sound is on right now: wanted, and unlocked by an interaction. */
 export const isSoundOn = () => root.dataset.sound === "on";
@@ -28,26 +33,34 @@ function wanted() {
   }
 }
 
-// The browser caches the file across pages; it's fetched early so the first press can play it.
-const loadClick = () => (clickFile ??= fetch("/sounds/snd01-toggle.wav").then((response) => response.arrayBuffer()));
-if (wanted()) void loadClick();
+/** Fetch recordings ahead of time, so the first press doesn't wait for the network. The browser
+    caches them across pages. Skipped when the visitor has turned sound off. */
+export function preload(urls: string[]) {
+  if (!wanted()) return;
+  for (const url of urls) if (!files.has(url)) files.set(url, fetch(url).then((response) => response.arrayBuffer()));
+}
+preload([CLICK]);
 
 function start() {
   audio ??= new AudioContext();
-  click ??= loadClick().then((data) => audio!.decodeAudioData(data));
   void audio.resume();
   return audio;
 }
 
-async function playClick() {
+/** Play a recording. Only called from a press, so it may start audio. */
+async function playFile(url: string, volume: number) {
+  if (!isSoundOn()) return;
   const context = start();
+  preload([url]);
+  if (!decoded.has(url)) decoded.set(url, files.get(url)!.then((data) => context.decodeAudioData(data.slice(0))));
   const source = context.createBufferSource();
   const level = context.createGain();
-  source.buffer = await click!;
-  level.gain.value = 0.5;
+  source.buffer = await decoded.get(url)!;
+  level.gain.value = volume;
   source.connect(level).connect(context.destination);
   source.start();
 }
+const playClick = () => playFile(CLICK, 0.5);
 
 function show(on: boolean) {
   if (on) root.dataset.sound = "on";
@@ -72,27 +85,73 @@ export function setSound(on: boolean) {
   if (on) void playClick();
 }
 
-/** `band` is where the tick's energy sits (higher is lighter), `length` its decay in seconds. */
+/** Audio, but only when sound is on and the browser lets it play; otherwise nothing sounds. */
+const playable = () => (isSoundOn() && audio?.state === "running" ? audio : undefined);
+
+/** A few milliseconds of noise through a band filter: the hover tick. `band` is where its
+    energy sits (higher is lighter), `length` its decay in seconds. */
 function tick(band: number, volume: number, length: number) {
-  if (!audio) return;
+  const context = playable();
+  if (!context) return;
   if (!noise) {
-    noise = audio.createBuffer(1, audio.sampleRate * 0.05, audio.sampleRate);
+    noise = context.createBuffer(1, context.sampleRate * 0.05, context.sampleRate);
     const samples = noise.getChannelData(0);
     for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
   }
-  const at = audio.currentTime;
-  const source = audio.createBufferSource();
-  const filter = audio.createBiquadFilter();
-  const level = audio.createGain();
+  const at = context.currentTime;
+  const source = context.createBufferSource();
+  const filter = context.createBiquadFilter();
+  const level = context.createGain();
   source.buffer = noise;
   filter.type = "bandpass";
   filter.frequency.value = band;
   filter.Q.value = 1.2;
   level.gain.setValueAtTime(volume, at);
   level.gain.exponentialRampToValueAtTime(0.0001, at + length);
-  source.connect(filter).connect(level).connect(audio.destination);
+  source.connect(filter).connect(level).connect(context.destination);
   source.start(at);
   source.stop(at + length);
+}
+
+/** A short sine note with a quick attack and a ringing decay: the glint chime. */
+function note(pitch: number, volume: number, length: number, delay = 0) {
+  const context = playable();
+  if (!context) return;
+  const at = context.currentTime + delay;
+  const tone = context.createOscillator();
+  const level = context.createGain();
+  tone.frequency.value = pitch;
+  level.gain.setValueAtTime(0.0001, at);
+  level.gain.exponentialRampToValueAtTime(volume, at + 0.005);
+  level.gain.exponentialRampToValueAtTime(0.0001, at + length);
+  tone.connect(level).connect(context.destination);
+  tone.start(at);
+  tone.stop(at + length + 0.02);
+}
+
+// Sounds for the home page scene (src/components/andorra/AndorraScene.astro).
+
+/** The scene's recordings, for it to preload. */
+export const sceneSounds = [...SPLASHES, WINGS];
+
+let lastSplash = -1;
+/** A stone into the river: one of four recordings, never the same one twice in a row. */
+export function splash() {
+  let pick = Math.floor(Math.random() * SPLASHES.length);
+  if (pick === lastSplash) pick = (pick + 1) % SPLASHES.length;
+  lastSplash = pick;
+  void playFile(SPLASHES[pick], 0.18);
+}
+
+/** Pigeons taking off. The recording is much denser than the splashes, so it plays quieter. */
+export function flutter() {
+  void playFile(WINGS, 0.07);
+}
+
+/** Sun catching Caldea's glass: two high, quiet chimes. */
+export function sparkle() {
+  note(2637, 0.018, 0.5);
+  note(3951, 0.012, 0.45, 0.07);
 }
 
 const linkAt = (target: EventTarget | null) => (target instanceof Element ? target.closest("a[href]") : null);
@@ -102,7 +161,8 @@ document.addEventListener("pointerover", (event) => {
   // Only on entering a link (not moving between its children), and only for a mouse or pen:
   // a tap also fires pointerover, and would click twice.
   if (!isSoundOn() || !link || link === linkAt(event.relatedTarget) || event.pointerType === "touch") return;
-  if (start().state === "running") tick(5000, 0.1, 0.012);
+  start();
+  tick(5000, 0.1, 0.012);
 });
 
 // The first press or key on a page unlocks audio. The speaker button is left to its own handler,

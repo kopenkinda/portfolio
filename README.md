@@ -16,6 +16,11 @@ See `AGENTS.md` for how the blog, wall, themes and textures work.
 - Link click sound (`public/sounds/snd01-toggle.wav`): the toggle sound from the SND01 kit by
   [SND](https://snd.dev), used under the [SND terms of use](https://snd.dev). It may not be
   redistributed or sold on its own.
+- Home page scene sounds (`public/sounds/splash-*.m4a`, `public/sounds/wings.m4a`), trimmed
+  from CC0 recordings on Freesound: "Rock In Water Splash-Plop" 1 to 3 by
+  [jc144940](https://freesound.org/people/jc144940/), "Quick Splash (dropping grapes into a glass
+  of water)" by [asherkaye2](https://freesound.org/people/asherkaye2/sounds/538143/) and "Beating
+  wings of a pigeon" by [gerardcatala](https://freesound.org/people/gerardcatala/sounds/153277/).
 - Home page map: data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors,
   available under the Open Database Licence.
 - Background patterns adapted from [Hero Patterns](https://heropatterns.com) by Steve Schoger.
