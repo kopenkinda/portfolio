@@ -2,6 +2,8 @@
 // overriding the colour tokens on <html>. The inline script in Layout.astro re-applies the saved
 // mode and theme before each page paints.
 
+import { swoosh } from "./sounds";
+
 export type Theme = {
   id: string;
   name: string;
@@ -36,6 +38,7 @@ export const graphicFor = (theme: Theme | null, mode: Mode): Graphic => theme?.g
 
 /** Changes colours with the same focus-pull as a page switch, then tells the page. */
 function change(update: () => void) {
+  swoosh();
   const run = () => {
     update();
     root.dataset.graphic = graphicFor(getTheme(), getMode());

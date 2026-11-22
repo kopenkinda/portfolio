@@ -21,6 +21,10 @@ See `AGENTS.md` for how the blog, wall, themes and textures work.
   [jc144940](https://freesound.org/people/jc144940/), "Quick Splash (dropping grapes into a glass
   of water)" by [asherkaye2](https://freesound.org/people/asherkaye2/sounds/538143/) and "Beating
   wings of a pigeon" by [gerardcatala](https://freesound.org/people/gerardcatala/sounds/153277/).
+- Theme switch sound (`public/sounds/swoosh.m4a`), trimmed from the CC0 recording "swoosh-1" by
+  [lesaucisson](https://freesound.org/people/lesaucisson/sounds/585257/) on Freesound.
+- Puzzle break sound (`public/sounds/rip.m4a`), trimmed from the CC0 recording "Fast Paper Rip" by
+  [sgrowe](https://freesound.org/people/sgrowe/sounds/342541/) on Freesound.
 - Home page map: data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors,
   available under the Open Database Licence.
 - Background patterns adapted from [Hero Patterns](https://heropatterns.com) by Steve Schoger.

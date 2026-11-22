@@ -20,6 +20,8 @@ const decoded = new Map<string, Promise<AudioBuffer>>();
 const CLICK = "/sounds/snd01-toggle.wav";
 const SPLASHES = ["/sounds/splash-1.m4a", "/sounds/splash-2.m4a", "/sounds/splash-3.m4a", "/sounds/splash-4.m4a"];
 const WINGS = "/sounds/wings.m4a";
+const SWOOSH = "/sounds/swoosh.m4a";
+const RIP = "/sounds/rip.m4a";
 
 /** Whether sound is on right now: wanted, and unlocked by an interaction. */
 export const isSoundOn = () => root.dataset.sound === "on";
@@ -39,7 +41,7 @@ export function preload(urls: string[]) {
   if (!wanted()) return;
   for (const url of urls) if (!files.has(url)) files.set(url, fetch(url).then((response) => response.arrayBuffer()));
 }
-preload([CLICK]);
+preload([CLICK, SWOOSH, RIP]);
 
 function start() {
   audio ??= new AudioContext();
@@ -153,6 +155,15 @@ export function sparkle() {
   note(2637, 0.018, 0.5);
   note(3951, 0.012, 0.45, 0.07);
 }
+
+/** The colours changing: the light or dark mode, or a wall theme put on or taken off. */
+export const swoosh = () => void playFile(SWOOSH, 0.15);
+
+/** The dots valley breaking into jigsaw pieces: a quick paper rip. */
+export const rip = () => void playFile(RIP, 0.2);
+
+/** A jigsaw piece of the dots valley going into place: the click, quieter. */
+export const snap = () => void playFile(CLICK, 0.3);
 
 const linkAt = (target: EventTarget | null) => (target instanceof Element ? target.closest("a[href]") : null);
 

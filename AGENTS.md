@@ -96,6 +96,16 @@ is its density, and alpha 0 marks the sky, where the canvas draws stars. The mou
 from seed points placed by hand (`LAYERS`), like the peak glint (`GLINT` in `DotsScene.astro`); place
 both again when the photo changes.
 
+The sixth tap breaks the valley into a jigsaw (`puzzle.ts`). Loose pieces are small canvases in a
+layer fixed to the bottom of the window; each copies its part of the scene's canvas every frame, so
+the scene keeps drawing while a puzzle is open, even off screen. Placed pieces are the scene's own
+canvas, clipped to their shapes. A piece let go away from its place falls again, with the speed
+the pointer gave it. Because pieces copy the scene, nothing the pointer does over the picture may
+reach a loose piece: it would appear on the piece that belongs under the pointer. So the pointer
+counts only on placed pieces, their cursor effect is drawn after the loose pieces have copied the
+frame, a loose piece draws the effect for the cursor on it itself, and taps wait until the picture
+is whole. Switching to another graphic ends the puzzle.
+
 ## Texture
 
 The background texture is an SVG mask in `src/styles/global.css`, painted in `ash`, so it follows

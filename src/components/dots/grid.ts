@@ -8,10 +8,11 @@
 // base, and fainter the farther away it is. That is what makes the ridges read as overlapping
 // silhouettes instead of one field of dots. The photo's own detail (tone and edges) sits on top.
 import { createHash } from "node:crypto";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import sharp from "sharp";
 
-const PHOTO = fileURLToPath(new URL("./photo.jpg", import.meta.url));
+// From the project root, not this file: the build bundles this module into dist/, away from the photo.
+const PHOTO = resolve("src/components/dots/photo.jpg");
 const ROWS = 110;
 const KEEP = 0.8; // how much of the photo, from the top, to use: the foreground below is too busy as dots
 const FINE = 4; // edges are measured at this many pixels per dot, where a silhouette is still a sharp line

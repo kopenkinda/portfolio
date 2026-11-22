@@ -6,6 +6,7 @@
 // more of that colour, until the picture is in full colour. Near the cursor, dots turn into ASCII
 // characters and get pushed aside. Above the ridge is a night sky of twinkling stars, with a
 // shooting star now and then. On load the dots fly in and assemble; loose particles drift.
+// The sixth tap breaks the picture into a jigsaw to put back together (puzzle.ts).
 //
 // All on one canvas. Most frames draw the grid as one tiny image (one pixel per dot) scaled up in
 // a single call; only the intro and the dots near the cursor are drawn one by one.
@@ -19,6 +20,12 @@ import { gridVersion } from "./grid";
   class="relative left-1/2 block aspect-[12/5] min-h-52 w-[min(100vw,46rem)] -translate-x-1/2 cursor-crosshair touch-manipulation select-none"
 >
   <canvas class="absolute inset-0 size-full"></canvas>
+  <!-- For the jigsaw: the outline of the empty picture while the puzzle is open, and its cuts,
+       which only show for a moment as the solved picture fuses. -->
+  <svg class="pointer-events-none absolute inset-0 size-full overflow-visible text-ash opacity-0" fill="none" stroke="currentColor" aria-hidden="true">
+    <rect width="100%" height="100%"></rect>
+    <path class="opacity-0"></path>
+  </svg>
 </dots-scene>
 
 <style>
@@ -30,6 +37,7 @@ import { gridVersion } from "./grid";
 
 <script>
   import { sparkle } from "../../scripts/sounds";
+  import { openPuzzle, type Puzzle } from "./puzzle";
 
   const CELL = 4; // CSS pixels per dot
   const GAP = 1; // CSS pixels between dots
@@ -38,6 +46,7 @@ import { gridVersion } from "./grid";
   const RADIUS = 9; // dots around the cursor that turn into characters
   const ASSEMBLE = 1.6; // seconds for the dots to fly in
   const TAP_COLOR = 0.25; // how much more of the photo's colour each tap brings
+  const BREAK_AT = 6; // taps until the picture breaks into a jigsaw: two after it's in full colour
   const GLINT = [0.654, 0.135]; // the snowy peak that catches the light, as fractions of the photo
   const STARS = 0.045; // share of the sky's dots that are stars
   const SKY = 0.15; // extra night sky above the photo, as a share of the height
@@ -82,7 +91,11 @@ import { gridVersion } from "./grid";
         if (hex.startsWith("#")) paper = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
       };
       readPaper();
-      document.addEventListener("themechange", readPaper);
+      document.addEventListener("themechange", () => {
+        readPaper();
+        // Another graphic takes over: an open puzzle ends, and the picture is whole when it's back.
+        if (document.documentElement.dataset.graphic !== "dots") puzzle?.close();
+      });
 
       // Grid layout, rebuilt on resize: the photo fills the height, centred.
       let cols = 0;
@@ -200,6 +213,9 @@ import { gridVersion } from "./grid";
       let time = still ? ASSEMBLE : 0;
       let last = 0;
       let running = false;
+      let visible = false;
+      let taps = 0;
+      let puzzle: Puzzle | null = null;
       let lastChime = -Infinity;
       let meteor: { x: number; y: number; vx: number; vy: number; age: number } | null = null;
       let nextMeteor = ASSEMBLE + 4;
@@ -211,13 +227,48 @@ import { gridVersion } from "./grid";
         return [0, 1, 2].map((c) => paper[c] * d * (1 - k) + photo[i * 3 + c] * k);
       };
 
+      /** Set a canvas up for the characters. */
+      const letters = (target: CanvasRenderingContext2D) => {
+        target.font = `${CELL * 2 + 1}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+        target.textAlign = "center";
+        target.textBaseline = "middle";
+      };
+      /** A dot as a character, moved by (dx, dy) dots. */
+      const glyphAt = (target: CanvasRenderingContext2D, x: number, y: number, dx: number, dy: number) => {
+        const i = y * cols + x;
+        const s = strength[i];
+        if (s < 0.06 || x % 2 || y % 2) return;
+        const [r, g, b] = colorOf(i);
+        target.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
+        target.fillText(GLYPHS[Math.min(GLYPHS.length - 1, Math.floor(s * GLYPHS.length))], ox + (x + dx + 1) * CELL, oy + (y + dy + 1) * CELL);
+      };
+      /** The cursor's effect around `at`: the dots there become characters, pushed aside. draw()
+          leaves those dots out of the picture itself. `wipe` removes them from a copy of the
+          picture instead: a jigsaw piece shows the effect that way, on its own canvas, so the
+          cursor over one piece never shows on another. */
+      const hover = (target: CanvasRenderingContext2D, at: { x: number; y: number }, wipe = false) => {
+        for (const wiping of wipe ? [true, false] : [false]) {
+          for (let y = Math.max(0, Math.floor(at.y - RADIUS)); y < Math.min(rows, at.y + RADIUS); y++) {
+            for (let x = Math.max(0, Math.floor(at.x - RADIUS)); x < Math.min(cols, at.x + RADIUS); x++) {
+              const d = Math.hypot(x - at.x, y - at.y);
+              if (d >= RADIUS) continue;
+              const push = ((RADIUS - d) / RADIUS) * 1.6;
+              if (wiping) target.clearRect(ox + x * CELL, oy + y * CELL, CELL, CELL);
+              else glyphAt(target, x, y, ((x - at.x) / (d || 1)) * push, ((y - at.y) / (d || 1)) * push);
+            }
+          }
+        }
+      };
+
       const draw = () => {
         const assembled = Math.min(1, time / ASSEMBLE);
         const spread = 1 - ease(assembled);
         ctx.clearRect(0, 0, width, height);
 
+        // With a puzzle open, the cursor's effect is left out here and drawn last (see the end).
+        const cursor = puzzle ? null : pointer;
         const near = (x: number, y: number) =>
-          pointer !== null && Math.abs(x - pointer.x) < RADIUS && Math.abs(y - pointer.y) < RADIUS && Math.hypot(x - pointer.x, y - pointer.y) < RADIUS;
+          cursor !== null && Math.abs(x - cursor.x) < RADIUS && Math.abs(y - cursor.y) < RADIUS && Math.hypot(x - cursor.x, y - cursor.y) < RADIUS;
         const inRing = (x: number, y: number) => pulses.some((p) => Math.abs(Math.hypot(x - p.x, y - p.y) - p.age * 55) < 2.5);
 
         if (spread > 0.001) {
@@ -256,29 +307,10 @@ import { gridVersion } from "./grid";
           ctx.globalCompositeOperation = "source-over";
 
           // Characters: around the cursor, pushed aside; and along each tap's ring.
-          ctx.font = `${CELL * 2 + 1}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          const glyphAt = (x: number, y: number, dx: number, dy: number) => {
-            const i = y * cols + x;
-            const s = strength[i];
-            if (s < 0.06 || x % 2 || y % 2) return;
-            const [r, g, b] = colorOf(i);
-            ctx.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
-            ctx.fillText(GLYPHS[Math.min(GLYPHS.length - 1, Math.floor(s * GLYPHS.length))], ox + (x + dx + 1) * CELL, oy + (y + dy + 1) * CELL);
-          };
-          if (pointer) {
-            for (let y = Math.max(0, Math.floor(pointer.y - RADIUS)); y < Math.min(rows, pointer.y + RADIUS); y++) {
-              for (let x = Math.max(0, Math.floor(pointer.x - RADIUS)); x < Math.min(cols, pointer.x + RADIUS); x++) {
-                const d = Math.hypot(x - pointer.x, y - pointer.y);
-                if (d >= RADIUS) continue;
-                const push = ((RADIUS - d) / RADIUS) * 1.6;
-                glyphAt(x, y, ((x - pointer.x) / (d || 1)) * push, ((y - pointer.y) / (d || 1)) * push);
-              }
-            }
-          }
+          letters(ctx);
+          if (cursor) hover(ctx, cursor);
           if (pulses.length) {
-            for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (inRing(x, y) && !near(x, y)) glyphAt(x, y, 0, 0);
+            for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (inRing(x, y) && !near(x, y)) glyphAt(ctx, x, y, 0, 0);
           }
         }
 
@@ -335,6 +367,20 @@ import { gridVersion } from "./grid";
             sparkle();
           }
         }
+
+        if (puzzle) {
+          puzzle.paint(`rgb(${paper.join(",")})`);
+          // Only now the cursor's effect on the placed pieces. The loose pieces have taken their
+          // copy of this frame, so it can't show on them and give a place away. It is clipped to
+          // the placed pieces as well, so the canvas never holds it over an empty place.
+          if (pointer) {
+            ctx.save();
+            ctx.clip(puzzle.placed());
+            letters(ctx);
+            hover(ctx, pointer, true);
+            ctx.restore();
+          }
+        }
       };
 
       const step = (dt: number) => {
@@ -352,7 +398,8 @@ import { gridVersion } from "./grid";
           nextMeteor = time + 8 + Math.random() * 12;
         }
         for (const p of particles) {
-          if (pointer) {
+          // Not with a puzzle open: a pushed particle would drift onto the loose pieces.
+          if (pointer && !puzzle) {
             const dx = p.x - pointer.x;
             const dy = p.y - pointer.y;
             const d = Math.hypot(dx, dy);
@@ -384,10 +431,20 @@ import { gridVersion } from "./grid";
       };
 
       const frame = (now: number) => {
-        step(Math.min(0.05, (now - (last || now)) / 1000));
+        const dt = Math.min(0.05, (now - (last || now)) / 1000);
         last = now;
+        step(dt);
+        puzzle?.step(dt);
         draw();
+        // An open puzzle keeps the scene going off screen: its pieces show the scene wherever they are.
+        running = visible || puzzle !== null;
         if (running) requestAnimationFrame(frame);
+      };
+      const run = () => {
+        if (running) return;
+        running = true;
+        last = 0;
+        requestAnimationFrame(frame);
       };
 
       resize();
@@ -400,15 +457,15 @@ import { gridVersion } from "./grid";
 
       if (still) {
         draw();
+        // A zoom or a move to another screen changes the pixel ratio but not the box, so the
+        // observer above misses it, and without motion nothing else redraws: the canvas would stay
+        // at the old ratio, and puzzle pieces (which the puzzle resizes for it) blank. After the
+        // frame, so the puzzle has laid its pieces out first.
+        window.addEventListener("resize", () => requestAnimationFrame(() => this.isConnected && (resize(), draw())));
       } else {
         new IntersectionObserver(([entry]) => {
-          if (entry.isIntersecting && !running) {
-            running = true;
-            last = 0;
-            requestAnimationFrame(frame);
-          } else if (!entry.isIntersecting) {
-            running = false;
-          }
+          visible = entry.isIntersecting;
+          if (visible) run();
         }).observe(this);
       }
 
@@ -416,9 +473,38 @@ import { gridVersion } from "./grid";
         const box = canvas.getBoundingClientRect();
         return { x: (event.clientX - box.left - ox) / CELL, y: (event.clientY - box.top - oy) / CELL };
       };
-      this.addEventListener("pointermove", (event) => (pointer = toCells(event)));
+      // The jigsaw's outline follows the scene's soft rounded edge.
+      const grid = this.querySelector("svg")!;
+      grid.querySelector("rect")!.setAttribute("rx", String(CORNER * CELL));
+
+      // While the puzzle is open, the pointer counts only on the placed pieces, which behave like
+      // the whole picture does. The canvas is clipped to them, so only there is it the target.
+      // Over an empty place nothing may show: the loose pieces copy this canvas, and the piece
+      // that belongs under the pointer would give its place away. Loose pieces show the cursor's
+      // effect themselves, where the cursor is on them. Taps wait until the picture is whole:
+      // a ring or a pushed particle would cross the empty places too.
+      this.addEventListener("pointermove", (event) => (pointer = event.target === canvas ? toCells(event) : null));
       this.addEventListener("pointerleave", () => (pointer = null));
       this.addEventListener("click", (event) => {
+        if (puzzle) return;
+        if (++taps === BREAK_AT) {
+          // Rings still on their way would sweep over the fallen pieces: bring their colour in at once.
+          for (const p of pulses) colorLevel.forEach((v, i) => hitBy[i] !== p.id && (colorLevel[i] = Math.min(1, v + TAP_COLOR)));
+          pulses.length = 0;
+          pointer = null;
+          const onPiece = (target: CanvasRenderingContext2D, x: number, y: number) => {
+            letters(target);
+            hover(target, { x: (x - ox) / CELL, y: (y - oy) / CELL }, true);
+          };
+          puzzle = openPuzzle(canvas, grid, still, onPiece, (solved) => {
+            puzzle = null;
+            taps = 0;
+            // Solved: one more ring, from the middle, sweeps the picture as its seams dissolve.
+            if (solved && !still) pulses.push({ id: pulseCount++, x: cols / 2, y: rows / 2, age: 0 });
+          });
+          draw(); // onto the pieces straight away, as the canvas itself is hidden from now
+          return;
+        }
         const at = toCells(event);
         pulses.push({ id: pulseCount++, ...at, age: 0 });
         if (still) {
