@@ -32,7 +32,7 @@ const geometry = {
 <style>
   /* Hidden when the colours pick another graphic (see graphicFor in src/scripts/theme.ts). The
      painting is lazy-loaded, so a hidden map is never downloaded. */
-  :global(:root[data-graphic="dots"]) andorra-scene {
+  :global(:root:not([data-graphic="map"])) andorra-scene {
     display: none;
   }
 

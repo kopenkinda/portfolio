@@ -1,0 +1,416 @@
+---
+// PROTOTYPE, variant D: the Bleach hourglass in 3D, as blown glass with sand in it. The sand is a
+// grid of grains (sand.ts) in the picture's two colours; one WebGL shader traces each ray through
+// the glass wall, the hollow and out the back, so the glass bends and reflects like the real thing.
+// Drag it round to turn it, or click to flip it. The sand holds its shape until a slope gets too
+// steep, then slides; whichever bulb is on top runs out through the neck. It leans a little
+// towards the pointer and settles upright or upside down when let go.
+---
+
+<hourglass-3d
+  role="img"
+  aria-label="A glass hourglass, lavender and coral sand running through it. Drag to turn it, click to flip it."
+  class="relative left-1/2 block aspect-[12/5] min-h-52 w-[min(100vw,46rem)] -translate-x-1/2 select-none"
+>
+  <canvas class="absolute top-0 left-1/2 aspect-square h-full -translate-x-1/2 cursor-grab touch-none active:cursor-grabbing"></canvas>
+</hourglass-3d>
+
+<script>
+  import { swoosh } from "../../scripts/sounds";
+  import { createSand, NECK, NX, NY, STEP, W, WIDEST } from "./sand";
+
+  const CYCLE = 40; // seconds for a full bulb to run out
+  const PITCH = 0.28; // radians the viewer looks down on the glass, to show the sand's surface
+  const LEAN = 0.12; // radians it leans towards the pointer, at most
+
+  const FRAGMENT = `#version 300 es
+    precision highp float;
+    precision highp sampler3D;
+    uniform vec2 size;
+    uniform mat3 toObject;  // the page's space to the glass's own
+    uniform vec3 down;      // gravity, in the glass's space
+    uniform vec3 stream;    // the falling sand: where it starts and ends below the neck, and its colour
+    uniform float time;
+    uniform vec3 ink, paper;
+    uniform sampler3D sand; // r: a grain is there; g: its colour, 0 coral to 1 lavender, times r
+    out vec4 color;
+    const float W = ${W}, NECK = ${NECK}, WIDEST = ${WIDEST}, PI = 3.14159265, IOR = 1.5;
+    const vec3 LAVENDER = vec3(164, 140, 230) / 255.;
+    const vec3 CORAL = vec3(216, 92, 60) / 255.;
+    const vec3 OLIVE = vec3(138, 154, 60) / 255.;
+    const vec3 SUN = normalize(vec3(-0.55, 0.6, 0.58)); // the window's direction, in the page's space
+
+    // Distance (near enough) to the inside face of the glass: negative in the hollow.
+    float wall(vec3 p) {
+      float r = length(p.xz), u = abs(p.y);
+      if (u < WIDEST) {
+        float a = PI * u / WIDEST;
+        float slope = (W - NECK) * PI / (2. * WIDEST) * sin(a);
+        return (r - NECK - (W - NECK) * (1. - cos(a)) / 2.) / sqrt(1. + slope * slope);
+      }
+      vec2 q = vec2(r, u - WIDEST), ab = vec2(W, 1. - WIDEST);
+      float k0 = length(q / ab), k1 = length(q / (ab * ab));
+      return k0 * (k0 - 1.) / max(k1, 1e-4);
+    }
+    // How thick the glass is: blown glass gathers at the neck.
+    float thick(vec3 p) { return 0.034 + 0.03 * exp(-abs(p.y) * 7.); }
+    vec3 normalAt(vec3 p) {
+      vec2 e = vec2(0.002, -0.002);
+      return normalize(e.xyy * wall(p + e.xyy) + e.yyx * wall(p + e.yyx) + e.yxy * wall(p + e.yxy) + e.xxx * wall(p + e.xxx));
+    }
+    float fresnel(vec3 d, vec3 n) {
+      float c = 1. - abs(dot(d, n));
+      return 0.04 + 0.96 * c * c * c * c * c;
+    }
+    float hash(vec3 p) {
+      p = fract(p * 0.3183099 + 0.1) * 17.;
+      return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+    }
+
+    // The room the glass reflects: dark olive, a tall window up on the left with a bar across it,
+    // a strip of light on the right, and the sand's two colours glowing above and below.
+    vec3 room(vec3 d) {
+      d = d * toObject;
+      vec3 c = mix(ink * 1.3, OLIVE * 0.3, smoothstep(-0.4, 0.9, d.y));
+      vec3 right = normalize(cross(vec3(0, 1, 0), SUN)), up = cross(SUN, right);
+      float facing = dot(d, SUN);
+      vec2 w = vec2(dot(d, right), dot(d, up)) / max(facing, 1e-3);
+      float window = step(0., facing) * smoothstep(0.4, 0.34, abs(w.x)) * smoothstep(0.62, 0.56, abs(w.y));
+      window *= 0.25 + 0.75 * smoothstep(0.015, 0.04, abs(w.y + 0.1));
+      c += paper * 5. * window;
+      c += paper * 0.8 * smoothstep(0.93, 0.98, dot(normalize(d.xz + 1e-5), normalize(vec2(0.9, 0.35)))) * smoothstep(0.8, 0.5, abs(d.y));
+      c += mix(OLIVE, paper, 0.55) * 0.55 * smoothstep(0.45, 1., abs(d.x)) * smoothstep(0.5, -0.3, d.z);
+      c += LAVENDER * 0.22 * smoothstep(0.2, 1., d.y) + CORAL * 0.2 * smoothstep(-0.2, -1., d.y);
+      return c;
+    }
+
+    vec2 sandAt(vec3 p) { return texture(sand, p / vec3(2. * W, 2, 2. * W) + 0.5).rg; }
+    // The grid holds sand a little past the wall, to meet the glass; light only counts what's inside.
+    float sandIn(vec3 p) { return wall(p) < 0. ? sandAt(p).r : 0.; }
+
+    // Follows a ray inside the glass to the face it leaves by. True when that's into the hollow.
+    bool throughGlass(inout vec3 p, vec3 d) {
+      for (int i = 0; i < 28; i++) {
+        float w = wall(p);
+        float m = min(w, thick(p) - w);
+        if (m < 0.0008) break;
+        p += d * max(m * 0.9, 0.002);
+      }
+      return wall(p) < thick(p) * 0.5;
+    }
+    // A ray leaving glass for air through a face whose normal is n, or bouncing back when it can't.
+    vec3 leave(vec3 d, vec3 n) {
+      n = dot(n, d) > 0. ? n : -n;
+      vec3 o = refract(d, -n, IOR);
+      return o == vec3(0) ? reflect(d, n) : o;
+    }
+
+    // Follows a ray across the hollow. 0: it reached the far wall; 1: it met sand; 2: the stream.
+    int hollow(inout vec3 p, vec3 d) {
+      float last = 0.;
+      for (int i = 0; i < 110; i++) {
+        float w = -wall(p);
+        if (w < 0.001) return 0;
+        if (sandAt(p).r > 0.5) {
+          // Halve back to the sand's surface, so it doesn't show the steps.
+          for (int k = 0; k < 4; k++) {
+            last *= 0.5;
+            p -= d * last * (sandAt(p).r > 0.5 ? 1. : -1.);
+          }
+          return 1;
+        }
+        float len = min(max(w * 0.8, 0.002), 0.012);
+        if (stream.y > stream.x) {
+          float along = dot(p, down);
+          vec3 off = p - down * clamp(along, stream.x, stream.y);
+          // The stream is loose grains, thinnest at the neck: some rays slip between them.
+          float gap = length(off) - 0.005 - 0.004 * smoothstep(0., 0.5, along);
+          vec3 grain = floor(vec3(off.x * 260., (along - time * 1.4) * 150., off.z * 260.));
+          if (gap < 0. && hash(grain) > 0.3) return 2;
+          len = min(len, max(gap, 0.003));
+        }
+        p += d * len;
+        last = len;
+      }
+      return 0;
+    }
+
+    // The colour of the sand at p: grains of both colours, each a little lighter or darker, lit by
+    // the window and shaded by the sand between them and it.
+    vec3 sandColor(vec3 p, float tone, vec3 light) {
+      vec2 e = vec2(0.028, 0);
+      vec3 slope = vec3(sandAt(p + e.xyy).r - sandAt(p - e.xyy).r, sandAt(p + e.yxy).r - sandAt(p - e.yxy).r, sandAt(p + e.yyx).r - sandAt(p - e.yyx).r);
+      // Sand against the glass shows the flat face the glass gives it.
+      vec3 n = normalize(-slope + normalAt(p) * (0.02 + 2. * smoothstep(0.016, 0.004, -wall(p))));
+      vec3 cell = floor(p * 170.);
+      float grain = hash(cell);
+      vec3 base = mix(CORAL, LAVENDER, smoothstep(0.3, 0.7, tone + (hash(cell + 7.) - 0.5) * 0.7)) * (0.76 + 0.44 * grain);
+      float shade = 0.;
+      for (int k = 1; k <= 5; k++) shade += sandIn(p + n * 0.012 + light * 0.022 * float(k));
+      float lit = max(dot(n, light), 0.) * exp(-shade * 0.8);
+      float open = 1. - 0.55 * sandIn(p + n * 0.04);
+      return base * (0.3 * open + 0.95 * lit) + paper * 0.5 * pow(grain, 24.) * lit;
+    }
+
+    void main() {
+      vec2 uv = (gl_FragCoord.xy - size * 0.5) / (size.y * 0.5);
+      vec3 ro = toObject * vec3(0, 0, 4);
+      vec3 rd = toObject * normalize(vec3(uv * 0.29, -1));
+      // Only the box around the glass is worth tracing.
+      vec3 lo = vec3(-0.46, -1.06, -0.46);
+      vec3 t0 = (lo - ro) / rd, t1 = (-lo - ro) / rd;
+      vec3 tn = min(t0, t1), tf = max(t0, t1);
+      float near = max(max(tn.x, tn.y), tn.z), far = min(min(tf.x, tf.y), tf.z);
+      color = vec4(0);
+      if (near > far || far < 0.) return;
+
+      // To the outside of the glass.
+      float t = near, closest = 1.;
+      vec3 p;
+      bool hit = false;
+      for (int i = 0; i < 64 && t < far; i++) {
+        p = ro + rd * t;
+        float d = wall(p) - thick(p);
+        closest = min(closest, d);
+        if (d < 0.0008) { hit = true; break; }
+        t += d * 0.9;
+      }
+      if (!hit) {
+        // A ray that only just misses still gets some of the rim, so the outline isn't jagged.
+        float edge = clamp(1. - closest / (2.32 / size.y), 0., 1.);
+        color = vec4(room(reflect(rd, normalize(ro + rd * t))) * edge, edge);
+        return;
+      }
+
+      // Each face the ray meets reflects some of the room and lets the rest through.
+      vec3 light = toObject * SUN;
+      vec3 n = normalAt(p);
+      float f = fresnel(rd, n);
+      vec3 rgb = f * room(reflect(rd, n));
+      float through = 1. - f;
+      vec3 d = refract(rd, n, 1. / IOR);
+      vec3 q = p - n * 0.003;
+      float glass = 0.; // how much glass the ray has crossed
+      vec3 from = q;
+      bool inside = throughGlass(q, d);
+      glass += distance(from, q);
+      n = normalAt(q);
+      vec3 into = inside ? refract(d, n, IOR) : vec3(0);
+      vec3 away; // the way the ray finally leaves the glass
+      if (into == vec3(0)) away = leave(d, n);
+      else {
+        f = fresnel(d, n);
+        rgb += through * f * room(reflect(d, n));
+        through *= 1. - f;
+        q -= n * 0.004;
+        int met = hollow(q, into);
+        // Glass takes a little light, more of the red and blue: that's its green edge.
+        vec3 tint = exp(-glass * vec3(1.5, 0.7, 1.2));
+        if (met == 1) {
+          // The colour from a few cells around, so a stray grain of the other colour shows as a
+          // few specks in the mix, not as a blot the size of its cell.
+          vec2 e = vec2(0.02, -0.02);
+          vec2 s = sandAt(q) + sandAt(q + e.xyy) + sandAt(q + e.yyx) + sandAt(q + e.yxy) + sandAt(q + e.xxx);
+          color = vec4(rgb + through * tint * sandColor(q, s.g / max(s.r, 1e-3), light), 1);
+          return;
+        }
+        if (met == 2) {
+          float grain = hash(floor(q * 200.));
+          vec3 base = mix(CORAL, LAVENDER, step(0.5, stream.z + (grain - 0.5) * 0.4)) * (0.75 + 0.5 * grain);
+          color = vec4(rgb + through * tint * base, 1);
+          return;
+        }
+        // The far wall, seen from inside, then out through it.
+        n = normalAt(q);
+        f = fresnel(into, n);
+        rgb += through * f * room(reflect(into, n));
+        through *= 1. - f;
+        d = refract(into, -n, 1. / IOR);
+        q += n * 0.004;
+        from = q;
+        throughGlass(q, d);
+        glass += distance(from, q);
+        away = leave(d, normalAt(q));
+      }
+      // What's behind: the page itself where the ray comes out as it went in, so the canvas stays
+      // clear there; where the glass bent it, the room in that direction.
+      vec3 tint = exp(-glass * vec3(1.5, 0.7, 1.2));
+      float bent = smoothstep(0.02, 0.35, 1. - dot(away, rd));
+      rgb += through * tint * room(away) * bent;
+      color = vec4(rgb, 1. - through * (1. - bent) * tint.g);
+    }`;
+
+  class Hourglass3D extends HTMLElement {
+    connectedCallback() {
+      const canvas = this.querySelector("canvas")!;
+      const gl = canvas.getContext("webgl2", { premultipliedAlpha: true, antialias: false });
+      if (!gl) return void (canvas.hidden = true);
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const root = document.documentElement;
+      const shown = () => root.dataset.graphic === "hourglass" && root.dataset.hgVariant === "D";
+
+      const shader = (type: number, source: string) => {
+        const s = gl.createShader(type)!;
+        gl.shaderSource(s, source);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+        return s;
+      };
+      const program = gl.createProgram()!;
+      gl.attachShader(program, shader(gl.VERTEX_SHADER, "#version 300 es\nin vec2 at; void main() { gl_Position = vec4(at, 0, 1); }"));
+      gl.attachShader(program, shader(gl.FRAGMENT_SHADER, FRAGMENT));
+      gl.linkProgram(program);
+      gl.useProgram(program);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(0);
+      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+      const u = (name: string) => gl.getUniformLocation(program, name);
+
+      // The sand, handed to the shader as a 3D texture it can read between grains.
+      const sand = createSand(CYCLE);
+      gl.bindTexture(gl.TEXTURE_3D, gl.createTexture());
+      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+      gl.texImage3D(gl.TEXTURE_3D, 0, gl.RG8, NX, NY, NX, 0, gl.RG, gl.UNSIGNED_BYTE, sand.cells);
+      for (const side of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T, gl.TEXTURE_WRAP_R]) gl.texParameteri(gl.TEXTURE_3D, side, gl.CLAMP_TO_EDGE);
+      for (const filter of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER]) gl.texParameteri(gl.TEXTURE_3D, filter, gl.LINEAR);
+
+      // The turn, clockwise on screen. Let go, it spins on, then settles upright or upside down.
+      let turn = 0;
+      let spin = 0;
+      let rest: number | null = 0;
+      let lean = 0;
+      let tilt = PITCH;
+      let tiltTo = PITCH;
+      let dragging: { from: number; turn: number; moved: boolean; at: number } | null = null;
+      let behind = 0; // seconds of sand not yet stepped
+      let stale = true; // the picture no longer matches what's on the canvas
+
+      const resize = () => {
+        const side = Math.round(canvas.clientHeight * Math.min(devicePixelRatio, 2));
+        if (canvas.width !== side) canvas.width = canvas.height = side;
+        gl.viewport(0, 0, side, side);
+        gl.uniform2f(u("size"), side, side);
+        for (const name of ["ink", "paper"]) {
+          const hex = getComputedStyle(root).getPropertyValue(`--color-${name}`).trim();
+          const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+          gl.uniform3fv(u(name), rgb.every((v) => v >= 0) ? rgb : name === "ink" ? [0.07, 0.08, 0.04] : [1, 1, 1]);
+        }
+        stale = true;
+      };
+
+      const angle = (event: PointerEvent) => {
+        const box = canvas.getBoundingClientRect();
+        return Math.atan2(event.clientY - box.top - box.height / 2, event.clientX - box.left - box.width / 2);
+      };
+      canvas.addEventListener("pointerdown", (event) => {
+        canvas.setPointerCapture(event.pointerId);
+        dragging = { from: angle(event), turn, moved: false, at: performance.now() };
+        rest = null;
+      });
+      canvas.addEventListener("pointermove", (event) => {
+        if (!dragging) return;
+        let delta = angle(event) - dragging.from;
+        delta -= Math.round(delta / (2 * Math.PI)) * 2 * Math.PI;
+        if (Math.abs(delta) > 0.06) dragging.moved = true;
+        const now = performance.now();
+        const next = dragging.turn + delta;
+        spin = spin * 0.5 + ((next - turn) / Math.max((now - dragging.at) / 1000, 1 / 240)) * 0.5;
+        dragging.at = now;
+        turn = next;
+        // Keep the reference fresh so a spin past half a turn keeps going the same way.
+        [dragging.from, dragging.turn] = [angle(event), turn];
+      });
+      canvas.addEventListener("pointerup", () => {
+        if (dragging && !dragging.moved) {
+          swoosh();
+          spin = 0;
+          rest = Math.round(turn / Math.PI) * Math.PI + Math.PI;
+        }
+        dragging = null;
+      });
+      addEventListener(
+        "pointermove",
+        (event) => {
+          if (still || dragging) return;
+          const box = canvas.getBoundingClientRect();
+          const x = (event.clientX - (box.left + box.width / 2)) / (innerWidth / 2);
+          const y = (event.clientY - (box.top + box.height / 2)) / (innerHeight / 2);
+          lean = Math.max(-1, Math.min(1, x)) * LEAN;
+          tiltTo = PITCH + Math.max(-1, Math.min(1, y)) * 0.12;
+        },
+        { passive: true },
+      );
+
+      const step = (dt: number) => {
+        const [turned, tilted] = [turn, tilt];
+        if (!dragging) {
+          if (rest === null) {
+            turn += spin * dt;
+            spin *= Math.exp(-2.5 * dt);
+            if (Math.abs(spin) < 1.5) rest = Math.round(turn / Math.PI) * Math.PI;
+          } else if (still) [turn, spin] = [rest, 0];
+          else {
+            spin += (40 * (rest + lean - turn) - 9 * spin) * dt;
+            turn += spin * dt;
+          }
+        }
+        tilt += (tiltTo - tilt) * Math.min(1, dt * 10);
+        // A glass at rest stops for good, instead of creeping towards its mark for ever.
+        if (rest !== null && !dragging && Math.abs(spin) < 1e-3 && Math.abs(rest + lean - turn) < 1e-4) [turn, spin] = [rest + lean, 0];
+        if (Math.abs(tiltTo - tilt) < 1e-4) tilt = tiltTo;
+        if (turn !== turned || tilt !== tilted) stale = true;
+
+        // Gravity in the glass's own space. The pitch is the viewer looking down on the glass, not
+        // the glass leaning, so the sand doesn't feel it.
+        const r = -turn;
+        const [cr, sr, cp, sp] = [Math.cos(r), Math.sin(r), Math.cos(tilt), Math.sin(tilt)];
+        gl.uniformMatrix3fv(u("toObject"), false, [cr, -sr * cp, sr * sp, sr, cr * cp, -cr * sp, 0, sp, cp]);
+        const gravity = [-sr, -cr, 0];
+        gl.uniform3fv(u("down"), gravity);
+
+        // The neck runs freely once the glass is well off its side.
+        const flow = Math.min(1, Math.max(0, (Math.abs(gravity[1]) - 0.3) / 0.4));
+        let moved = false;
+        behind = Math.min(behind + dt, 4 * STEP);
+        for (; behind >= STEP; behind -= STEP) moved = sand.step(gravity, flow) || moved;
+        if (moved) gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, NX, NY, NX, gl.RG, gl.UNSIGNED_BYTE, sand.cells);
+        const { tail, head, tone } = sand.stream;
+        gl.uniform3f(u("stream"), tail, head, tone);
+        if (moved || head > tail) stale = true;
+      };
+
+      let frame = 0;
+      let last = 0;
+      const tick = (now: number) => {
+        step(Math.min((now - last) / 1000, 0.05));
+        last = now;
+        // Once the sand has run out and nothing turns, there's nothing new to draw.
+        if (stale) {
+          gl.uniform1f(u("time"), (now / 1000) % 1000);
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+          stale = false;
+        }
+        frame = requestAnimationFrame(tick);
+      };
+      // It runs only while the theme shows it, it's on screen and the tab is in view.
+      let onScreen = false;
+      const start = () => {
+        cancelAnimationFrame(frame);
+        if (!shown() || !onScreen || document.hidden) return;
+        resize();
+        last = performance.now();
+        frame = requestAnimationFrame(tick);
+      };
+      new IntersectionObserver(([entry]) => {
+        onScreen = entry.isIntersecting;
+        start();
+      }).observe(this);
+      addEventListener("resize", () => shown() && resize());
+      document.addEventListener("visibilitychange", start);
+      document.addEventListener("themechange", start);
+    }
+  }
+
+  if (!customElements.get("hourglass-3d")) customElements.define("hourglass-3d", Hourglass3D);
+</script>

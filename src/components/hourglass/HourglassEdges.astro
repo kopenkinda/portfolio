@@ -1,0 +1,239 @@
+---
+// PROTOTYPE, variant C: both sides of the page fill with the hourglass's liquids, lavender above
+// and coral below, drawn as a halftone of square dots (like the dots valley) rather than a blur.
+// The liquid is a dozen blobs that drift; moving the pointer through them stirs them, they lean
+// towards it, and scrolling sloshes them. The dots shrink away before the text column.
+//
+// Variant D uses the same liquid to tint the page's own background pattern instead: the canvas is
+// masked by the texture (several times over, so the colour shows), with a glow that follows the
+// pointer and grows as it moves faster.
+---
+
+<hourglass-edges aria-hidden="true">
+  <canvas class="pointer-events-none fixed inset-0 -z-2 size-full"></canvas>
+</hourglass-edges>
+
+<style>
+  /* On every page while the Hourglass theme is on; on the home page the prototype's A and B go
+     without it. */
+  :global(:root:not([data-graphic="hourglass"])) hourglass-edges,
+  :global(:root[data-hg-variant="A"]) hourglass-edges,
+  :global(:root[data-hg-variant="B"]) hourglass-edges {
+    display: none;
+  }
+
+  /* The page's texture patterns (global.css), at full strength: the colour shows only where the
+     pattern draws. */
+  :global(:root:not([data-hg-variant="C"])) canvas {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Cpath d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
+  }
+  /* Mortar is continuous lines, not sparse dots: at full colour it would glow like neon. */
+  :global(:root:not([data-hg-variant="C"])[data-texture="bricks"]) canvas {
+    opacity: 0.4;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='44'%3E%3Cpath fill-rule='evenodd' d='M0 0h42v44H0V0zm1 1h40v20H1V1zM0 23h20v20H0V23zm22 0h20v20H22V23z'/%3E%3C/svg%3E");
+  }
+</style>
+
+<script>
+  const PITCH = 7; // CSS pixels between dots
+  const SPRING = 2.2; // how hard a pushed blob goes back to its drift
+  const DRAG = 1.6; // how fast its push dies down
+  const STIR = 5; // how much of the pointer's speed a blob under it picks up
+  const LEAN = 1.4; // how strongly blobs lean towards the pointer
+  const SLOSH = 3; // how far scrolling throws them
+
+  // The hourglass's colours, from the picture: its two liquids, the pink where they meet the
+  // light, and the olive behind it.
+  const LAVENDER = "164 140 230";
+  const PINK = "224 140 207";
+  const CORAL = "216 92 60";
+  const OLIVE = "138 154 60";
+
+  // Each blob drifts around a home: `x` from the window's edge as a share of the side band, `y` as
+  // a share of the window's height, `r` its size against the band. Lavender sits high and coral
+  // low, like the glass; each side is mirrored with its own timing so they never move as one.
+  const HOMES = [
+    { x: 0.2, y: 0.12, r: 1.1, color: LAVENDER },
+    { x: 0.55, y: 0.3, r: 0.8, color: LAVENDER },
+    { x: 0.1, y: 0.42, r: 0.7, color: PINK },
+    { x: 0.45, y: 0.55, r: 0.6, color: OLIVE },
+    { x: 0.15, y: 0.72, r: 1, color: CORAL },
+    { x: 0.5, y: 0.92, r: 0.9, color: CORAL },
+  ];
+
+  type Blob = (typeof HOMES)[number] & { side: 1 | -1; phase: number; speed: number; dx: number; dy: number; vx: number; vy: number };
+
+  class HourglassEdges extends HTMLElement {
+    connectedCallback() {
+      const canvas = this.querySelector("canvas")!;
+      const ctx = canvas.getContext("2d")!;
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const root = document.documentElement;
+      const tint = () => root.dataset.hgVariant !== "C";
+      const shown = () => root.dataset.graphic === "hourglass" && !["A", "B"].includes(root.dataset.hgVariant ?? "");
+      const glow = { x: -1e4, y: -1e4, r: 0 };
+
+      const blobs: Blob[] = ([1, -1] as const).flatMap((side) =>
+        HOMES.map((home, i) => ({ ...home, side, phase: i * 1.7 + (side > 0 ? 0 : 2.9), speed: 0.11 + ((i * 37) % 7) * 0.012, dx: 0, dy: 0, vx: 0, vy: 0 })),
+      );
+      const pointer = { x: -1e4, y: -1e4, vx: 0, vy: 0, at: 0 };
+      let width = 0;
+      let height = 0;
+      let band = 0;
+
+      const resize = () => {
+        [width, height] = [innerWidth, innerHeight];
+        band = Math.max(48, width / 2 - 19 * 16);
+        canvas.width = Math.ceil(width * devicePixelRatio);
+        canvas.height = Math.ceil(height * devicePixelRatio);
+      };
+
+      /** Where a blob is now: its drift, from the clock so it carries on across pages, plus its push. */
+      const place = (b: Blob, t: number) => {
+        const s = t * b.speed + b.phase;
+        const x = (b.x + Math.sin(s) * 0.18) * band + b.dx;
+        const y = (b.y + Math.cos(s * 0.73) * 0.06) * height + b.dy;
+        return { x: b.side > 0 ? x : width - x, y, r: b.r * Math.max(band, 160) };
+      };
+
+      /** D: the blobs as soft colour, faded towards the text, then the pointer's glow on top. The
+          texture mask turns all of it into the pattern's dots. */
+      const drawTint = (t: number) => {
+        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+        ctx.clearRect(0, 0, width, height);
+        for (const b of blobs) {
+          const { x, y, r } = place(b, t);
+          const gradient = ctx.createRadialGradient(x, y, 0, x, y, r);
+          gradient.addColorStop(0, `rgb(${b.color})`);
+          gradient.addColorStop(1, `rgb(${b.color} / 0)`);
+          ctx.fillStyle = gradient;
+          ctx.fillRect(x - r, y - r, r * 2, r * 2);
+        }
+        const fade = ctx.createLinearGradient(0, 0, width, 0);
+        const edge = Math.min(0.5, band / width);
+        fade.addColorStop(0, "#000");
+        fade.addColorStop(edge, "rgb(0 0 0 / 0.25)");
+        fade.addColorStop(1 - edge, "rgb(0 0 0 / 0.25)");
+        fade.addColorStop(1, "#000");
+        ctx.globalCompositeOperation = "destination-in";
+        ctx.fillStyle = fade;
+        ctx.fillRect(0, 0, width, height);
+        ctx.globalCompositeOperation = "source-over";
+        if (glow.r > 1) {
+          // Lavender high on the page, coral low, like the glass.
+          const k = Math.min(1, Math.max(0, glow.y / height));
+          const color = [164 + (216 - 164) * k, 140 + (92 - 140) * k, 230 + (60 - 230) * k].map(Math.round).join(" ");
+          const gradient = ctx.createRadialGradient(glow.x, glow.y, 0, glow.x, glow.y, glow.r);
+          gradient.addColorStop(0, `rgb(${color})`);
+          gradient.addColorStop(1, `rgb(${color} / 0)`);
+          ctx.fillStyle = gradient;
+          ctx.fillRect(glow.x - glow.r, glow.y - glow.r, glow.r * 2, glow.r * 2);
+        }
+      };
+
+      /** A halftone of the blobs: each dot's size is how much liquid is there, its colour their mix. */
+      const draw = (t: number) => {
+        if (tint()) return drawTint(t);
+        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+        ctx.clearRect(0, 0, width, height);
+        const at = blobs.map((b) => ({ ...place(b, t), b }));
+        for (let x = PITCH / 2; x < band; x += PITCH) {
+          const edge = (1 - x / band) ** 1.2; // fades out towards the text
+          for (const side of [1, -1] as const) {
+            const cx = side > 0 ? x : width - x;
+            const near = at.filter((a) => a.b.side === side);
+            for (let cy = PITCH / 2; cy < height; cy += PITCH) {
+              let total = 0;
+              let [r, g, bl] = [0, 0, 0];
+              for (const a of near) {
+                const k = Math.exp(-((cx - a.x) ** 2 + (cy - a.y) ** 2) / (a.r * 0.5) ** 2);
+                const [cr, cg, cb] = a.b.color.split(" ").map(Number);
+                total += k;
+                [r, g, bl] = [r + cr * k, g + cg * k, bl + cb * k];
+              }
+              const size = PITCH * 0.85 * Math.sqrt(Math.min(1, total) * edge);
+              if (size < 0.8) continue;
+              ctx.fillStyle = `rgb(${r / total} ${g / total} ${bl / total} / 0.75)`;
+              ctx.fillRect(cx - size / 2, cy - size / 2, size, size);
+            }
+          }
+        }
+      };
+
+      const step = (t: number, dt: number) => {
+        // The pointer's speed fades once it stops moving, so a still pointer doesn't stir.
+        const idle = Math.min(1, (performance.now() - pointer.at) / 120);
+        const [pvx, pvy] = [pointer.vx * (1 - idle), pointer.vy * (1 - idle)];
+        // The glow trails the pointer, and swells while it moves.
+        const follow = Math.min(1, dt * 8);
+        glow.x += (pointer.x - glow.x) * (glow.x < -1e3 ? 1 : follow);
+        glow.y += (pointer.y - glow.y) * (glow.y < -1e3 ? 1 : follow);
+        glow.r += (120 + Math.min(Math.hypot(pvx, pvy) * 0.15, 220) - glow.r) * Math.min(1, dt * 3);
+        for (const b of blobs) {
+          const { x, y, r } = place(b, t);
+          const near = Math.max(0, 1 - Math.hypot(pointer.x - x, pointer.y - y) / (r * 1.3)) ** 2;
+          const ax = -SPRING * b.dx - DRAG * b.vx + near * (STIR * pvx + LEAN * (pointer.x - x));
+          const ay = -SPRING * b.dy - DRAG * b.vy + near * (STIR * pvy + LEAN * (pointer.y - y));
+          b.vx += ax * dt;
+          b.vy += ay * dt;
+          b.dx += b.vx * dt;
+          b.dy += b.vy * dt;
+        }
+      };
+
+      let frame = 0;
+      let last = 0;
+      const tick = (now: number) => {
+        const dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
+        const t = Date.now() / 1000;
+        step(t, dt);
+        draw(t);
+        frame = requestAnimationFrame(tick);
+      };
+      const start = () => {
+        cancelAnimationFrame(frame);
+        if (!shown()) return;
+        resize();
+        canvas.style.maskPosition = `0 ${-scrollY}px`;
+        if (still) draw(Date.now() / 1000);
+        else {
+          last = performance.now();
+          frame = requestAnimationFrame(tick);
+        }
+      };
+
+      addEventListener(
+        "pointermove",
+        (event) => {
+          const now = performance.now();
+          const dt = Math.max((now - pointer.at) / 1000, 1 / 240);
+          // Speed from the last move, smoothed; a first move after a while carries none.
+          const fresh = pointer.at && dt < 0.1;
+          pointer.vx = fresh ? pointer.vx * 0.5 + ((event.clientX - pointer.x) / dt) * 0.5 : 0;
+          pointer.vy = fresh ? pointer.vy * 0.5 + ((event.clientY - pointer.y) / dt) * 0.5 : 0;
+          [pointer.x, pointer.y, pointer.at] = [event.clientX, event.clientY, now];
+        },
+        { passive: true },
+      );
+      document.documentElement.addEventListener("pointerleave", () => ([pointer.x, pointer.y] = [-1e4, -1e4]));
+      let scrolled = scrollY;
+      addEventListener(
+        "scroll",
+        () => {
+          // The pattern scrolls with the page: keep the mask on it.
+          canvas.style.maskPosition = `0 ${-scrollY}px`;
+          // The page moves up, the liquid lags behind and swings back.
+          for (const b of blobs) b.vy -= (scrollY - scrolled) * SLOSH * (1.5 - b.r / 2);
+          scrolled = scrollY;
+        },
+        { passive: true },
+      );
+      addEventListener("resize", () => shown() && (resize(), still && draw(Date.now() / 1000)));
+      document.addEventListener("themechange", start);
+      start();
+    }
+  }
+
+  if (!customElements.get("hourglass-edges")) customElements.define("hourglass-edges", HourglassEdges);
+</script>

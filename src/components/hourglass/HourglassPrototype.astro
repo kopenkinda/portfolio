@@ -1,0 +1,45 @@
+---
+// PROTOTYPE: four takes on the home page while the Hourglass theme is on, switched with
+// `?variant=` (D, A, B or C; D when none) or the floating switcher in dev. Throw away once one is picked.
+//   A: an hourglass in dots fills the graphic box (Hourglass.astro).
+//   B: no graphic and no box; the page starts with the name.
+//   C: no box; the hourglass's liquids as a halftone along the page's sides (HourglassEdges.astro).
+//   D: a 3D glass hourglass in the box (Hourglass3D.astro), and the liquids tinting the page's own
+//      background pattern, stirred by the pointer (HourglassEdges.astro, in Layout so the wall's
+//      bricks get it too).
+import Hourglass from "./Hourglass.astro";
+import Hourglass3D from "./Hourglass3D.astro";
+---
+
+<script is:inline>
+  // Before paint, so the page doesn't jump between variants.
+  document.documentElement.dataset.hgVariant = new URLSearchParams(location.search).get("variant") || "D";
+</script>
+<Hourglass />
+<Hourglass3D />
+
+<style is:global>
+  :root:not([data-graphic="hourglass"][data-hg-variant="A"]) hourglass-glass,
+  :root:not([data-graphic="hourglass"][data-hg-variant="D"]) hourglass-3d {
+    display: none;
+  }
+</style>
+
+<script>
+  import { mountPrototypeSwitcher } from "./prototype-switcher";
+
+  if (import.meta.env.DEV) {
+    mountPrototypeSwitcher({
+      variants: [
+        { key: "D", name: "3D glass, tinted pattern" },
+        { key: "A", name: "Dot hourglass" },
+        { key: "B", name: "Nothing" },
+        { key: "C", name: "Halftone edges" },
+      ],
+    });
+    addEventListener("popstate", () => {
+      document.documentElement.dataset.hgVariant = new URLSearchParams(location.search).get("variant") || "D";
+      document.dispatchEvent(new CustomEvent("themechange")); // the graphics start or stop on it
+    });
+  }
+</script>

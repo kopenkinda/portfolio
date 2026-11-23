@@ -14,8 +14,9 @@ export type Theme = {
   graphic?: Graphic;
 };
 
-/** The home page graphics: the painted map of Escaldes, or a valley in dots. */
-export type Graphic = "map" | "dots";
+/** The home page graphics: the painted map of Escaldes, a valley in dots, or the hourglass, which
+    leaves the home page's picture empty and colours the sides of every page instead. */
+export type Graphic = "map" | "dots" | "hourglass";
 
 export type Mode = "dark" | "light";
 

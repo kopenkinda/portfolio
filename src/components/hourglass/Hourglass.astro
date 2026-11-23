@@ -1,0 +1,185 @@
+---
+// PROTOTYPE, variant A: the Bleach hourglass in dots, in the home page's graphic box. Like the one
+// in the picture it's a liquid timer: the heavy lavender drips down through the coral, coral
+// bubbles rise in its place, and when the top has run out, a click turns it over. It leans a little
+// towards the pointer, and the liquids stay level as it does, even through the flip.
+---
+
+<hourglass-glass
+  role="img"
+  aria-label="An hourglass in dots, lavender liquid dripping down through coral. Click to turn it over."
+  class="relative left-1/2 block aspect-[12/5] min-h-52 w-[min(100vw,46rem)] -translate-x-1/2 cursor-pointer touch-manipulation select-none"
+>
+  <canvas class="absolute top-0 left-1/2 aspect-square h-full -translate-x-1/2"></canvas>
+</hourglass-glass>
+
+<script>
+  import { swoosh } from "../../scripts/sounds";
+
+  const N = 61; // cells across the canvas, which is square; the neck is the middle row
+  const HALF = 27; // rows in each bulb
+  const R = 11.5; // a bulb's widest half-width, in cells
+  const CYCLE = 40; // seconds for the top to run out
+  const TILT = 0.12; // radians the glass leans towards the pointer, at most
+  const FLIP = 1100; // milliseconds to turn it over
+  const DROP_EVERY = 0.9; // seconds between drops
+  const DROP_SPEED = 7; // cells per second
+
+  const LAVENDER = [164, 140, 230];
+  const CORAL = [216, 92, 60];
+  const PINK = "rgb(236 160 220)";
+
+  /** The bulb's half-width at `u`, 0 at the neck and 1 at its far end: a teardrop, widest past the middle. */
+  const halfWidth = (u: number) => R * Math.sin(Math.PI * u ** 1.36) ** 0.6 + 0.6 * (1 - u) ** 6;
+
+  // The cells: liquid inside the bulbs, glass as a one-cell shell around it.
+  type Cell = { x: number; y: number; shade: number };
+  const liquid = new Set<string>();
+  const top: Cell[] = [];
+  const bottom: Cell[] = [];
+  const neck: Cell[] = [];
+  const glass: { x: number; y: number }[] = [];
+  const c = (N - 1) / 2;
+  for (let y = -c; y <= c; y++) {
+    for (let x = -c; x <= c; x++) {
+      const u = Math.abs(y) / HALF;
+      const w = halfWidth(u);
+      if (u > 1 || Math.abs(x) >= w) continue;
+      liquid.add(`${x},${y}`);
+      const cell = { x, y, shade: 0.5 + 0.5 * Math.sqrt(Math.max(0, 1 - (x / w) ** 2)) };
+      (y < 0 ? top : y > 0 ? bottom : neck).push(cell);
+    }
+  }
+  for (let y = -c; y <= c; y++) {
+    for (let x = -c; x <= c; x++) {
+      if (liquid.has(`${x},${y}`)) continue;
+      const near = [-1, 0, 1].some((dy) => [-1, 0, 1].some((dx) => liquid.has(`${x + dx},${y + dy}`)));
+      if (near) glass.push({ x, y });
+    }
+  }
+
+  class Hourglass extends HTMLElement {
+    connectedCallback() {
+      const canvas = this.querySelector("canvas")!;
+      const ctx = canvas.getContext("2d")!;
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const root = document.documentElement;
+      const shown = () => root.dataset.graphic === "hourglass" && root.dataset.hgVariant === "A";
+
+      let ran = 0.1; // how much of the lavender has dripped to the bottom
+      let tilt = 0;
+      let lean = 0; // where the pointer asks the glass to lean
+      let flip = 0; // radians of the turn in progress
+      let flipping = 0; // when the turn started, or 0
+      let drops: { y: number; up: boolean }[] = [];
+      let sinceDrop = 0;
+      let paper = "#fff";
+
+      const resize = () => {
+        const side = Math.round(canvas.clientHeight * devicePixelRatio);
+        if (canvas.width !== side) canvas.width = canvas.height = side;
+        paper = getComputedStyle(root).getPropertyValue("--color-paper").trim();
+      };
+
+      /** Fills a chamber: the heavy lavender takes the lowest cells for the way the glass is turned. */
+      const fill = (cells: Cell[], lavender: number, down: [number, number], colors: Map<Cell, number[]>) => {
+        const sorted = [...cells].sort((a, b) => b.x * down[0] + b.y * down[1] - (a.x * down[0] + a.y * down[1]));
+        const count = Math.round(lavender * cells.length);
+        sorted.forEach((cell, i) => colors.set(cell, i < count ? LAVENDER : CORAL));
+        return sorted;
+      };
+
+      const draw = () => {
+        const angle = tilt + flip;
+        canvas.style.rotate = `${angle}rad`;
+        const down: [number, number] = [Math.sin(angle), Math.cos(angle)];
+        const colors = new Map<Cell, number[]>();
+        fill(top, 1 - ran, down, colors);
+        fill(bottom, ran, down, colors);
+        for (const cell of neck) colors.set(cell, ran < 1 && !flipping ? LAVENDER : CORAL);
+
+        const pitch = canvas.width / N;
+        const size = pitch * 0.8;
+        const at = (v: number) => (v + c) * pitch + (pitch - size) / 2;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = paper;
+        ctx.globalAlpha = 0.45;
+        for (const g of glass) ctx.fillRect(at(g.x), at(g.y), size, size);
+        ctx.globalAlpha = 1;
+        for (const [cell, [r, g, b]] of colors) {
+          ctx.fillStyle = `rgb(${r} ${g} ${b} / ${cell.shade * 0.85})`;
+          ctx.fillRect(at(cell.x), at(cell.y), size, size);
+        }
+        ctx.fillStyle = PINK;
+        for (const drop of drops) ctx.fillRect(at(0), at(Math.round(drop.y)), size, size);
+      };
+
+      // Where the lavender starts in each chamber, down the middle column: drops stop there.
+      const surface = (cells: Cell[], lavender: number) => {
+        const column = cells.filter((cell) => cell.x === 0).sort((a, b) => b.y - a.y);
+        return column[Math.min(column.length - 1, Math.round(lavender * column.length))]?.y ?? 0;
+      };
+
+      const step = (dt: number) => {
+        tilt += (lean - tilt) * Math.min(1, dt * 4);
+        if (flipping) {
+          const t = Math.min(1, (performance.now() - flipping) / (still ? 1 : FLIP));
+          flip = Math.PI * (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);
+          if (t === 1) [flip, flipping, ran] = [0, 0, 1 - ran]; // the bottom is now the top
+          return;
+        }
+        if (ran >= 1) return;
+        ran = Math.min(1, ran + dt / CYCLE);
+        // Drops fall from the neck to the lavender at the bottom; bubbles rise to the coral at the top.
+        sinceDrop += dt;
+        if (!still && sinceDrop > DROP_EVERY) {
+          sinceDrop = 0;
+          drops.push({ y: 1, up: false }, { y: -1, up: true });
+        }
+        const floor = surface(bottom, ran);
+        const ceiling = surface(top, 1 - ran);
+        drops = drops.filter((drop) => {
+          drop.y += (drop.up ? -1 : 1) * DROP_SPEED * dt;
+          return drop.up ? drop.y > ceiling : drop.y < floor;
+        });
+      };
+
+      let frame = 0;
+      let last = 0;
+      const tick = (now: number) => {
+        step(Math.min((now - last) / 1000, 0.05));
+        last = now;
+        draw();
+        frame = requestAnimationFrame(tick);
+      };
+      const start = () => {
+        cancelAnimationFrame(frame);
+        if (!shown()) return;
+        resize();
+        last = performance.now();
+        frame = requestAnimationFrame(tick);
+      };
+
+      this.addEventListener("click", () => {
+        if (flipping) return;
+        swoosh();
+        drops = [];
+        flipping = performance.now();
+      });
+      addEventListener(
+        "pointermove",
+        (event) => {
+          if (still) return;
+          const box = canvas.getBoundingClientRect();
+          lean = Math.max(-1, Math.min(1, (event.clientX - (box.left + box.width / 2)) / (innerWidth / 2))) * TILT;
+        },
+        { passive: true },
+      );
+      addEventListener("resize", () => shown() && resize());
+      document.addEventListener("themechange", start);
+      start();
+    }
+  }
+
+  if (!customElements.get("hourglass-glass")) customElements.define("hourglass-glass", Hourglass);
+</script>
