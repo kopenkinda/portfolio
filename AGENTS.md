@@ -106,6 +106,16 @@ counts only on placed pieces, their cursor effect is drawn after the loose piece
 frame, a loose piece draws the effect for the cursor on it itself, and taps wait until the picture
 is whole. Switching to another graphic ends the puzzle.
 
+The hourglass (the Bleach hourglass's theme on the wall) lives in `src/components/hourglass/`.
+`HourglassScene.astro` draws the glass in one WebGL shader, with two liquids that exchange through
+the neck (`liquids.ts`): a drop of water down and a bubble of oil up at once. It can be dragged
+round or clicked to flip. Its sounds are in `src/scripts/sounds.ts`: `blob`, a glug as each pair
+lets go of the neck, and `slosh` on a turn. `HourglassTint.astro`, in Layout, tints every page's
+background pattern in the hourglass's colours while the theme is on, stirred by the pointer. It
+paints through the texture's own pattern at full strength, so keep its mask in step with the
+textures in `global.css`. The variants tried before this one are on the
+`prototype/hourglass-variants` branch.
+
 ## Open source
 
 The open source list on the home page lives in `src/components/open-source/`. `projects.ts` lists the

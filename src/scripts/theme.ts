@@ -14,8 +14,9 @@ export type Theme = {
   graphic?: Graphic;
 };
 
-/** The home page graphics: the painted map of Escaldes, or a valley in dots. */
-export type Graphic = "map" | "dots";
+/** The home page graphics: the painted map of Escaldes, a valley in dots, or the Bleach hourglass
+    in glass, which also tints the background pattern of every page. */
+export type Graphic = "map" | "dots" | "hourglass";
 
 export type Mode = "dark" | "light";
 

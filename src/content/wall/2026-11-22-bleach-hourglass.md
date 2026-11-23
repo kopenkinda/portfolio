@@ -12,4 +12,5 @@ images:
       paper: "#e4ddf7"
       ash: "#a3a386"
       accent: "#e8714f"
+      graphic: hourglass
 ---

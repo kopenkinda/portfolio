@@ -1,0 +1,458 @@
+---
+// The home page graphic for the Hourglass wall theme: the Bleach hourglass in 3D, a liquid timer
+// of blown glass. It's full of two liquids that don't mix (liquids.ts): lavender water and, floating
+// on it, coral oil. One WebGL shader traces each ray through the glass wall, both liquids and out
+// the back, so glass and liquids bend and reflect like the real thing. Drag it round to turn it,
+// or click to flip it. The liquids settle level along gravity and slosh as it moves; the bulb on
+// top lets its water down through the neck in blobs while oil rises the other way. It leans a
+// little towards the pointer and settles upright or upside down when let go.
+---
+
+<hourglass-scene
+  role="img"
+  aria-label="A glass hourglass, lavender water dripping down through coral oil. Drag to turn it, click to flip it."
+  class="relative left-1/2 block aspect-[12/5] min-h-52 w-[min(100vw,46rem)] -translate-x-1/2 select-none"
+>
+  <!-- Unseen until its first frame is drawn (the script fades it in), so it never flashes blank. -->
+  <canvas
+    class="absolute top-0 left-1/2 aspect-square h-full -translate-x-1/2 cursor-grab touch-none opacity-0 transition-opacity duration-200 active:cursor-grabbing motion-reduce:transition-none"
+  ></canvas>
+</hourglass-scene>
+
+<style>
+  /* Only shown when the colours ask for it (see graphicFor in src/scripts/theme.ts). */
+  :global(:root:not([data-graphic="hourglass"])) hourglass-scene {
+    display: none;
+  }
+</style>
+
+<script>
+  import { blob, hourglassSounds, preload, slosh } from "../../scripts/sounds";
+  import { BLOBS, createLiquids, FLANK, NECK, W, WIDEST } from "./liquids";
+
+  const CYCLE = 40; // seconds for the liquids to change bulbs
+  const PITCH = 0.28; // radians the viewer looks down on the glass, to show the liquids' surfaces
+  const SPLASH = 5; // radians a second: a spin that reaches this is heard
+  const LEAN = 0.12; // radians it leans towards the pointer, at most
+
+  const FRAGMENT = `#version 300 es
+    precision highp float;
+    uniform vec2 size;
+    uniform mat3 toObject;  // the page's space to the glass's own
+    uniform vec3 down;      // the gravity the liquids feel, in the glass's space
+    uniform vec2 level;     // where water starts along "down", in the +y bulb and the other
+    uniform vec4 heads[${BLOBS}]; // each blob's ball: where it is, and its radius, negative for oil
+    uniform vec4 tails[${BLOBS}]; // the other end of its thread, and the thread's radius there
+    uniform float reach;    // how far from the glass's middle line any blob gets
+    uniform float stretch[${BLOBS}]; // how far each ball is pulled long
+    uniform vec4 ripple;    // each bulb: seconds since a blob landed, and how hard
+    uniform float churn;    // how stirred up the surfaces are
+    uniform float time;
+    uniform vec3 ink, paper;
+    out vec4 color;
+    const float W = ${W}, NECK = ${NECK}, WIDEST = ${WIDEST}, FLANK = ${FLANK}, PI = 3.14159265, IOR = 1.5;
+    const vec3 LAVENDER = vec3(164, 140, 230) / 255.;
+    const vec3 CORAL = vec3(216, 92, 60) / 255.;
+    const vec3 PINK = vec3(240, 170, 225) / 255.;
+    const vec3 OLIVE = vec3(138, 154, 60) / 255.;
+    const vec3 SUN = normalize(vec3(-0.55, 0.6, 0.58)); // the window's direction, in the page's space
+
+    // Distance (near enough) to the inside face of the glass: negative in the hollow.
+    float wall(vec3 p) {
+      float r = length(p.xz), u = abs(p.y);
+      if (u < WIDEST) {
+        // The same shape as "profile" in liquids.ts, and its slope, for the distance.
+        float a = PI / 2. * u / WIDEST, span = W * W - NECK * NECK, sn = max(sin(a), 1e-4);
+        float swell = pow(sn, FLANK);
+        float at = sqrt(NECK * NECK + span * swell * swell);
+        float slope = span * swell * FLANK * swell / sn * cos(a) * PI / (2. * WIDEST) / at;
+        return (r - at) / sqrt(1. + slope * slope);
+      }
+      vec2 q = vec2(r, u - WIDEST), ab = vec2(W, 1. - WIDEST);
+      float k0 = length(q / ab), k1 = length(q / (ab * ab));
+      return k0 * (k0 - 1.) / max(k1, 1e-4);
+    }
+    // How thick the glass is: blown glass gathers at the neck.
+    float thick(vec3 p) { return 0.026 + 0.012 * exp(-abs(p.y) * 7.); }
+    vec3 normalAt(vec3 p) {
+      vec2 e = vec2(0.002, -0.002);
+      return normalize(e.xyy * wall(p + e.xyy) + e.yyx * wall(p + e.yyx) + e.yxy * wall(p + e.yxy) + e.xxx * wall(p + e.xxx));
+    }
+    // How much a face reflects; "facing" is what it reflects seen straight on.
+    float fresnel(vec3 d, vec3 n, float facing) {
+      float c = 1. - abs(dot(d, n));
+      return facing + (1. - facing) * c * c * c * c * c;
+    }
+
+    // The room the glass reflects: dark olive, a tall window up on the left with a bar across it,
+    // a strip of light on the right, and the liquids' two colours glowing above and below.
+    vec3 room(vec3 d) {
+      d = d * toObject;
+      vec3 c = mix(ink * 1.3, OLIVE * 0.3, smoothstep(-0.4, 0.9, d.y));
+      vec3 right = normalize(cross(vec3(0, 1, 0), SUN)), up = cross(SUN, right);
+      float facing = dot(d, SUN);
+      vec2 w = vec2(dot(d, right), dot(d, up)) / max(facing, 1e-3);
+      float window = step(0., facing) * smoothstep(0.4, 0.34, abs(w.x)) * smoothstep(0.62, 0.56, abs(w.y));
+      window *= 0.25 + 0.75 * smoothstep(0.015, 0.04, abs(w.y + 0.1));
+      c += paper * 5. * window;
+      c += paper * 0.8 * smoothstep(0.93, 0.98, dot(normalize(d.xz + 1e-5), normalize(vec2(0.9, 0.35)))) * smoothstep(0.8, 0.5, abs(d.y));
+      c += mix(OLIVE, paper, 0.7) * 0.75 * smoothstep(0.45, 1., abs(d.x)) * smoothstep(0.5, -0.3, d.z);
+      c += LAVENDER * 0.22 * smoothstep(0.2, 1., d.y) + CORAL * 0.2 * smoothstep(-0.2, -1., d.y);
+      return c;
+    }
+
+    // The smaller of two distances, rounded where they meet: it's what joins a blob to a pool.
+    float join(float a, float b, float k) {
+      float h = max(k - abs(a - b), 0.) / k;
+      return min(a, b) - h * h * k * 0.25;
+    }
+    // Which liquid is at p: positive in the water, negative in the oil, and near enough the
+    // distance to where they meet. x counts the blobs; y is the pools alone, without them.
+    vec2 liquid(vec3 p) {
+      float depth = dot(p, down);
+      // A landed blob sends rings out from where it fell, the line down from the neck.
+      vec2 rings = mix(ripple.zw, ripple.xy, smoothstep(-0.03, 0.03, p.y));
+      float out_ = length(p - down * depth);
+      depth += 0.014 * rings.y * exp(-2.2 * rings.x - 3. * out_) * cos(34. * out_ - 13. * rings.x);
+      // A stirred surface rolls.
+      vec3 across = cross(down, vec3(0, 0, 1));
+      depth += churn * 0.016 * (sin(15. * dot(p, across) + 8. * time) + 0.6 * sin(21. * p.z - 11. * time));
+      // Each bulb has its own level. The two bulbs meet in the neck at a face that sags the way
+      // gravity pulls, like a drop about to form, so nothing there is cut flat.
+      float out2 = dot(p.xz, p.xz);
+      float face = p.y - down.y * (0.02 - min(25. * out2, 0.06));
+      float pools = max(min(face, depth - level.x), min(-face, depth - level.y));
+      float s = pools;
+      // Blobs keep near the glass's middle line: most of the glass needn't ask about them.
+      if (sqrt(out2) > reach + 0.03) return vec2(s, pools);
+      for (int i = 0; i < ${BLOBS}; i++) {
+        vec4 b = heads[i], a = tails[i];
+        if (b.w == 0.) continue;
+        // The ball, pulled long along gravity and thinner across (or squashed), keeping its volume.
+        vec3 q = p - b.xyz;
+        float along = dot(q, down), wide = sqrt(1. + stretch[i]);
+        q = (q - down * along) * wide + down * along / (1. + stretch[i]);
+        // A ball that tapers into its thread, like a drop hanging: the nearest point of the line
+        // from ball to tail, and how thick the blob is there.
+        vec3 line = a.xyz - b.xyz;
+        float h = clamp(dot(q, line) / max(dot(line, line), 1e-6), 0., 1.);
+        float d = (length(q - line * h) - mix(abs(b.w), a.w, smoothstep(0., 0.55, h))) / wide;
+        s = b.w > 0. ? -join(-s, d, 0.02) : join(s, d, 0.02);
+      }
+      return vec2(s, pools);
+    }
+
+    // Follows a ray inside the glass to the face it leaves by. True when that's into the hollow.
+    bool throughGlass(inout vec3 p, vec3 d) {
+      for (int i = 0; i < 28; i++) {
+        float w = wall(p);
+        float m = min(w, thick(p) - w);
+        if (m < 0.0008) break;
+        p += d * max(m * 0.9, 0.002);
+      }
+      return wall(p) < thick(p) * 0.5;
+    }
+    // A ray leaving glass for air through a face whose normal is n, or bouncing back when it can't.
+    vec3 leave(vec3 d, vec3 n) {
+      n = dot(n, d) > 0. ? n : -n;
+      vec3 o = refract(d, -n, IOR);
+      return o == vec3(0) ? reflect(d, n) : o;
+    }
+
+    // Carries a ray across the hollow, through both liquids, to the far wall. The liquids are
+    // milky and lit from within, as in the picture: each stretch of the way adds its colour to
+    // "glow" and hides some of what's behind. Nothing has a hard edge: the two blend where they
+    // meet, and a blob is a soft pink bead.
+    void hollow(inout vec3 p, vec3 d, inout vec3 glow, inout float through, vec3 light) {
+      vec2 s = liquid(p);
+      for (int i = 0; i < 72; i++) {
+        float w = -wall(p);
+        if (w < 0.001 || through < 0.01) return;
+        // Shorter steps near the glass's middle line, where the small beads are.
+        float len = min(max(w * 0.8, 0.003), length(p.xz) < reach + 0.03 ? 0.007 : 0.02);
+        vec2 after = liquid(p + d * len);
+        vec3 c = mix(CORAL, LAVENDER, smoothstep(-0.004, 0.004, s.x));
+        // A blob is one liquid inside the other's pool. Near the neck it's still its own colour,
+        // a thread of it; further in it shows pink, and thick enough to be seen deep in the glass.
+        float bead = s.x * s.y < 0. ? smoothstep(0., 0.009, abs(s.x)) : 0.;
+        c = mix(c, PINK, bead * smoothstep(0.01, 0.06, abs(s.y)));
+        // Brightest near the glass, where the light comes in, and a little more on the window's side.
+        float lit = 0.82 + 0.45 * smoothstep(0.14, 0., w) + 0.22 * smoothstep(-0.3, 0., wall(p + light * 0.14));
+        float hidden = 1. - exp(-(2.3 + 26. * bead) * len);
+        glow += through * hidden * mix(c, paper, 0.12) * lit;
+        through *= 1. - hidden;
+        // The level face between a bulb's two liquids catches the light: a faint reflection of the
+        // room, and the pink the picture has there. Not in the neck, where the two only blend.
+        if (s.y * after.y < 0. && s.x * after.x < 0.) {
+          float f = fresnel(d, down, 0.03) * smoothstep(0.05, 0.12, abs(p.y));
+          vec3 n = dot(down, d) < 0. ? down : -down;
+          glow += through * (0.5 * f * min(room(reflect(d, n)), 1.5) + 0.22 * PINK * smoothstep(0.05, 0.12, abs(p.y)));
+          through *= 1. - 0.5 * f;
+        }
+        p += d * len;
+        s = after;
+      }
+    }
+
+    void main() {
+      vec2 uv = (gl_FragCoord.xy - size * 0.5) / (size.y * 0.5);
+      vec3 ro = toObject * vec3(0, 0, 4);
+      vec3 rd = toObject * normalize(vec3(uv * 0.29, -1));
+      // Only the box around the glass is worth tracing.
+      vec3 lo = vec3(-0.46, -1.06, -0.46);
+      vec3 t0 = (lo - ro) / rd, t1 = (-lo - ro) / rd;
+      vec3 tn = min(t0, t1), tf = max(t0, t1);
+      float near = max(max(tn.x, tn.y), tn.z), far = min(min(tf.x, tf.y), tf.z);
+      color = vec4(0);
+      if (near > far || far < 0.) return;
+
+      // To the outside of the glass.
+      float t = near, closest = 1.;
+      vec3 p;
+      bool hit = false;
+      for (int i = 0; i < 64 && t < far; i++) {
+        p = ro + rd * t;
+        float d = wall(p) - thick(p);
+        closest = min(closest, d);
+        if (d < 0.0008) { hit = true; break; }
+        t += d * 0.9;
+      }
+      if (!hit) {
+        // A ray that only just misses still gets some of the rim, so the outline isn't jagged.
+        float edge = clamp(1. - closest / (2.32 / size.y), 0., 1.);
+        color = vec4(room(reflect(rd, normalize(ro + rd * t))) * edge, edge);
+        return;
+      }
+
+      // Each face the ray meets reflects some of the room and lets the rest through.
+      vec3 light = toObject * SUN;
+      vec3 n = normalAt(p);
+      float f = fresnel(rd, n, 0.04);
+      // The picture's glass shines softly: no reflection gets to glare.
+      vec3 rgb = f * min(room(reflect(rd, n)), 1.6);
+      float through = 1. - f;
+      vec3 d = refract(rd, n, 1. / IOR);
+      vec3 q = p - n * 0.003;
+      float glass = 0.; // how much glass the ray has crossed
+      vec3 from = q;
+      bool inside = throughGlass(q, d);
+      glass += distance(from, q);
+      n = normalAt(q);
+      vec3 into = inside ? refract(d, n, IOR) : vec3(0);
+      vec3 away; // the way the ray finally leaves the glass
+      if (into == vec3(0)) away = leave(d, n);
+      else {
+        f = fresnel(d, n, 0.04);
+        rgb += through * f * 0.6 * min(room(reflect(d, n)), 1.6);
+        through *= 1. - f;
+        q -= n * 0.004;
+        // Glass takes a little light, more of the red and blue: that's its green edge.
+        vec3 glow = vec3(0);
+        hollow(q, into, glow, through, light);
+        rgb += exp(-glass * vec3(1.5, 0.7, 1.2)) * glow;
+        // Out through the far wall.
+        n = normalAt(q);
+        d = refract(into, -n, 1. / IOR);
+        q += n * 0.004;
+        from = q;
+        throughGlass(q, d);
+        glass += distance(from, q);
+        away = leave(d, normalAt(q));
+      }
+      // What's behind: the page itself where the ray comes out as it went in, so the canvas stays
+      // clear there; where the glass bent it, the room in that direction.
+      vec3 tint = exp(-glass * vec3(1.5, 0.7, 1.2));
+      float bent = smoothstep(0.02, 0.35, 1. - dot(away, rd));
+      rgb += through * tint * room(away) * bent;
+      color = vec4(rgb, 1. - through * (1. - bent) * tint.g);
+    }`;
+
+  class HourglassScene extends HTMLElement {
+    connectedCallback() {
+      const canvas = this.querySelector("canvas")!;
+      const gl = canvas.getContext("webgl2", { premultipliedAlpha: true, antialias: false });
+      if (!gl) return void (canvas.hidden = true);
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const root = document.documentElement;
+      const shown = () => root.dataset.graphic === "hourglass";
+
+      const shader = (type: number, source: string) => {
+        const s = gl.createShader(type)!;
+        gl.shaderSource(s, source);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+        return s;
+      };
+      const program = gl.createProgram()!;
+      gl.attachShader(program, shader(gl.VERTEX_SHADER, "#version 300 es\nin vec2 at; void main() { gl_Position = vec4(at, 0, 1); }"));
+      gl.attachShader(program, shader(gl.FRAGMENT_SHADER, FRAGMENT));
+      gl.linkProgram(program);
+      gl.useProgram(program);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(0);
+      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+      const u = (name: string) => gl.getUniformLocation(program, name);
+
+      // blob(): once each time the neck lets go of a pair, a drop of water going down and a bubble
+      // of oil going up at the same moment.
+      const liquids = createLiquids(CYCLE, blob);
+      // slosh(): the liquids thrown about. Asked for by a flip and by a drag's spin (see below);
+      // at most once in 0.7 seconds, so a long spin doesn't rattle.
+      let sloshed = 0;
+      const sloshOnce = () => {
+        if (performance.now() - sloshed < 700) return;
+        sloshed = performance.now();
+        slosh();
+      };
+
+      // The turn, clockwise on screen. Let go, it spins on, then settles upright or upside down.
+      let turn = 0;
+      let spin = 0;
+      let rest: number | null = 0;
+      let lean = 0;
+      let tilt = PITCH;
+      let tiltTo = PITCH;
+      let dragging: { from: number; turn: number; pressed: number; moved: boolean; at: number } | null = null;
+      let stale = true; // the picture no longer matches what's on the canvas
+
+      const resize = () => {
+        const side = Math.round(canvas.clientHeight * Math.min(devicePixelRatio, 2));
+        if (canvas.width !== side) canvas.width = canvas.height = side;
+        gl.viewport(0, 0, side, side);
+        gl.uniform2f(u("size"), side, side);
+        for (const name of ["ink", "paper"]) {
+          const hex = getComputedStyle(root).getPropertyValue(`--color-${name}`).trim();
+          const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+          gl.uniform3fv(u(name), rgb.every((v) => v >= 0) ? rgb : name === "ink" ? [0.07, 0.08, 0.04] : [1, 1, 1]);
+        }
+        stale = true;
+      };
+
+      const angle = (event: PointerEvent) => {
+        const box = canvas.getBoundingClientRect();
+        return Math.atan2(event.clientY - box.top - box.height / 2, event.clientX - box.left - box.width / 2);
+      };
+      canvas.addEventListener("pointerdown", (event) => {
+        canvas.setPointerCapture(event.pointerId);
+        dragging = { from: angle(event), turn, pressed: turn, moved: false, at: performance.now() };
+        rest = null;
+      });
+      canvas.addEventListener("pointermove", (event) => {
+        if (!dragging) return;
+        let delta = angle(event) - dragging.from;
+        delta -= Math.round(delta / (2 * Math.PI)) * 2 * Math.PI;
+        const now = performance.now();
+        const next = dragging.turn + delta;
+        // A press becomes a drag once it has turned the glass a little in all, however slowly.
+        // slosh: a press turns into a drag, so the glass starts to turn.
+        if (!dragging.moved && Math.abs(next - dragging.pressed) > 0.06) {
+          dragging.moved = true;
+          sloshOnce();
+        }
+        const slow = Math.abs(spin) < SPLASH;
+        spin = spin * 0.5 + ((next - turn) / Math.max((now - dragging.at) / 1000, 1 / 240)) * 0.5;
+        // slosh: the spin under the pointer gets up to SPLASH.
+        if (slow && Math.abs(spin) >= SPLASH) sloshOnce();
+        dragging.at = now;
+        turn = next;
+        stale = true;
+        // Keep the reference fresh so a spin past half a turn keeps going the same way.
+        [dragging.from, dragging.turn] = [angle(event), turn];
+      });
+      canvas.addEventListener("pointerup", () => {
+        if (dragging && !dragging.moved) {
+          // slosh: a click flips the glass over.
+          sloshOnce();
+          spin = 0;
+          rest = Math.round(turn / Math.PI) * Math.PI + Math.PI;
+        }
+        dragging = null;
+      });
+      // A touch the browser cancels (say, for a scroll) ends the drag too, so the glass settles.
+      canvas.addEventListener("lostpointercapture", () => (dragging = null));
+      addEventListener(
+        "pointermove",
+        (event) => {
+          if (still || dragging) return;
+          const box = canvas.getBoundingClientRect();
+          const x = (event.clientX - (box.left + box.width / 2)) / (innerWidth / 2);
+          const y = (event.clientY - (box.top + box.height / 2)) / (innerHeight / 2);
+          lean = Math.max(-1, Math.min(1, x)) * LEAN;
+          tiltTo = PITCH + Math.max(-1, Math.min(1, y)) * 0.12;
+        },
+        { passive: true },
+      );
+
+      const step = (dt: number) => {
+        const [turned, tilted] = [turn, tilt];
+        if (!dragging) {
+          if (rest === null) {
+            turn += spin * dt;
+            spin *= Math.exp(-2.5 * dt);
+            if (Math.abs(spin) < 1.5) rest = Math.round(turn / Math.PI) * Math.PI;
+          } else if (still) [turn, spin] = [rest, 0];
+          else {
+            spin += (40 * (rest + lean - turn) - 9 * spin) * dt;
+            turn += spin * dt;
+          }
+        }
+        tilt += (tiltTo - tilt) * Math.min(1, dt * 10);
+        // A glass at rest stops for good, instead of creeping towards its mark for ever.
+        if (rest !== null && !dragging && Math.abs(spin) < 1e-3 && Math.abs(rest + lean - turn) < 1e-4) [turn, spin] = [rest + lean, 0];
+        if (Math.abs(tiltTo - tilt) < 1e-4) tilt = tiltTo;
+        if (turn !== turned || tilt !== tilted) stale = true;
+
+        // Gravity in the glass's own space. The pitch is the viewer looking down on the glass, not
+        // the glass leaning, so the liquids don't feel it.
+        const r = -turn;
+        const [cr, sr, cp, sp] = [Math.cos(r), Math.sin(r), Math.cos(tilt), Math.sin(tilt)];
+        gl.uniformMatrix3fv(u("toObject"), false, [cr, -sr * cp, sr * sp, sr, cr * cp, -cr * sp, 0, sp, cp]);
+        if (liquids.step([-sr, -cr, 0], dt, still)) stale = true;
+        gl.uniform3fv(u("down"), liquids.down);
+        gl.uniform2fv(u("level"), liquids.level);
+        gl.uniform4fv(u("heads"), liquids.heads);
+        gl.uniform4fv(u("tails"), liquids.tails);
+        gl.uniform1f(u("reach"), liquids.reach[0]);
+        gl.uniform1fv(u("stretch"), liquids.stretch);
+        gl.uniform4fv(u("ripple"), liquids.ripple);
+        gl.uniform1f(u("churn"), liquids.churn[0]);
+      };
+
+      let frame = 0;
+      let last = 0;
+      const tick = (now: number) => {
+        step(Math.min((now - last) / 1000, 0.05));
+        last = now;
+        // Once the liquids have changed bulbs and nothing turns, there's nothing new to draw.
+        // Nothing is drawn before resize() has given the canvas its size and the shader its colours.
+        if (stale && canvas.width) {
+          gl.uniform1f(u("time"), (now / 1000) % 1000);
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+          stale = false;
+          canvas.style.opacity = "1"; // the first frame is in: show it
+        }
+        frame = requestAnimationFrame(tick);
+      };
+      // It runs only while the theme shows it, it's on screen and the tab is in view.
+      let onScreen = false;
+      const start = () => {
+        cancelAnimationFrame(frame);
+        if (!shown() || !onScreen || document.hidden) return;
+        preload(hourglassSounds); // fetched once; the first glug would otherwise come late
+        resize();
+        last = performance.now();
+        frame = requestAnimationFrame(tick);
+      };
+      new IntersectionObserver(([entry]) => {
+        onScreen = entry.isIntersecting;
+        start();
+      }).observe(this);
+      addEventListener("resize", () => shown() && resize());
+      document.addEventListener("visibilitychange", start);
+      document.addEventListener("themechange", start);
+    }
+  }
+
+  if (!customElements.get("hourglass-scene")) customElements.define("hourglass-scene", HourglassScene);
+</script>

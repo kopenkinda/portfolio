@@ -31,6 +31,9 @@ See `AGENTS.md` for how the blog, wall, themes and textures work.
   [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 - Puzzle complete sound (`public/sounds/complete.m4a`), trimmed from the CC0 recording
   "achievement-sparkle" by [SkySpeira](https://freesound.org/people/SkySpeira/sounds/715067/) on Freesound.
+- Hourglass sounds (`public/sounds/slosh-*.m4a`, `public/sounds/glug-*.m4a`), cut from "Olive Oil" by
+  [rickaldo09](https://freesound.org/people/rickaldo09/sounds/327613/) on Freesound, used under
+  [CC BY-NC 3.0](https://creativecommons.org/licenses/by-nc/3.0/).
 - Home page map: data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors,
   available under the Open Database Licence.
 - Background patterns adapted from [Hero Patterns](https://heropatterns.com) by Steve Schoger.

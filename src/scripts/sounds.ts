@@ -171,6 +171,31 @@ export const complete = () => void playFile(COMPLETE, 0.2);
 /** A jigsaw piece of the dots valley going into place: a soft plop. */
 export const snap = () => void playFile(PLOP, 0.25);
 
+// Sounds for the hourglass (src/components/hourglass/HourglassScene.astro): glugs cut from one
+// recording of olive oil being poured, the two fullest for turning it.
+const SLOSHES = [1, 2].map((n) => `/sounds/slosh-${n}.m4a`);
+const GLUGS = [1, 2, 3, 4, 5].map((n) => `/sounds/glug-${n}.m4a`);
+
+/** The hourglass's recordings, for it to preload once it shows. */
+export const hourglassSounds = [...SLOSHES, ...GLUGS];
+
+/** One of `files`, never the same one twice in a row (`last` remembers it). */
+const pickFrom = (files: string[], last: { pick: number }) => {
+  let pick = Math.floor(Math.random() * files.length);
+  if (pick === last.pick) pick = (pick + 1) % files.length;
+  last.pick = pick;
+  return files[pick];
+};
+
+const lastGlug = { pick: -1 };
+/** A drop and a bubble letting go of the hourglass's neck: a small glug, kept quiet because the
+    blobs are small and it comes every second or so. */
+export const blob = () => void playFile(pickFrom(GLUGS, lastGlug), 0.07);
+
+const lastSlosh = { pick: -1 };
+/** The glass spun or flipped: the liquids sloshing inside. */
+export const slosh = () => void playFile(pickFrom(SLOSHES, lastSlosh), 0.21);
+
 // Sounds for a zoomed image (src/components/ImageZoom.astro).
 
 /** Opening or closing it with a click: the link click. */
@@ -179,15 +204,10 @@ export const imageClick = () => void playClick();
 /** The swipes, for the zoom to preload when it opens. */
 export const swipeSounds = SWIPES;
 
-let lastSwipe = -1;
+const lastSwipe = { pick: -1 };
 /** Stepping to another image: one of SND01's five swipes, never the same one twice in a row, as
     SND plays them. */
-export function swipe() {
-  let pick = Math.floor(Math.random() * SWIPES.length);
-  if (pick === lastSwipe) pick = (pick + 1) % SWIPES.length;
-  lastSwipe = pick;
-  void playFile(SWIPES[pick], 0.5);
-}
+export const swipe = () => void playFile(pickFrom(SWIPES, lastSwipe), 0.5);
 
 const linkAt = (target: EventTarget | null) => (target instanceof Element ? target.closest("a[href]") : null);
 
