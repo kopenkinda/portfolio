@@ -5,12 +5,31 @@ import HourglassScene from "../components/hourglass/HourglassScene.astro";
 import OpenSource from "../components/open-source/OpenSource.astro";
 import Layout from "../layouts/Layout.astro";
 
-// Placeholder content. Replace with real entries.
 const work = [
-  { year: "2026", text: "CTO at Salut Mercado, a retail ERP for independent supermarkets" },
-  { year: "2024", text: "Built a browser-based CAD viewer used by 7,500+ companies" },
-  { year: "2022", text: "Put ML models into surgical triage across 100+ hospitals" },
-  { year: "2017", text: "Shipped prototypes, most went nowhere, a few did" },
+  {
+    year: "2026",
+    text: "Shipped the Salut! POS, inventory and barcode onboarding across 6,000+ products. Stores ran 48,500+ transactions and €280k in sales through it between May and September.",
+  },
+  {
+    year: "2025",
+    text: "At Move Work Forward, built browser 2D/3D CAD viewers for Confluence and Jira with revision tracking and support for 70+ CAD formats.",
+  },
+  {
+    year: "2024",
+    text: "Hooked a real-time currency arbitrage and position-tracking app straight into the QUIK trading terminal.",
+  },
+  {
+    year: "2023",
+    text: "Worked on Orthense at Digikare, an orthopedic platform in 100+ hospitals. Automated implant lookup from surgical photos with a 90% confidence bar for human review, which contributed to a 20% efficiency gain.",
+  },
+  {
+    year: "2021",
+    text: "Led five developers at Toulouse Ynov Campus on automated grading and campus platforms that cut manual admin work in half, and mentored 150+ students while earning my Master's.",
+  },
+  {
+    year: "2018",
+    text: "Linked an online storefront to the IIKO POS for AQUAService so orders went directly to the restaurant. Online orders rose 20% and bounce rate fell 40%.",
+  },
 ];
 
 const nav = [
@@ -44,19 +63,22 @@ const link = "underline decoration-accent underline-offset-4 transition-colors h
 
   <div class="mt-14 space-y-5 leading-relaxed">
     <p class="appear" style="--order: 2">
-      I'm a full-stack product engineer in Andorra. I build complete products, from the database
-      schema to the feature in a customer's hands. Most of my work is in TypeScript, React, Node,
-      Python, Go and Postgres.
+      I'm a product engineer in Andorra. Over the past eight years I've built software for
+      supermarkets, hospitals, engineering teams and schools. I'd rather own a product than work
+      off tickets. I like sitting with the people who use what I build and fixing whatever gets in
+      their way.
     </p>
     <p class="appear" style="--order: 3">
-      Right now I'm CTO at <a href="https://salutmercado.com" class={link}>Salut Mercado</a>, where
-      we're shipping an ERP to independent supermarkets in Barcelona. If you're building
-      something, <a href="mailto:hi@kopenkin.tech" class={`${link} cursor-grabbing`}>send me an email</a>.
+      I co-founded <a href="https://salutmercado.com" class={link}>Salut!</a>, a retail ERP for
+      independent supermarkets. Ten stores run on it now, and it's steady enough that it only takes
+      an hour or two of my day. That leaves room for a remote role, either B2B or through an
+      Andorra employer of record. If you're building something interesting,{" "}
+      <a href="mailto:hi@kopenkin.tech" class={`${link} cursor-grabbing`}>send me an email</a>.
     </p>
   </div>
 
   <h2 class="appear mt-14 font-display text-lg font-medium" style="--order: 4">Work</h2>
-  <ul class="appear mt-4 space-y-3 leading-relaxed" style="--order: 5">
+  <ul class="appear mt-4 space-y-4 leading-relaxed" style="--order: 5">
     {
       work.map((item) => (
         <li class="flex gap-6">
