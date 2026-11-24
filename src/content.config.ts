@@ -4,13 +4,16 @@ import { z } from "astro/zod";
 
 const blog = defineCollection({
   loader: glob({ base: "./src/content/blog", pattern: "**/*.{md,mdx}" }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    pubDate: z.coerce.date(),
-    /** Unlisted posts have a page but don't appear on the blog list; link to them from the wall. */
-    unlisted: z.boolean().default(false),
-  }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      description: z.string(),
+      pubDate: z.coerce.date(),
+      /** Unlisted posts have a page but don't appear on the blog list; link to them from the wall. */
+      unlisted: z.boolean().default(false),
+      /** A picture for the post's share card, drawn in dots. Without one, the card shows the valley. */
+      cover: image().optional(),
+    }),
 });
 
 // WCAG contrast ratio between two #rrggbb colours.

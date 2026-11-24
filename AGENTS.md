@@ -28,6 +28,8 @@ Posts are MDX files in `src/content/blog/`. A post's interactive elements live i
 Write client behaviour as a custom element in a TypeScript `<script>`, and add `not-prose`
 to the component's root so post text styles don't leak into it.
 Set `unlisted: true` on a post that should only be reached from the wall, not the blog list.
+Set `cover` to an image (usually one in `src/assets/blog/<post-slug>/`) to draw it in dots on the
+post's share card instead of the valley.
 Elements any post can use sit directly in `src/components/blog/`: `YouTubeAudio` plays a YouTube
 video's sound as a small audio player (`video`, `title`, optional `loop`).
 
@@ -144,7 +146,9 @@ tags and structured data from it (a Person on the home page, a BlogPosting when 
 `published`). The sitemap comes from `@astrojs/sitemap`, and `public/robots.txt` points to it.
 
 Every page has a 1200 × 630 share card at `/og/<page path>.png` (`/og/index.png` for home), rendered at
-build time by `src/components/og/card.ts`: the dots valley over the page's heading and one short line.
+build time by `src/components/og/card.ts`: the dots valley, or a post's `cover` in dots, over the page's
+heading and one short line. The valley keeps its hand-shaped densities; a cover's come from its
+brightness, so pick a picture whose subject is lighter than its shadows.
 Layout links each page to its card by path, so a new page needs an entry in
 `src/pages/og/[...page].png.ts`. The card fonts are static TTFs next to `card.ts`, because the card
 renderer (satori) can't read the site's woff2 files.

@@ -5,6 +5,15 @@ import { getCollection } from "astro:content";
 import { card } from "../../components/og/card";
 import { readingTime } from "../../content.config";
 
+/** The file behind a post's cover. Astro keeps it on the image as `fsPath`, a property it doesn't
+    document, so fail loudly if a release drops it rather than quietly showing the valley. */
+const coverFile = (cover?: ImageMetadata) => {
+  if (!cover) return undefined;
+  const file = (cover as ImageMetadata & { fsPath?: string }).fsPath;
+  if (!file) throw new Error(`No file path on cover ${cover.src}; Astro may have renamed fsPath.`);
+  return file;
+};
+
 export const getStaticPaths = (async () => {
   const posts = await getCollection("blog");
   return [
@@ -13,10 +22,10 @@ export const getStaticPaths = (async () => {
     { params: { page: "wall" }, props: { heading: "Wall", line: "Stills, sounds and links" } },
     ...posts.map((post) => ({
       params: { page: `blog/${post.id}` },
-      props: { heading: post.data.title, line: readingTime(post.body) },
+      props: { heading: post.data.title, line: readingTime(post.body), cover: coverFile(post.data.cover) },
     })),
   ];
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute = async ({ props }) =>
-  new Response(new Uint8Array(await card(props.heading, props.line)), { headers: { "Content-Type": "image/png" } });
+  new Response(new Uint8Array(await card(props.heading, props.line, props.cover)), { headers: { "Content-Type": "image/png" } });
