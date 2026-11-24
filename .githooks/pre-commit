@@ -1,0 +1,7 @@
+#!/bin/sh
+# Blocks commits whose staged text contains an em dash (U+2014).
+# Written as an escape so this file doesn't match itself.
+if git grep --cached -nI "$(printf '\342\200\224')"; then
+  echo "Commit blocked: replace the em dashes above."
+  exit 1
+fi
