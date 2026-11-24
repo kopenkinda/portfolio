@@ -15,7 +15,7 @@ const date = new Intl.DateTimeFormat("en", { dateStyle: "long" }).format(post.da
 const back = post.data.unlisted ? { label: "Wall", href: "/wall/" } : { label: "Blog", href: "/blog/" };
 ---
 
-<Layout title={post.data.title} description={post.data.description} back={back}>
+<Layout title={post.data.title} description={post.data.description} back={back} published={post.data.pubDate}>
   <article>
     <h1
       class="w-fit font-display text-3xl font-medium tracking-tight [view-transition-class:post-title]"

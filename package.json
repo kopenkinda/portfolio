@@ -10,11 +10,12 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "lint": "! git grep -nI \u2014 || (echo \"Replace the em dashes above.\" && false)",
+    "lint": "! git grep -nI \"$(printf '\\342\\200\\224')\" || (echo \"Replace the em dashes above.\" && false)",
     "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.6",
+    "@astrojs/sitemap": "^3.7.6",
     "@hugeicons/core-free-icons": "^4.4.0",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.5",
@@ -22,6 +23,7 @@
     "tailwindcss": "^4.3.5"
   },
   "devDependencies": {
+    "satori": "0.63.2",
     "sharp": "0.35.5"
   }
 }

@@ -136,3 +136,15 @@ the theme without its own colours. Pages default to `dots`; the wall uses `brick
 text. To add one, add a `--texture-<name>` variable and the name to the Layout prop and theme schema.
 
 Use Hugeicons (`@hugeicons/core-free-icons` through `src/components/Icon.astro`) for any icon.
+
+## Search and share cards
+
+`site` in `astro.config.mjs` is the production address; Layout builds the canonical link, Open Graph
+tags and structured data from it (a Person on the home page, a BlogPosting when a page passes
+`published`). The sitemap comes from `@astrojs/sitemap`, and `public/robots.txt` points to it.
+
+Every page has a 1200 × 630 share card at `/og/<page path>.png` (`/og/index.png` for home), rendered at
+build time by `src/components/og/card.ts`: the dots valley over the page's heading and one short line.
+Layout links each page to its card by path, so a new page needs an entry in
+`src/pages/og/[...page].png.ts`. The card fonts are static TTFs next to `card.ts`, because the card
+renderer (satori) can't read the site's woff2 files.

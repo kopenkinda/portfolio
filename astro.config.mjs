@@ -1,11 +1,14 @@
 // @ts-check
 import { defineConfig, fontProviders } from "astro/config";
 import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [mdx()],
+  // Canonical links, share cards and the sitemap need absolute addresses.
+  site: "https://kopenkin.tech",
+  integrations: [mdx(), sitemap()],
   markdown: {
     // Code colours come from CSS variables in global.css, so they follow the site palette.
     shikiConfig: { theme: "css-variables" },
