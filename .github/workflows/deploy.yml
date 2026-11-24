@@ -27,6 +27,10 @@ jobs:
           node-version: 24
           package-manager: pnpm@10
 
+      # The pre-commit hook can be skipped (--no-verify, edits on GitHub); this stops the publish instead.
+      - name: No em dashes
+        run: pnpm lint
+
       - name: Publish dist to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:

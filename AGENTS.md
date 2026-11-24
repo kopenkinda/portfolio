@@ -144,6 +144,7 @@ Use Hugeicons (`@hugeicons/core-free-icons` through `src/components/Icon.astro`)
 `site` in `astro.config.mjs` is the production address; Layout builds the canonical link, Open Graph
 tags and structured data from it (a Person on the home page, a BlogPosting when a page passes
 `published`). The sitemap comes from `@astrojs/sitemap`, and `public/robots.txt` points to it.
+The blog's RSS feed is `src/pages/rss.xml.ts`, at the address earlier versions used, so keep it there.
 
 Every page has a 1200 × 630 share card at `/og/<page path>.png` (`/og/index.png` for home), rendered at
 build time by `src/components/og/card.ts`: the dots valley, or a post's `cover` in dots, over the page's

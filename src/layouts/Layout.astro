@@ -2,6 +2,7 @@
 import {
   ArrowLeft01Icon,
   Cancel01Icon,
+  GithubIcon,
   Moon02Icon,
   Sun03Icon,
   VolumeHighIcon,
@@ -61,6 +62,7 @@ const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-
     <meta name="description" content={description} />
     <link rel="canonical" href={url} />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title={name} href="/rss.xml" />
     <meta property="og:type" content={published ? "article" : "website"} />
     <meta property="og:site_name" content={name} />
     <meta property="og:title" content={title ?? name} />
@@ -196,7 +198,17 @@ const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-
               ))
             }
           </ul>
-          <span>© 2026 {name}</span>
+          <span class="inline-flex items-center gap-3">
+            © 2026 {name}
+            <a
+              href="https://github.com/kopenkinda/portfolio"
+              class="transition-colors hover:text-paper"
+              aria-label="Source on GitHub"
+              title="Source on GitHub"
+            >
+              <Icon icon={GithubIcon} class="size-4" />
+            </a>
+          </span>
         </div>
       </footer>
     </div>
