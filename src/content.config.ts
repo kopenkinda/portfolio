@@ -90,3 +90,15 @@ export const collections = { blog, wall };
 
 /** Shared view-transition name, so a post's title travels from the blog list into the post page. */
 export const postTitleTransition = (id: string) => `post-${id.replace(/[^a-zA-Z0-9-]/g, "-")}`;
+
+/** "8 min read" for a post's MDX body, at 230 words a minute. Imports, component tags (with their
+    props, like hover card summaries) and link addresses aren't read, so they don't count. */
+export const readingTime = (body = "") => {
+  const words = body
+    .replace(/^import .*$/gm, "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\]\([^)]*\)/g, "]")
+    .split(/\s+/)
+    .filter((word) => /\p{L}/u.test(word)).length;
+  return `${Math.max(1, Math.round(words / 230))} min read`;
+};

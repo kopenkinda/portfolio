@@ -1,6 +1,6 @@
 ---
 import { type CollectionEntry, getCollection, render } from "astro:content";
-import { postTitleTransition } from "../../content.config";
+import { postTitleTransition, readingTime } from "../../content.config";
 import Layout from "../../layouts/Layout.astro";
 
 export async function getStaticPaths() {
@@ -23,7 +23,9 @@ const back = post.data.unlisted ? { label: "Wall", href: "/wall/" } : { label: "
     >
       {post.data.title}
     </h1>
-    <time datetime={post.data.pubDate.toISOString()} class="mt-2 block text-ash">{date}</time>
+    <p class="mt-2 text-ash">
+      <time datetime={post.data.pubDate.toISOString()}>{date}</time> · {readingTime(post.body)}
+    </p>
     <div class="prose mt-12">
       <Content />
     </div>
