@@ -1,7 +1,7 @@
 // A quiet tick when a pointer moves onto a link, and a click when one is pressed; plus the sounds
 // of the home page scene. The tick and the glint chime are synthesised with Web Audio. The rest
 // are short recordings in public/sounds, credited in the README: the click is the toggle sound
-// from SND01 by SND (https://snd.dev), the splashes and wings are CC0 recordings from Freesound.
+// from SND01 by SND (https://snd.dev), the splashes, wings and coins are CC0 recordings from Freesound.
 //
 // Sound is on by default, but browsers keep audio off until the visitor clicks or presses a key.
 // So the speaker icon shows muted until that first interaction, which turns sound on for real
@@ -170,6 +170,17 @@ export const complete = () => void playFile(COMPLETE, 0.2);
 
 /** A jigsaw piece of the dots valley going into place: a soft plop. */
 export const snap = () => void playFile(PLOP, 0.25);
+
+// The dots valley's taps (src/components/dots/DotsScene.astro): three coin hits cut from one
+// recording, levelled to match. The scene picks which one as the taps build toward the jigsaw.
+const COINS = [1, 2, 3].map((n) => `/sounds/coin-${n}.m4a`);
+
+/** The valley's recordings, for it to preload. */
+export const dotsSounds = COINS;
+
+/** A tap sending a ring across the dots valley: coin hit `hit` (0, 1 or 2), very quiet. The hits
+    ring for over a second and are brighter than the splashes, so they sit well under them. */
+export const coin = (hit: 0 | 1 | 2) => void playFile(COINS[hit], 0.07);
 
 // Sounds for the hourglass (src/components/hourglass/HourglassScene.astro): glugs cut from one
 // recording of olive oil being poured, the two fullest for turning it.

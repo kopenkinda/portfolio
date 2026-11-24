@@ -34,7 +34,7 @@ import { gridVersion } from "./grid";
 </style>
 
 <script>
-  import { sparkle } from "../../scripts/sounds";
+  import { coin, dotsSounds, preload, sparkle } from "../../scripts/sounds";
   import { openPuzzle, type Puzzle } from "./puzzle";
 
   const CELL = 4; // CSS pixels per dot
@@ -65,6 +65,7 @@ import { gridVersion } from "./grid";
 
   class DotsScene extends HTMLElement {
     async connectedCallback() {
+      preload(dotsSounds);
       const canvas = this.querySelector("canvas")!;
       const ctx = canvas.getContext("2d")!;
       const small = document.createElement("canvas");
@@ -505,6 +506,9 @@ import { gridVersion } from "./grid";
         }
         const at = toCells(event);
         pulses.push({ id: pulseCount++, ...at, age: 0 });
+        // The coins build toward the break: the first two taps ring the first hit, the last tap
+        // before the break the third, the ones between the second. The break itself rips.
+        coin(taps <= 2 ? 0 : taps === BREAK_AT - 1 ? 2 : 1);
         if (still) {
           // No ring without motion: just bring the colour in at once.
           colorLevel.forEach((v, i) => (colorLevel[i] = Math.min(1, v + TAP_COLOR)));
