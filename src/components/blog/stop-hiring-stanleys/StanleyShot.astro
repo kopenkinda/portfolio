@@ -1,0 +1,40 @@
+---
+// A word that opens a screenshot of Stanley at his desk in the image zoom. The image sits unseen
+// behind the word, at its aspect ratio, so ImageZoom lifts the screenshot from the word itself.
+import { getImage, Image } from "astro:assets";
+import stanley from "../../../assets/blog/stop-hiring-stanleys/stanley-at-his-desk.png";
+
+const large = await getImage({ src: stanley, width: stanley.width });
+const alt = "Stanley from The Stanley Parable at his office desk, facing his computer";
+---
+
+<stanley-shot class="not-prose relative inline-block">
+  <button
+    type="button"
+    aria-haspopup="dialog"
+    class="cursor-zoom-in border-0 bg-transparent p-0 [font:inherit] text-paper underline decoration-accent underline-offset-4 transition-colors hover:decoration-paper"
+    ><slot /></button
+  >
+  <Image
+    src={stanley}
+    alt={alt}
+    width={320}
+    loading="eager"
+    aria-hidden="true"
+    data-zoom
+    data-zoom-group="stanley"
+    data-zoom-src={large.src}
+    data-zoom-width={stanley.width}
+    class="pointer-events-none absolute top-1/2 left-1/2 aspect-video h-[1.2em] w-auto max-w-none -translate-1/2 opacity-0"
+  />
+</stanley-shot>
+
+<script>
+  class StanleyShot extends HTMLElement {
+    connectedCallback() {
+      this.querySelector("button")!.addEventListener("click", () => this.querySelector("img")!.click());
+    }
+  }
+
+  if (!customElements.get("stanley-shot")) customElements.define("stanley-shot", StanleyShot);
+</script>

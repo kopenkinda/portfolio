@@ -7,6 +7,7 @@
 // An image takes part when it's in a post's text (`.prose`) or has `data-zoom`. It can name a
 // larger file to show once loaded (`data-zoom-src`, with its width in `data-zoom-width`); otherwise
 // the image's own file is shown, at most at its own size.
+// An image with `data-zoom-group` only steps through images with the same group.
 import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import Icon from "./Icon.astro";
 
@@ -103,7 +104,9 @@ const arrow =
       };
 
       const open = (clicked: HTMLImageElement) => {
-        images = [...document.querySelectorAll<HTMLImageElement>(ZOOMABLE)];
+        images = [...document.querySelectorAll<HTMLImageElement>(ZOOMABLE)].filter(
+          (img) => img.dataset.zoomGroup === clicked.dataset.zoomGroup,
+        );
         index = images.indexOf(clicked);
         imageClick();
         if (images.length > 1) preload(swipeSounds);
