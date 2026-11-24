@@ -1,0 +1,292 @@
+---
+// A small audio player for a YouTube video, for music in a post. The sound comes from a YouTube
+// embed kept off screen; the YouTube API loads on the first press, so the page makes no requests to
+// YouTube until the reader asks for the music. Starting one player pauses any other on the page.
+import { PauseIcon, PlayIcon, VolumeHighIcon, VolumeMute02Icon } from "@hugeicons/core-free-icons";
+import Icon from "../Icon.astro";
+
+interface Props {
+  /** The YouTube video id, as in youtube.com/watch?v=<id>. */
+  video: string;
+  title: string;
+  loop?: boolean;
+}
+
+const { video, title, loop = false } = Astro.props;
+---
+
+<youtube-audio
+  data-video={video}
+  data-loop={loop ? "" : undefined}
+  role="group"
+  aria-label={title}
+  class="not-prose relative my-8 flex items-center gap-3 rounded-sm border border-ash/20 bg-[color-mix(in_oklab,var(--color-paper)_3%,var(--color-ink))] p-3 shadow-[inset_0_2px_6px_rgb(0_0_0/0.5)] in-data-[mode=light]:shadow-[inset_0_1px_3px_rgb(0_0_0/0.08)]"
+>
+  <button
+    type="button"
+    data-toggle
+    aria-label="Play"
+    class="grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border border-ash/40 text-paper transition-colors hover:border-paper"
+  >
+    <span data-play><Icon icon={PlayIcon} class="size-4" /></span>
+    <span data-pause class="hidden"><Icon icon={PauseIcon} class="size-4" /></span>
+  </button>
+  <div class="min-w-0 flex-1">
+    <div class="flex items-baseline gap-3">
+      <p class="min-w-0 flex-1 truncate text-paper">{title}</p>
+      <a
+        href={`https://www.youtube.com/watch?v=${video}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="shrink-0 text-sm text-ash underline decoration-accent underline-offset-4 transition-colors hover:text-paper hover:decoration-paper"
+        >YouTube</a
+      >
+    </div>
+    <div class="mt-1 flex items-center gap-2 text-sm text-ash">
+      <input
+        type="range"
+        data-seek
+        min="0"
+        max="1"
+        step="any"
+        value="0"
+        aria-label="Seek"
+        disabled
+        class="min-w-0 flex-1"
+      />
+      <span data-time class="shrink-0 tabular-nums">0:00</span>
+      <button
+        type="button"
+        data-mute
+        aria-label="Mute"
+        class="ml-1 shrink-0 cursor-pointer text-ash transition-colors hover:text-paper"
+      >
+        <span data-on><Icon icon={VolumeHighIcon} class="size-4" /></span>
+        <span data-off class="hidden"><Icon icon={VolumeMute02Icon} class="size-4" /></span>
+      </button>
+      <input
+        type="range"
+        data-volume
+        min="0"
+        max="100"
+        value="50"
+        aria-label="Volume"
+        class="hidden w-16 shrink-0 sm:block"
+      />
+    </div>
+  </div>
+  <div data-frame aria-hidden="true" inert class="pointer-events-none absolute size-px overflow-hidden opacity-0"></div>
+</youtube-audio>
+
+<style>
+  /* Thin theme-coloured sliders; --fill (set by the script) paints the played or volume part. */
+  input[type="range"] {
+    appearance: none;
+    height: 0.75rem;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type="range"]:disabled {
+    cursor: default;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 2px;
+    background: linear-gradient(
+      to right,
+      var(--color-paper) var(--fill, 0%),
+      color-mix(in oklab, var(--color-ash) 40%, transparent) var(--fill, 0%)
+    );
+  }
+  input[type="range"]::-moz-range-track {
+    height: 2px;
+    background: linear-gradient(
+      to right,
+      var(--color-paper) var(--fill, 0%),
+      color-mix(in oklab, var(--color-ash) 40%, transparent) var(--fill, 0%)
+    );
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    margin-top: -4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-paper);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--color-paper);
+  }
+  input[type="range"]:disabled::-webkit-slider-thumb {
+    visibility: hidden;
+  }
+  input[type="range"]:disabled::-moz-range-thumb {
+    visibility: hidden;
+  }
+</style>
+
+<script>
+  // Just the parts of the YouTube IFrame API this player uses.
+  interface Player {
+    playVideo(): void;
+    pauseVideo(): void;
+    seekTo(seconds: number, allowSeekAhead: boolean): void;
+    getCurrentTime(): number;
+    getDuration(): number;
+    setVolume(volume: number): void;
+    mute(): void;
+    unMute(): void;
+  }
+  type YT = {
+    Player: new (
+      el: HTMLElement,
+      options: {
+        videoId: string;
+        host: string;
+        playerVars: Record<string, string | number>;
+        events: { onReady(): void; onStateChange(event: { data: number }): void };
+      },
+    ) => Player;
+    PlayerState: { ENDED: number; PLAYING: number; BUFFERING: number };
+  };
+  type YTWindow = Window & { YT?: YT; onYouTubeIframeAPIReady?: () => void };
+
+  let api: Promise<YT> | undefined;
+  const loadApi = () =>
+    (api ??= new Promise((resolve) => {
+      const w = window as YTWindow;
+      if (w.YT?.Player) return resolve(w.YT);
+      w.onYouTubeIframeAPIReady = () => resolve(w.YT!);
+      const script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
+      document.head.append(script);
+    }));
+
+  const paint = (input: HTMLInputElement) => {
+    const min = Number(input.min);
+    input.style.setProperty("--fill", `${((Number(input.value) - min) / (Number(input.max) - min)) * 100}%`);
+  };
+
+  // The player that's playing, so starting another can pause it.
+  let current: Player | undefined;
+
+  const clock = (seconds: number) =>
+    `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+
+  class YouTubeAudio extends HTMLElement {
+    connectedCallback() {
+      const $ = <T extends Element = HTMLElement>(selector: string) => this.querySelector<T>(selector)!;
+      const toggle = $("[data-toggle]");
+      const seek = $<HTMLInputElement>("[data-seek]");
+      const time = $("[data-time]");
+      const muteButton = $("[data-mute]");
+      const slider = $<HTMLInputElement>("[data-volume]");
+
+      let player: Player | undefined;
+      let loading = false;
+      let playing = false;
+      let dragging = false;
+      let raf = 0;
+      let volume = Number(slider.value);
+      let muted = false;
+      paint(slider);
+
+      const tick = () => {
+        if (!player) return;
+        const duration = player.getDuration();
+        if (duration && !dragging) {
+          seek.max = String(duration);
+          seek.value = String(player.getCurrentTime());
+          paint(seek);
+        }
+        time.textContent = `${clock(Number(seek.value))} / ${clock(duration)}`;
+        if (playing) raf = requestAnimationFrame(tick);
+      };
+
+      const setPlaying = (on: boolean) => {
+        playing = on;
+        toggle.setAttribute("aria-label", on ? "Pause" : "Play");
+        $("[data-play]").classList.toggle("hidden", on);
+        $("[data-pause]").classList.toggle("hidden", !on);
+        cancelAnimationFrame(raf);
+        tick();
+      };
+
+      // The controls hold the volume until the player exists, then hand it over.
+      const applyVolume = () => {
+        slider.value = String(muted ? 0 : volume);
+        paint(slider);
+        muteButton.setAttribute("aria-label", muted ? "Unmute" : "Mute");
+        $("[data-on]").classList.toggle("hidden", muted);
+        $("[data-off]").classList.toggle("hidden", !muted);
+        if (!player) return;
+        player.setVolume(volume);
+        if (muted) player.mute();
+        else player.unMute();
+      };
+
+      const create = async () => {
+        loading = true;
+        const YT = await loadApi();
+        const p: Player = new YT.Player($("[data-frame]").appendChild(document.createElement("div")), {
+          videoId: this.dataset.video!,
+          host: "https://www.youtube-nocookie.com",
+          playerVars: { playsinline: 1 },
+          events: {
+            onReady: () => {
+              player = p;
+              seek.disabled = false;
+              applyVolume();
+              p.playVideo();
+            },
+            onStateChange: ({ data }) => {
+              // Loop by hand: YouTube's own loop needs a one-video playlist, which is less reliable.
+              if (data === YT.PlayerState.ENDED && "loop" in this.dataset) {
+                p.seekTo(0, true);
+                p.playVideo();
+              }
+              if (data === YT.PlayerState.PLAYING && current !== p) {
+                current?.pauseVideo();
+                current = p;
+              }
+              // Buffering counts as playing, so the button still offers Pause while the sound loads.
+              setPlaying(data === YT.PlayerState.PLAYING || data === YT.PlayerState.BUFFERING);
+            },
+          },
+        });
+      };
+
+      toggle.addEventListener("click", () => {
+        if (!player) return void (loading || create());
+        if (playing) player.pauseVideo();
+        else player.playVideo();
+      });
+
+      seek.addEventListener("input", () => {
+        dragging = true;
+        paint(seek);
+        time.textContent = `${clock(Number(seek.value))} / ${clock(Number(seek.max))}`;
+      });
+      seek.addEventListener("change", () => {
+        dragging = false;
+        player?.seekTo(Number(seek.value), true);
+      });
+
+      muteButton.addEventListener("click", () => {
+        muted = !muted;
+        applyVolume();
+      });
+      slider.addEventListener("input", () => {
+        const value = Number(slider.value);
+        muted = value === 0;
+        if (value) volume = value;
+        applyVolume();
+      });
+    }
+  }
+
+  if (!customElements.get("youtube-audio")) customElements.define("youtube-audio", YouTubeAudio);
+</script>

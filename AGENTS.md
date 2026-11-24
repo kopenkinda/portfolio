@@ -28,6 +28,8 @@ Posts are MDX files in `src/content/blog/`. A post's interactive elements live i
 Write client behaviour as a custom element in a TypeScript `<script>`, and add `not-prose`
 to the component's root so post text styles don't leak into it.
 Set `unlisted: true` on a post that should only be reached from the wall, not the blog list.
+Elements any post can use sit directly in `src/components/blog/`: `YouTubeAudio` plays a YouTube
+video's sound as a small audio player (`video`, `title`, optional `loop`).
 
 ## Type
 
