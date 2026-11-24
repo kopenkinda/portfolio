@@ -1,0 +1,82 @@
+---
+title: "Stop hiring Stanleys"
+description: "Agents do the typing now. Most technical interviews still test for typing."
+pubDate: "2026-11-24"
+---
+
+import LinkHoverCard from "../../components/blog/stop-hiring-stanleys/LinkHoverCard.astro";
+import VettingHoverCard from "../../components/blog/stop-hiring-stanleys/VettingHoverCard.astro";
+
+It's the end of 2026, and the line between what's possible and what's "too much work" keeps moving every month. Just in the last couple of months, people have been shipping wild game mods with coding agents: Minecraft mechanics bridged straight into <LinkHoverCard href="https://x.com/TobynJacobs/status/2105410135674028144" title="Minecraft inside Elden Ring" summary="Tobyn Jacobs' passthrough mod bridging Minecraft Java Edition blocks, inventory, and crafting directly into Elden Ring." source="X · @TobynJacobs">Elden Ring</LinkHoverCard> and <LinkHoverCard href="https://www.youtube.com/watch?v=3eQuBEA_Pjk" title="Skyrim, But It's Actually Just Minecraft" summary="Minecraft running live inside Skyrim through a shared-memory bridge between SKSE and Fabric." source="YouTube · Caffs" thumbnail="https://i.ytimg.com/vi/3eQuBEA_Pjk/mqdefault.jpg">Skyrim</LinkHoverCard>, <LinkHoverCard href="https://github.com/Geraldlol/witchcraft" title="Geraldlol/witchcraft" summary="Embeds Claude Code, Codex, and Copilot terminals directly inside World of Warcraft, backed by a local WoW MCP server for live quests, stats, and Lua errors." source="GitHub">Claude Code terminals running inside World of Warcraft</LinkHoverCard>, and <LinkHoverCard href="https://github.com/SunkenInTime/diorama" title="SunkenInTime/diorama" summary="A client-side Fabric minimap and world map for Minecraft that renders terrain at an angle, like an isometric model on a table." source="GitHub">Diorama</LinkHoverCard>, a Minecraft minimap that renders your world like an isometric tabletop model. A year ago, projects like that looked too weird, too slow, or too expensive in time to even attempt. Now people put them together in days or weeks.
+
+Naturally, everyone has landed on the same panic: engineers are about to be replaced, we won't need developers anymore, coding is dead. Honestly, coding as we knew it *is* dead, and I think that's a good thing.
+
+## We were all Stanley
+
+If you've played *The Stanley Parable*, you know the setup: a narrator tells Stanley where to walk and which buttons to push, and Stanley obliges. For a long time, that was most software jobs. A manager came down with an idea ("we need to add this," "we need to fix that") and an engineer turned the instructions into code.
+
+Plenty of engineers still work that way, except now there's one more hop in the chain: they take the ticket, feed it to an agent, and hand the result back up. Thorsten Ball [put it bluntly in September](https://thorstenball.com/blog/2026/09/19/what-i-believe-about-the-future-of-software-development/):
+
+> "Engineers" who act as "meat proxies" and shove tickets into agents and report back to humans will no longer be valuable.
+
+He's right. The only real edge a human engineer ever had over Stanley was experience: knowing how to approach a problem before touching a file. Writing the syntax itself was never the valuable part, and at this point agents are better at it than we are. They write genuinely good code. For someone who knows what they're doing, an agent is just a very fast, very smart keyboard.
+
+## Where the keyboard stops
+
+Sure, you can hand an agent a prompt and get working code back without looking too closely at what it wrote, and every new model pushes how far that gets you a little further. Still, at a serious company there's a lot of work around the code that you can't just hand off and hope for the best. Infrastructure, maintainability, picking the right abstractions, deciding what order to build things in, and all the ongoing [gardening Theo talks about](https://www.youtube.com/watch?v=GtJKFhztgdM) still need an engineer who understands the system and holds the wheel.
+
+Infrastructure is the easiest place to see how neglected this side of the job is. Someone sets it up once, and unless it actively catches fire or turns into a bottleneck, nobody looks at it again. It should be tended to continuously. Trimming waste saves real money every month, and a faster platform keeps users from leaving. Every company says it cares about cost and speed, yet almost none of them give engineers the time or budget to work on either.
+
+That's the real upside of agents taking over the typing. If engineering judgment is what's left, we finally have the breathing room to use it: to experiment, try a few approaches instead of settling for the first one that compiles, and fix the underlying mess instead of patching over the symptom.
+
+## The panic
+
+None of that is what people hear day to day, though. What they hear, constantly, is that programming is over and engineers are next on the chopping block.
+
+Combine that noise with how hiring works right now and it takes a real toll. Being visible online isn't a bad thing, it's just not how most engineers are wired. Personality research on software developers has consistently found that the majority lean introverted: [Capretz's well-known study](https://doi.org/10.1016/S1071-5819(02)00137-4) put the share at 57%, and plenty of follow-up surveys land closer to two-thirds. That means a huge number of strong engineers stay hidden by default. Realistically, the easiest way to land an interview today is through a referral, which depends heavily on your past network and how comfortable you are cold-messaging strangers.
+
+Everyone else ends up fighting a hiring system that's supposed to help both sides find each other. I've seen what that grind does to people I know, and I've felt it myself. It wears you down and kills your motivation faster than anything else, and it isn't the agents shutting these engineers out of work. It's the fact that tech recruiting hasn't budged an inch since agents arrived.
+
+## How hiring still works
+
+### The CV filter
+
+Apply cold right now and the first thing you hit is a numbers game. Recruiters write plenty of thoughtful posts about holistic screening and protecting engineering bandwidth, and plenty of them mean well, but look at the actual reality they operate in. A single open engineering role routinely pulls in hundreds of applications, and recruiters are measured on time-to-fill and how quickly they can narrow that pile into a shortlist for the hiring manager. Eye-tracking research from [Ladders](https://www.prnewswire.com/news-releases/ladders-updates-popular-recruiter-eye-tracking-study-with-new-key-insights-on-how-job-seekers-can-improve-their-resumes-300744923.html) found recruiters spend an average of 7.4 seconds on an initial resume scan. Even recruiters speaking candidly about their own workflow admit it comes down to a ten-second triage: matching titles, recognizable company names, and the right stack keywords.
+
+So you end up rewriting your CV for every listing just to survive an ATS filter and a ten-second skim. You can be the exact engineer a team needs, and if the right words aren't sitting near the top of page one, you're filtered out before anyone ever looks at what you've built.
+
+A few networks try to avoid that by putting real technical evaluation up front. Places like Arc, Toptal, and G2i actually vet engineers instead of just matching keywords on a PDF. Because proper evaluation takes time and people who understand the craft, these platforms only let so many people through at once. Even <VettingHoverCard>getting vetted can stall out</VettingHoverCard>: [Arc's own playbook](https://codementor.notion.site/Arc-Talent-Playbook-bb1a5777fe64414ea5dcbf9c39308790) puts its vetting process on hold unless a matcher already has a matching role, and my Toptal waitlist from April 2024 only unlocked a reapply button over two years later.
+
+### The LeetCode round
+
+If you do make it past screening, you hit the technical interview, and 95% of companies somehow still get it wrong after all these years. A recent grad and a senior engineer regularly get handed the exact same "programming assessment": a LeetCode puzzle, plus maybe a small framework snippet if you're interviewing for frontend.
+
+You get dropped into a barebones browser editor with no <LinkHoverCard href="https://en.wikipedia.org/wiki/Language_Server_Protocol" title="Language Server Protocol (LSP)" summary="An open protocol that lets code editors talk to background language analyzers for autocomplete, diagnostics, go-to-definition, and refactoring." source="Wikipedia">LSP</LinkHoverCard> and a ticking clock while someone watches you reconstruct a textbook algorithm from memory. Nobody writes software like that. Those platforms exist to simulate an exam hall, not a job. They tell you nothing about how someone navigates an unfamiliar codebase, weighs real time and budget trade-offs, or spots when a small bug is actually a symptom of a bigger structural mess that needs a refactor. All a LeetCode screen reliably measures is how well you remember undergrad algorithms, or how many evenings you burned grinding them just to survive interviews like this one. It tests memory and typing speed, right when agents already have both covered.
+
+To be fair, I get why companies at the scale of Google or Meta still lean on hard algorithmic rounds. When you're operating at that kind of volume, shaving milliseconds or megabytes off a hot path genuinely matters, and you need people who are cracked at that style of optimization. Almost nobody else is Google or Meta. Watching a mid-sized SaaS company test candidates on obscure graph traversals when the actual job is fixing billing webhooks and shipping product features is absurd.
+
+Algorithms are still worth knowing, of course. If you want to check for that knowledge, check for the knowledge itself. Give the candidate a problem and watch how they think through it. If the best answer is a sliding window, let them work their way to that idea, explain why it holds up, and stop there. The actual implementation looks roughly the same in any language, and an agent would write it in seconds anyway. What actually tells you something is whether they reach the right approach, how quickly they get there, and whether they understand why it works.
+
+Deep language knowledge still has its place, too, depending on the kind of work. If you're in a low-level language managing memory directly, you obviously need to know that cold. That's just a completely separate question from whether someone knows how to solve problems.
+
+### System design
+
+Pretty much nobody argues against system design interviews, and I genuinely like them. They're one of the few stages where you get to show you understand how larger systems actually fit together, and they're even better when they mix architecture with product thinking.
+
+Even there, I've only ever had one interviewer who got what I think is the most important question in the room. They asked me how I'd build "Instagram for dogs," and the very first thing worth asking is whether you need to build it from scratch at all. Maybe there's an open-source, self-hostable project you can build on top of, or an existing tool you can integrate. Every time you reinvent the wheel, you sign up to maintain that wheel forever.
+
+That kind of thinking sits right at the intersection of engineering, product, and customers. Good engineers care about the product they're shipping. How is an interview loop built around typing out whatever instructions you're handed supposed to tell you whether someone actually cares?
+
+## What I'd do instead
+
+What makes a great engineer today is how fast they can run an experiment and how fast they can untangle a problem, not how cleanly they type code from scratch. Out of all the interviews I've sat through in the last two months, not a single one tested for either. Not one.
+
+Honestly, fixing this has to start inside engineering teams. Recruiters don't invent technical loops out of thin air; they run whatever process the team signed off on. Engineers who sit on interview panels need to push back. If you want interesting people as coworkers, build an interview process that interesting people would actually enjoy going through.
+
+If I were designing the technical round, I'd keep it simple. Take a real piece of work one of your engineers already finished, strip out anything sensitive so it's self-contained, and hand it to the candidate. Maybe it's adding a new subscription tier that unlocks a feature, or tracking down a real billing bug: something that actually looks like a normal week on the job. Let them use everything they'd use at work: the internet, their own IDE or ADE, AI agents, all of it. Then sit down and watch how they work.
+
+Obviously, that takes more effort than sending out a LeetCode link. Someone has to prepare the task, and an engineer has to spend time sitting with the candidate. LeetCode is cheap and makes it easy to stack-rank people in a spreadsheet, which is why companies hold onto it, even when it's measuring the wrong thing.
+
+Actually watch people work for an hour and two things become pretty obvious. First, there are a lot more strong engineers out there than your keyword filters and trivia rounds will ever let through. Second, plenty of the people you hired the old way are Stanleys: they wait for the narrator to tell them what to do, type out the instructions, and never bring a thought of their own to the table.
+
+Agents already do that job, faster and for less. Stop hiring Stanleys.

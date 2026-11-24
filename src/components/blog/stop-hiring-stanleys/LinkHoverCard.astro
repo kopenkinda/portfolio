@@ -1,0 +1,132 @@
+---
+// Inline link with a compact hovercard (Wikipedia summaries, GitHub repos, or YouTube previews).
+// Positioned in viewport coordinates so it never clips against narrow columns or screen edges.
+import { ArrowUpRight01Icon } from "@hugeicons/core-free-icons";
+import Icon from "../../Icon.astro";
+
+interface Props {
+  href: string;
+  title: string;
+  summary: string;
+  source?: string;
+  thumbnail?: string;
+  thumbnailAlt?: string;
+}
+
+const { href, title, summary, source = "Link", thumbnail, thumbnailAlt = title } = Astro.props;
+const slug = `${title}-${href}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 48);
+const id = `link-card-${slug}`;
+---
+
+<link-hover-card class="not-prose inline">
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    data-trigger
+    aria-describedby={id}
+    class="[font:inherit] text-paper underline decoration-accent underline-offset-4 transition-colors hover:decoration-paper"
+    ><slot /></a
+  >
+  <span
+    id={id}
+    role="tooltip"
+    data-card
+    aria-hidden="true"
+    class="pointer-events-none fixed top-0 left-0 z-40 block w-72 max-w-[calc(100vw-1.5rem)] rounded-sm border border-ash/25 bg-ink p-3 text-left font-serif text-sm leading-relaxed text-paper opacity-0 shadow-lg transition-opacity duration-150"
+    style="visibility: hidden;"
+  >
+    {
+      thumbnail && (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          tabindex="-1"
+          class="mb-2.5 block overflow-hidden rounded-[2px] border border-ash/20"
+        >
+          <img src={thumbnail} alt={thumbnailAlt} loading="lazy" decoding="async" class="aspect-video w-full object-cover" />
+        </a>
+      )
+    }
+    <span class="block font-medium text-paper">{title}</span>
+    <span class="mt-1 block text-ash">{summary}</span>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      tabindex="-1"
+      class="mt-2.5 inline-flex items-center gap-1 text-xs text-ash underline decoration-accent underline-offset-4 transition-colors hover:text-paper hover:decoration-paper"
+    >
+      <span>{source}</span>
+      <Icon icon={ArrowUpRight01Icon} class="size-3.5 translate-y-[0.05em]" />
+    </a>
+  </span>
+</link-hover-card>
+
+<script>
+  const GAP = 8;
+  const MARGIN = 12;
+
+  class LinkHoverCard extends HTMLElement {
+    connectedCallback() {
+      const trigger = this.querySelector<HTMLElement>("[data-trigger]");
+      const card = this.querySelector<HTMLElement>("[data-card]");
+      if (!trigger || !card) return;
+
+      let timer: number | undefined;
+      let openState = false;
+
+      const position = () => {
+        const rect = trigger.getBoundingClientRect();
+        const width = card.offsetWidth;
+        const height = card.offsetHeight;
+        const left = Math.max(MARGIN, Math.min(rect.left + rect.width / 2 - width / 2, innerWidth - width - MARGIN));
+        const above = rect.top - height - GAP >= MARGIN;
+        const top = above ? rect.top - height - GAP : Math.min(rect.bottom + GAP, innerHeight - height - MARGIN);
+        card.style.left = `${left}px`;
+        card.style.top = `${top}px`;
+      };
+
+      const open = () => {
+        clearTimeout(timer);
+        position();
+        if (openState) return;
+        openState = true;
+        card.style.visibility = "visible";
+        card.style.opacity = "1";
+        card.style.pointerEvents = "auto";
+        card.setAttribute("aria-hidden", "false");
+      };
+
+      const close = (immediate = false) => {
+        clearTimeout(timer);
+        const hide = () => {
+          openState = false;
+          card.style.opacity = "0";
+          card.style.pointerEvents = "none";
+          card.style.visibility = "hidden";
+          card.setAttribute("aria-hidden", "true");
+        };
+        if (immediate) hide();
+        else timer = window.setTimeout(hide, 140);
+      };
+
+      trigger.addEventListener("pointerenter", (event) => event.pointerType !== "touch" && open());
+      trigger.addEventListener("pointerleave", (event) => event.pointerType !== "touch" && close());
+      card.addEventListener("pointerenter", () => clearTimeout(timer));
+      card.addEventListener("pointerleave", () => close());
+      trigger.addEventListener("focus", open);
+      this.addEventListener("focusout", (event) => {
+        if (!this.contains(event.relatedTarget as Node | null)) close(true);
+      });
+      this.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && openState) close(true);
+      });
+      addEventListener("scroll", () => openState && close(true), { passive: true });
+      addEventListener("resize", () => openState && position());
+    }
+  }
+
+  if (!customElements.get("link-hover-card")) customElements.define("link-hover-card", LinkHoverCard);
+</script>

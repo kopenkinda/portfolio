@@ -1,0 +1,154 @@
+---
+// Inline trigger with a screenshot preview hovercard that expands into the site's ImageZoom gallery
+// on click (either the trigger itself or any thumbnail inside the card).
+import { getImage, Image } from "astro:assets";
+import arcOnHold from "../../../assets/blog/stop-hiring-stanleys/arc-vetting-on-hold.png";
+import arcReviewing from "../../../assets/blog/stop-hiring-stanleys/arc-vetting-reviewing.png";
+import toptalWaitlist from "../../../assets/blog/stop-hiring-stanleys/toptal-waitlist.png";
+
+const raw = [
+  {
+    src: arcReviewing,
+    label: "Arc dashboard",
+    alt: "Arc vetting dashboard stuck on Step 1: Profile review, waiting for a matching role",
+  },
+  {
+    src: arcOnHold,
+    label: "Arc playbook",
+    alt: "Arc Talent Playbook stating that Arc's vetting process is on hold",
+  },
+  {
+    src: toptalWaitlist,
+    label: "Toptal waitlist",
+    alt: "Toptal dashboard showing a waitlist entry from April 9, 2024 inviting a reapplication",
+  },
+];
+
+const items = await Promise.all(
+  raw.map(async (item) => {
+    const width = Math.min(item.src.width, 2400);
+    const large = await getImage({ src: item.src, width });
+    return {
+      ...item,
+      zoom: { "data-zoom": "", "data-zoom-src": large.src, "data-zoom-width": width },
+    };
+  }),
+);
+---
+
+<vetting-hover-card class="not-prose inline">
+  <button
+    type="button"
+    data-trigger
+    aria-haspopup="dialog"
+    class="inline cursor-zoom-in border-0 bg-transparent p-0 [font:inherit] text-paper underline decoration-accent underline-offset-4 transition-colors hover:decoration-paper"
+    ><slot /></button
+  >
+  <span
+    data-card
+    aria-hidden="true"
+    class="pointer-events-none fixed top-0 left-0 z-40 block w-88 max-w-[calc(100vw-1.5rem)] rounded-sm border border-ash/25 bg-ink p-2.5 text-left font-serif opacity-0 shadow-lg transition-opacity duration-150"
+    style="visibility: hidden;"
+  >
+    <span class="grid grid-cols-3 gap-1.5">
+      {
+        items.map((item) => (
+          <Image
+            {...item.zoom}
+            src={item.src}
+            alt={item.alt}
+            widths={[240, 480]}
+            sizes="120px"
+            loading="eager"
+            class="aspect-[16/10] w-full rounded-[2px] border border-ash/20 object-cover object-left-top transition-colors hover:border-paper/60"
+          />
+        ))
+      }
+    </span>
+    <span class="mt-2 block text-xs text-ash">3 screenshots · click to inspect</span>
+  </span>
+</vetting-hover-card>
+
+<script>
+  const GAP = 8;
+  const MARGIN = 12;
+
+  class VettingHoverCard extends HTMLElement {
+    connectedCallback() {
+      const trigger = this.querySelector<HTMLButtonElement>("[data-trigger]");
+      const card = this.querySelector<HTMLElement>("[data-card]");
+      const thumbs = [...this.querySelectorAll<HTMLImageElement>("img[data-zoom]")];
+      if (!trigger || !card || thumbs.length === 0) return;
+
+      let timer: number | undefined;
+      let openState = false;
+
+      const position = () => {
+        const rect = trigger.getBoundingClientRect();
+        const width = card.offsetWidth;
+        const height = card.offsetHeight;
+        const left = Math.max(MARGIN, Math.min(rect.left + rect.width / 2 - width / 2, innerWidth - width - MARGIN));
+        const above = rect.top - height - GAP >= MARGIN;
+        const top = above ? rect.top - height - GAP : Math.min(rect.bottom + GAP, innerHeight - height - MARGIN);
+        card.style.left = `${left}px`;
+        card.style.top = `${top}px`;
+      };
+
+      const open = () => {
+        clearTimeout(timer);
+        position();
+        if (openState) return;
+        openState = true;
+        card.style.visibility = "visible";
+        card.style.opacity = "1";
+        card.style.pointerEvents = "auto";
+        card.setAttribute("aria-hidden", "false");
+      };
+
+      const close = (immediate = false) => {
+        clearTimeout(timer);
+        const hide = () => {
+          openState = false;
+          card.style.opacity = "0";
+          card.style.pointerEvents = "none";
+          card.style.visibility = "hidden";
+          card.setAttribute("aria-hidden", "true");
+        };
+        if (immediate) hide();
+        else timer = window.setTimeout(hide, 140);
+      };
+
+      trigger.addEventListener("pointerenter", (event) => event.pointerType !== "touch" && open());
+      trigger.addEventListener("pointerleave", (event) => event.pointerType !== "touch" && close());
+      card.addEventListener("pointerenter", () => clearTimeout(timer));
+      card.addEventListener("pointerleave", () => close());
+      trigger.addEventListener("focus", open);
+      this.addEventListener("focusout", (event) => {
+        if (!this.contains(event.relatedTarget as Node | null)) close(true);
+      });
+      this.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && openState) close(true);
+      });
+
+      // Clicking the trigger positions the card over it so ImageZoom lifts the first screenshot
+      // cleanly from the link, then hides the hovercard behind the modal.
+      trigger.addEventListener("click", () => {
+        position();
+        thumbs[0].click();
+        close(true);
+      });
+
+      // Clicking a thumbnail lets ImageZoom open on that image, then closes the hovercard.
+      card.addEventListener("click", (event) => {
+        if (event.target instanceof HTMLImageElement && event.target.matches("img[data-zoom]")) {
+          queueMicrotask(() => close(true));
+        }
+      });
+
+      addEventListener("scroll", () => openState && close(true), { passive: true });
+      addEventListener("resize", () => openState && position());
+    }
+  }
+
+  if (!customElements.get("vetting-hover-card")) customElements.define("vetting-hover-card", VettingHoverCard);
+</script>
