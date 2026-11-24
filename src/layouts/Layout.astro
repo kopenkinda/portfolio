@@ -121,7 +121,14 @@ const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-
         if (localStorage.getItem("sound") !== "off" && sessionStorage.getItem("sound-unlocked")) {
           root.dataset.sound = "on";
         }
-        const theme = JSON.parse(localStorage.getItem("theme"));
+        // The site's previous version saved its own "dark" or "light" under the same key, which isn't
+        // JSON. Drop anything that isn't a wall theme, or the parse error skips the rest of this script.
+        let theme = null;
+        try {
+          theme = JSON.parse(localStorage.getItem("theme"));
+        } catch {}
+        if (theme && !theme.colors) theme = null;
+        if (!theme) localStorage.removeItem("theme");
         if (theme) {
           for (const [token, value] of Object.entries(theme.colors)) {
             root.style.setProperty(`--color-${token}`, value);
