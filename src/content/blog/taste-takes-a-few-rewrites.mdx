@@ -1,0 +1,101 @@
+---
+title: "Taste takes a few rewrites"
+description: "How my taste changed across five versions of this portfolio, from following trends to building something quieter."
+pubDate: "2026-11-24"
+unlisted: true
+---
+
+import VersionShot from "../../components/blog/taste-takes-a-few-rewrites/VersionShot.astro";
+import v1 from "../../assets/blog/taste-takes-a-few-rewrites/v1.png";
+import v2 from "../../assets/blog/taste-takes-a-few-rewrites/v2.png";
+import v3 from "../../assets/blog/taste-takes-a-few-rewrites/v3.png";
+import v4Abandoned from "../../assets/blog/taste-takes-a-few-rewrites/v4-abandoned.png";
+import v41 from "../../assets/blog/taste-takes-a-few-rewrites/v4-1.png";
+import v5Dark from "../../assets/blog/taste-takes-a-few-rewrites/v5-dark.png";
+import v5Light from "../../assets/blog/taste-takes-a-few-rewrites/v5-light.png";
+
+Every year or so I look at my own website and realize my taste has moved on. Most of the early versions followed whatever design trend was making the rounds at the time. I dug up every old version, booted them back up, and took screenshots to trace how it went from v1 to v5.
+
+## Version 1
+
+<VersionShot
+  src={v1}
+  alt="Version 1 of the portfolio in light mode, showing pink gradient Kopenkin Dmitrii text, a sunglasses portrait, tool badges, and two project cards inside rounded bordered boxes."
+  caption="Version 1, 2022 to 2023."
+/>
+
+Looking back, this is pure 2022 developer-portfolio trend. Light stone background, my name in a pink-to-fuchsia gradient, rounded grey borders around every section, and hover pills that lit up in each tool's brand color. It looked like half the portfolios floating around Twitter that year. Nothing about the visual language was really mine. I stacked the patterns I saw everywhere else and shipped it.
+
+## Version 2
+
+<VersionShot
+  src={v2}
+  alt="Version 2 of the portfolio in a narrow white column with lowercase heading hey, i'm dmitrii, inline Digikare and Telegram pills, two project cards, and two blog post rows."
+  caption="Version 2, 2023 to 2024."
+/>
+
+This followed the next wave, the minimal single-column look that was everywhere in 2023. The pink gradient, the photo, and the outer frame all disappeared. One centered column, lowercase headings, inline bordered pills for links, two compact project cards, and a short list of posts underneath.
+
+It was a big step up in restraint and taught me how much cleaner a page reads once you strip out the nested boxes. It still felt borrowed, though. The layout, the pill links, and even the metallic "hire" button in the top right came straight out of the playbook everyone else was using.
+
+## Version 3
+
+<VersionShot
+  src={v3}
+  alt="Version 3 of the portfolio with hairline grid borders dividing a portrait photo, intro text with social icons and a dark Curriculum Vitae button, a dotted map of Spain and France with an orange dot on Andorra, and an experience timeline below."
+  caption="Version 3, 2024 to early 2026."
+/>
+
+In late 2024 I leaned into the hairline bento-grid look that was taking over everywhere. Crisp thin borders split the top into neat cells: a portrait on the left, a short intro with social icons and a CV button in the middle, and a dotted map of Spain and France on the right with an orange pin on Andorra. Below that ran a vertical experience timeline. Printing the page from the browser even turned the whole site into a formatted PDF resume.
+
+Structurally, this was the sharpest version I had built so far. Visually, it leaned too far toward a resume. Everything sat in a labeled box, and the page read more like a structured CV than a personal site.
+
+## Version 4, twice
+
+In 2026 I stopped copying safe templates and started experimenting with microinteractions. For the first time I cared as much about how the site felt to use as how it read. Finding the right balance took two opposite swings in a single summer.
+
+<VersionShot
+  src={v4Abandoned}
+  alt="The abandoned Version 4.0 portfolio with dot-matrix headings, teal Kopenkin Dmitrii text, pixel-art social buttons, and a large 3D dotted globe showing Andorra and Yekaterinburg photo cards linked by a moved in 2016 arc."
+  caption="Version 4.0, May 2026. Never shipped."
+/>
+
+First I pushed hard toward playful and loud. Dot-matrix headings with my name in teal, pixel-art buttons with drop shadows, a spinning 3D globe with polaroid pins on Andorra and Yekaterinburg, and a contribution grid you could draw on further down. Every piece was fun on its own, and together they fought each other for attention. It never went live. Before launch, I realized it was just too noisy.
+
+<VersionShot
+  src={v41}
+  alt="Version 4.1 of the portfolio in warm paper tones with monospace text, a top status bar showing keyboard hints, lowercase kopenkin dmitrii under $ whoami, an ASCII globe on the right, and collapsible experience rows."
+  caption="Version 4.1, June to October 2026."
+/>
+
+A month later I swung all the way to the opposite extreme. Before building anything, I set hard visual rules: monospace everywhere, sharp corners, no shadows, no cards, warm paper, dark ink, and one terracotta accent. The top bar turned into a status line with keyboard shortcuts, links scrambled their letters on hover, experience rows folded open and shut, and the 3D globe became a spinning ASCII sphere.
+
+This was the first version where I set strict rules of my own instead of pulling from a template, and its idea of putting interactive bits inside blog posts carried straight into v5. After a few months, though, those rules started boxing everything in. Every new idea had to fit the terminal look, and reading long paragraphs in monospace gets tiring fast.
+
+## Version 5
+
+Scrolling through [Vibrant Design](https://vibrant.design/) is what pushed me to build version 5. Next to those small interactive experiments, `v4.1` felt rigid. I wanted the page to read like plain prose while keeping room for playful details.
+
+I started from a quiet, narrow column modeled on [Ari Dutilh's site](https://dutilh.net/), dropped monospace for a readable serif paired with clean headings, and kept the default palette black and white with a faint dot texture and small UI sounds. Then two pieces from Vibrant Design shaped the scene at the top of the home page.
+
+<VersionShot
+  src={v5Dark}
+  alt="Version 5 in dark mode, with a dotted mountain valley under a starry night sky above Dmitrii Kopenkin and serif body text."
+  caption="Version 5 in dark mode."
+/>
+
+In dark mode, a photo of a valley in Andorra turns into an interactive dot field, sparked by an [agent thinking particle visualization](https://vibrant.design/feed/ptprba2-agent-thinking-particle-visualization) on Vibrant Design. Stars twinkle overhead and streak across the sky. Tapping the mountains pulls color back into the dots step by step, and the sixth tap breaks the valley into a jigsaw puzzle you can drag back together.
+
+<VersionShot
+  src={v5Light}
+  alt="Version 5 in light mode, showing a top-down watercolor map of Escaldes-Engordany around Caldea's glass dome and spire above Dmitrii Kopenkin and body text on warm off-white paper."
+  caption="Version 5 in light mode."
+/>
+
+Switch to light mode and the valley becomes a top-down watercolor map of Escaldes-Engordany around Caldea, inspired by a [Central Park afternoon animation](https://vibrant.design/feed/c2a4skl-central-park-afternoon-animation) on Vibrant Design. Cars follow the roads, people walk, cloud shadows drift past, clicking the river splashes, clicking land scatters birds, and clicking Caldea's spire chimes.
+
+Version 5 also added the Wall, a brick-textured page for stills, links, and unlisted posts like this one, where an image can recolor the whole site. The Bleach hourglass still on the wall even swaps the home graphic for a liquid hourglass you can flip around.
+
+What I like most about version 5 is that it doesn't lock me into a rigid design system. The base page is plain enough to stay out of the way, so I can plug in a new artistic experiment, play with it, or rip it back out without redoing the whole site. It's a clean slate I can keep adding to whenever I feel like it.
+
+It's also a small commitment to work on my writing. I want to get better at how I phrase things, how a post flows, and whether a line sticks once you read it. Having a flexible space like this means I can put thoughts out there and keep sharpening them.
