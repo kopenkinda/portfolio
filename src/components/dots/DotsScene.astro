@@ -506,9 +506,9 @@ import { gridVersion } from "./grid";
         }
         const at = toCells(event);
         pulses.push({ id: pulseCount++, ...at, age: 0 });
-        // The coins build toward the break: the first two taps ring the first hit, the last tap
-        // before the break the third, the ones between the second. The break itself rips.
-        coin(taps <= 2 ? 0 : taps === BREAK_AT - 1 ? 2 : 1);
+        // The coins climb toward the break, one step a tap; the last tap before it always rings the
+        // top chime. The break itself rips.
+        coin(taps === BREAK_AT - 1 ? 4 : Math.min(taps - 1, 3));
         if (still) {
           // No ring without motion: just bring the colour in at once.
           colorLevel.forEach((v, i) => (colorLevel[i] = Math.min(1, v + TAP_COLOR)));

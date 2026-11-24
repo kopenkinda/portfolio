@@ -33,7 +33,7 @@ See `AGENTS.md` for how the blog, wall, themes and textures work.
   "achievement-sparkle" by [SkySpeira](https://freesound.org/people/SkySpeira/sounds/715067/) on Freesound.
 - Dots valley tap sounds (`public/sounds/coin-*.m4a`), the three middle hits cut from the CC0
   recording "Collecting Coins" by [Philip_Berger](https://freesound.org/people/Philip_Berger/sounds/693840/)
-  on Freesound.
+  on Freesound, two of them also raised a whole tone for the steps between.
 - Hourglass sounds (`public/sounds/slosh-*.m4a`, `public/sounds/glug-*.m4a`), cut from "Olive Oil" by
   [rickaldo09](https://freesound.org/people/rickaldo09/sounds/327613/) on Freesound, used under
   [CC BY-NC 3.0](https://creativecommons.org/licenses/by-nc/3.0/).

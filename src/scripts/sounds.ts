@@ -171,16 +171,18 @@ export const complete = () => void playFile(COMPLETE, 0.2);
 /** A jigsaw piece of the dots valley going into place: a soft plop. */
 export const snap = () => void playFile(PLOP, 0.25);
 
-// The dots valley's taps (src/components/dots/DotsScene.astro): three coin hits cut from one
-// recording, levelled to match. The scene picks which one as the taps build toward the jigsaw.
-const COINS = [1, 2, 3].map((n) => `/sounds/coin-${n}.m4a`);
+// The dots valley's taps (src/components/dots/DotsScene.astro): five two-note coin chimes whose top
+// notes climb D6, E6, G6, A6, B6. The first, third and fifth are cut from one recording; the second
+// and fourth are the first and third raised a whole tone, to fill the steps between. All are
+// levelled to match. The scene plays the next one with each tap, building toward the jigsaw.
+const COINS = [1, 2, 3, 4, 5].map((n) => `/sounds/coin-${n}.m4a`);
 
 /** The valley's recordings, for it to preload. */
 export const dotsSounds = COINS;
 
-/** A tap sending a ring across the dots valley: coin hit `hit` (0, 1 or 2), very quiet. The hits
-    ring for over a second and are brighter than the splashes, so they sit well under them. */
-export const coin = (hit: 0 | 1 | 2) => void playFile(COINS[hit], 0.07);
+/** A tap sending a ring across the dots valley: chime `step` (0 to 4), very quiet. The chimes ring
+    for over a second and are brighter than the splashes, so they sit well under them. */
+export const coin = (step: number) => void playFile(COINS[step], 0.07);
 
 // Sounds for the hourglass (src/components/hourglass/HourglassScene.astro): glugs cut from one
 // recording of olive oil being poured, the two fullest for turning it.
