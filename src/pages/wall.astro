@@ -1,6 +1,7 @@
 ---
 import { File02Icon, Link04Icon } from "@hugeicons/core-free-icons";
 import { getCollection, getEntry, render } from "astro:content";
+import { readingTime } from "../content.config";
 import Icon from "../components/Icon.astro";
 import WallCaption from "../components/WallCaption.astro";
 import WallImages from "../components/WallImages.astro";
@@ -28,12 +29,16 @@ const kindIcon = "flex h-7 shrink-0 items-center text-ash";
 
 <Layout
   title="Wall"
-  description="Screenshots, links, quotes and other things Dmitrii Kopenkin pinned up."
+  description="Stills, sounds, links, interactive bits and whatever else Dmitrii Kopenkin felt like throwing at the wall."
   back={{ label: "Home", href: "/" }}
   texture="bricks"
 >
   <h1 class="font-display text-3xl font-medium tracking-tight">Wall</h1>
-  <p class="mt-2 text-ash">Screenshots, links, quotes and anything else I want to keep around.</p>
+  <p class="mt-2 leading-relaxed text-ash">
+    I throw whatever I feel like sharing up here and see what sticks. Anime and TV stills, things
+    that look or sound good, interactive bits, links, and all the stuff that isn't worth a blog
+    post or would otherwise just sit on social media.
+  </p>
 
   <!-- Newest first; dates only order the wall and are never shown. -->
   <ul class="mt-14 space-y-16">
@@ -55,6 +60,7 @@ const kindIcon = "flex h-7 shrink-0 items-center text-ash";
               </h2>
             )}
             {post && <p class={supporting}>{post.data.description}</p>}
+            {post && <p class="text-sm text-ash">{readingTime(post.body)}</p>}
 
             {data.link && (
               <h2 class="flex gap-2 font-display text-lg font-medium">

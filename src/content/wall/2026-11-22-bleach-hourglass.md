@@ -13,4 +13,14 @@ images:
       ash: "#a3a386"
       accent: "#e8714f"
       graphic: hourglass
+  - src: ../../assets/wall/bleach-16-shadow.jpg
+    alt: A pale cyan close-up of a wide-eyed anime face split by deep shadow, with a small red-lit figure kneeling beside a dropped sword inside the shadow across the cheek.
+    source:
+      title: Bleach
+      detail: Episode 16, 21:26
+  - src: ../../assets/wall/bleach-19-rukia.jpg
+    alt: Rukia's face half-lit on the far left edge, dark hair falling across her cheek, with most of the frame swallowed in near-black shadow.
+    source:
+      title: Bleach
+      detail: Episode 19, 02:30
 ---
