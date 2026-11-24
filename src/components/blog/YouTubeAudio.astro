@@ -2,7 +2,9 @@
 // A small audio player for a YouTube video, for music in a post. The sound comes from a YouTube
 // embed kept off screen; the YouTube API loads on the first press, so the page makes no requests to
 // YouTube until the reader asks for the music. Starting one player pauses any other on the page.
-import { PauseIcon, PlayIcon, VolumeHighIcon, VolumeMute02Icon } from "@hugeicons/core-free-icons";
+// Once started, a mini player floats at the bottom of the column while the player is scrolled away;
+// both copies of the controls run on the same handlers.
+import { PauseIcon, PlayIcon, VolumeHighIcon, VolumeMute02Icon, YoutubeIcon } from "@hugeicons/core-free-icons";
 import Icon from "../Icon.astro";
 
 interface Props {
@@ -76,9 +78,47 @@ const { video, title, loop = false } = Astro.props;
     </div>
   </div>
   <div data-frame aria-hidden="true" inert class="pointer-events-none absolute size-px overflow-hidden opacity-0"></div>
+  <div
+    data-mini
+    class="pointer-events-none invisible fixed inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-30 mx-auto max-w-xl translate-y-2 px-4 opacity-0 transition-all duration-200 data-shown:visible data-shown:translate-y-0 data-shown:opacity-100"
+  >
+    <div
+      class="pointer-events-auto flex items-center gap-3 rounded-sm border border-ash/25 bg-ink py-2 pr-3 pl-2 text-ash shadow-lg"
+    >
+      <button
+        type="button"
+        data-toggle
+        aria-label="Play"
+        class="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full border border-ash/40 text-paper transition-colors hover:border-paper"
+      >
+        <span data-play><Icon icon={PlayIcon} class="size-3.5" /></span>
+        <span data-pause class="hidden"><Icon icon={PauseIcon} class="size-3.5" /></span>
+      </button>
+      <input type="range" data-seek min="0" max="1" step="any" value="0" aria-label="Seek" disabled class="min-w-0 flex-1" />
+      <button type="button" data-mute aria-label="Mute" class="shrink-0 cursor-pointer transition-colors hover:text-paper">
+        <span data-on><Icon icon={VolumeHighIcon} class="size-4" /></span>
+        <span data-off class="hidden"><Icon icon={VolumeMute02Icon} class="size-4" /></span>
+      </button>
+      <input type="range" data-volume min="0" max="100" value="50" aria-label="Volume" class="hidden w-16 shrink-0 sm:block" />
+      <a
+        href={`https://www.youtube.com/watch?v=${video}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open on YouTube"
+        class="shrink-0 transition-colors hover:text-paper"
+      >
+        <Icon icon={YoutubeIcon} class="size-4" />
+      </a>
+    </div>
+  </div>
 </youtube-audio>
 
 <style>
+  /* Room under the page while the mini player floats there, so it never covers the footer. */
+  :global(body:has(youtube-audio [data-mini][data-shown])) {
+    padding-bottom: 5rem;
+  }
+
   /* Thin theme-coloured sliders; --fill (set by the script) paints the played or volume part. */
   input[type="range"] {
     appearance: none;
@@ -178,50 +218,68 @@ const { video, title, loop = false } = Astro.props;
 
   class YouTubeAudio extends HTMLElement {
     connectedCallback() {
-      const $ = <T extends Element = HTMLElement>(selector: string) => this.querySelector<T>(selector)!;
-      const toggle = $("[data-toggle]");
-      const seek = $<HTMLInputElement>("[data-seek]");
-      const time = $("[data-time]");
-      const muteButton = $("[data-mute]");
-      const slider = $<HTMLInputElement>("[data-volume]");
+      const all = <T extends HTMLElement = HTMLElement>(selector: string) => [...this.querySelectorAll<T>(selector)];
+      const toggles = all("[data-toggle]");
+      const seeks = all<HTMLInputElement>("[data-seek]");
+      const time = this.querySelector<HTMLElement>("[data-time]")!;
+      const muteButtons = all("[data-mute]");
+      const sliders = all<HTMLInputElement>("[data-volume]");
+      const mini = this.querySelector<HTMLElement>("[data-mini]")!;
+      const show = (selector: string, on: boolean) => all(selector).forEach((el) => el.classList.toggle("hidden", !on));
 
       let player: Player | undefined;
       let loading = false;
       let playing = false;
       let dragging = false;
       let raf = 0;
-      let volume = Number(slider.value);
+      let volume = Number(sliders[0].value);
       let muted = false;
-      paint(slider);
+      let onScreen = true;
+      sliders.forEach(paint);
+
+      // The mini player stands in for this one while it's the current player and scrolled away.
+      const updateMini = () => mini.toggleAttribute("data-shown", !!player && current === player && !onScreen);
+      new IntersectionObserver(([entry]) => {
+        onScreen = entry.isIntersecting;
+        updateMini();
+      }).observe(this);
+      document.addEventListener("youtube-audio:play", updateMini);
+
+      const setSeek = (value: string) =>
+        seeks.forEach((seek) => {
+          seek.value = value;
+          paint(seek);
+        });
 
       const tick = () => {
         if (!player) return;
         const duration = player.getDuration();
         if (duration && !dragging) {
-          seek.max = String(duration);
-          seek.value = String(player.getCurrentTime());
-          paint(seek);
+          seeks.forEach((seek) => (seek.max = String(duration)));
+          setSeek(String(player.getCurrentTime()));
         }
-        time.textContent = `${clock(Number(seek.value))} / ${clock(duration)}`;
+        time.textContent = `${clock(Number(seeks[0].value))} / ${clock(duration)}`;
         if (playing) raf = requestAnimationFrame(tick);
       };
 
       const setPlaying = (on: boolean) => {
         playing = on;
-        toggle.setAttribute("aria-label", on ? "Pause" : "Play");
-        $("[data-play]").classList.toggle("hidden", on);
-        $("[data-pause]").classList.toggle("hidden", !on);
+        toggles.forEach((toggle) => toggle.setAttribute("aria-label", on ? "Pause" : "Play"));
+        show("[data-play]", !on);
+        show("[data-pause]", on);
         cancelAnimationFrame(raf);
         tick();
       };
 
       // The controls hold the volume until the player exists, then hand it over.
       const applyVolume = () => {
-        slider.value = String(muted ? 0 : volume);
-        paint(slider);
-        muteButton.setAttribute("aria-label", muted ? "Unmute" : "Mute");
-        $("[data-on]").classList.toggle("hidden", muted);
-        $("[data-off]").classList.toggle("hidden", !muted);
+        sliders.forEach((slider) => {
+          slider.value = String(muted ? 0 : volume);
+          paint(slider);
+        });
+        muteButtons.forEach((button) => button.setAttribute("aria-label", muted ? "Unmute" : "Mute"));
+        show("[data-on]", !muted);
+        show("[data-off]", muted);
         if (!player) return;
         player.setVolume(volume);
         if (muted) player.mute();
@@ -231,14 +289,14 @@ const { video, title, loop = false } = Astro.props;
       const create = async () => {
         loading = true;
         const YT = await loadApi();
-        const p: Player = new YT.Player($("[data-frame]").appendChild(document.createElement("div")), {
+        const p: Player = new YT.Player(this.querySelector("[data-frame]")!.appendChild(document.createElement("div")), {
           videoId: this.dataset.video!,
           host: "https://www.youtube-nocookie.com",
           playerVars: { playsinline: 1 },
           events: {
             onReady: () => {
               player = p;
-              seek.disabled = false;
+              seeks.forEach((seek) => (seek.disabled = false));
               applyVolume();
               p.playVideo();
             },
@@ -251,6 +309,7 @@ const { video, title, loop = false } = Astro.props;
               if (data === YT.PlayerState.PLAYING && current !== p) {
                 current?.pauseVideo();
                 current = p;
+                document.dispatchEvent(new Event("youtube-audio:play"));
               }
               // Buffering counts as playing, so the button still offers Pause while the sound loads.
               setPlaying(data === YT.PlayerState.PLAYING || data === YT.PlayerState.BUFFERING);
@@ -259,32 +318,40 @@ const { video, title, loop = false } = Astro.props;
         });
       };
 
-      toggle.addEventListener("click", () => {
-        if (!player) return void (loading || create());
-        if (playing) player.pauseVideo();
-        else player.playVideo();
+      toggles.forEach((toggle) =>
+        toggle.addEventListener("click", () => {
+          if (!player) return void (loading || create());
+          if (playing) player.pauseVideo();
+          else player.playVideo();
+        }),
+      );
+
+      seeks.forEach((seek) => {
+        seek.addEventListener("input", () => {
+          dragging = true;
+          setSeek(seek.value);
+          time.textContent = `${clock(Number(seek.value))} / ${clock(Number(seek.max))}`;
+        });
+        seek.addEventListener("change", () => {
+          dragging = false;
+          player?.seekTo(Number(seek.value), true);
+        });
       });
 
-      seek.addEventListener("input", () => {
-        dragging = true;
-        paint(seek);
-        time.textContent = `${clock(Number(seek.value))} / ${clock(Number(seek.max))}`;
-      });
-      seek.addEventListener("change", () => {
-        dragging = false;
-        player?.seekTo(Number(seek.value), true);
-      });
-
-      muteButton.addEventListener("click", () => {
-        muted = !muted;
-        applyVolume();
-      });
-      slider.addEventListener("input", () => {
-        const value = Number(slider.value);
-        muted = value === 0;
-        if (value) volume = value;
-        applyVolume();
-      });
+      muteButtons.forEach((button) =>
+        button.addEventListener("click", () => {
+          muted = !muted;
+          applyVolume();
+        }),
+      );
+      sliders.forEach((slider) =>
+        slider.addEventListener("input", () => {
+          const value = Number(slider.value);
+          muted = value === 0;
+          if (value) volume = value;
+          applyVolume();
+        }),
+      );
     }
   }
 
