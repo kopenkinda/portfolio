@@ -4,9 +4,9 @@
 // by the browser. Everything that moves is drawn on one canvas above it, in a single pass per
 // frame: traffic on the real streets, people on the riverside walks, flowing water, cloud
 // shadows, birds and a glint on Caldea's spire. Pokes: clicking the river makes ripples, clicking
-// land startles birds.
+// Caldea's spire makes it chime, clicking other land startles birds.
 import { paintingVersion } from "./painting";
-import { caldeaSpire, HEIGHT, map, trafficRoutes, walkRoutes, WIDTH } from "./scene";
+import { caldeaSpire, caldeaSpireBase, HEIGHT, map, trafficRoutes, walkRoutes, WIDTH } from "./scene";
 
 // Only the geometry the moving layer needs goes to the browser, not the whole map.
 const geometry = {
@@ -16,6 +16,7 @@ const geometry = {
   rivers: map.rivers,
   water: map.water,
   spire: caldeaSpire,
+  spireBase: caldeaSpireBase,
 };
 ---
 
@@ -71,7 +72,7 @@ const geometry = {
   import { flutter, preload, sceneSounds, sparkle, splash } from "../../scripts/sounds";
 
   type Point = [number, number];
-  type Geometry = { traffic: { pts: Point[]; oneway: boolean }[]; walks: Point[][]; rivers: Point[][]; water: Point[][]; spire: Point };
+  type Geometry = { traffic: { pts: Point[]; oneway: boolean }[]; walks: Point[][]; rivers: Point[][]; water: Point[][]; spire: Point; spireBase: Point[] };
 
   const WIDTH = 1200;
   const HEIGHT = 500;
@@ -151,6 +152,7 @@ const geometry = {
 
       const water = geometry.water.map((ring) => new Path2D(`M${ring.map((p) => p.join(" ")).join("L")}Z`));
       const rivers = geometry.rivers.map((line) => new Path2D(`M${line.map((p) => p.join(" ")).join("L")}`));
+      const spire = new Path2D(`M${geometry.spireBase.map((p) => p.join(" ")).join("L")}Z`);
       // Cloud shadows: lumpy shapes with an even shade and soft edges, built from overlapping
       // puffs and drawn once each into a small image. They start spread across the frame, so one
       // is always passing over.
@@ -413,7 +415,11 @@ const geometry = {
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.lineWidth = 14;
         const onWater = water.some((w) => ctx.isPointInPath(w, x, y)) || rivers.some((r) => ctx.isPointInStroke(r, x, y));
-        if (onWater) {
+        if (ctx.isPointInPath(spire, x, y)) {
+          // The glass answers with the glint's chime, and the next chime on its own waits as usual.
+          lastChime = time;
+          sparkle();
+        } else if (onWater) {
           ripples.push({ x, y, age: 0 });
           splash();
         } else {

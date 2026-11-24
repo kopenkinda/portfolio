@@ -41,6 +41,18 @@ export const caldeaCentre = centroid(map.caldea.outer[0]);
 export const caldeaDome: Point = [caldeaCentre[0] - 61, caldeaCentre[1] - 37];
 export const caldeaSpire: Point = [caldeaCentre[0] + 44, caldeaCentre[1] + 12];
 
+/** The spire's diamond footprint from above, turned to the building's axis: the painting's facets,
+    and where a click counts as on the spire. */
+const spireAngle = (33 * Math.PI) / 180;
+const along: Point = [Math.cos(spireAngle), Math.sin(spireAngle)];
+const across: Point = [-along[1], along[0]];
+export const caldeaSpireBase: Point[] = [
+  [caldeaSpire[0] - along[0] * 46, caldeaSpire[1] - along[1] * 46],
+  [caldeaSpire[0] - across[0] * 22, caldeaSpire[1] - across[1] * 22],
+  [caldeaSpire[0] + along[0] * 46, caldeaSpire[1] + along[1] * 46],
+  [caldeaSpire[0] + across[0] * 22, caldeaSpire[1] + across[1] * 22],
+];
+
 /**
  * Streets joined into continuous routes (OpenStreetMap splits a street into many pieces), for
  * traffic and walkers to follow. Only routes long enough to be worth moving along are kept.

@@ -3,7 +3,7 @@
 // paints its watercolour filters once instead of on every animation frame. The moving parts live
 // in AndorraScene.astro.
 import { createHash } from "node:crypto";
-import { caldeaDome, caldeaSpire, HEIGHT, map, random, toPath, WIDTH, type Point } from "./scene";
+import { caldeaDome, caldeaSpire, caldeaSpireBase, HEIGHT, map, random, toPath, WIDTH, type Point } from "./scene";
 
 const rand = random(14);
 const between = (a: number, b: number) => a + rand() * (b - a);
@@ -162,18 +162,9 @@ const dome = Array.from({ length: domeSides }, (_, i) => {
   const fill = i % 2 ? (lit > 0 ? "#8fb2c4" : "#5d7f95") : lit > 0 ? "#a9c7d4" : "#6e91a6";
   return `<polygon points="${poly([p0, p1, caldeaDome])}" fill="${fill}"/>`;
 }).join("");
-const spireAngle = (33 * Math.PI) / 180;
-const along: Point = [Math.cos(spireAngle), Math.sin(spireAngle)];
-const across: Point = [-along[1], along[0]];
-const spireBase: Point[] = [
-  [caldeaSpire[0] - along[0] * 46, caldeaSpire[1] - along[1] * 46],
-  [caldeaSpire[0] - across[0] * 22, caldeaSpire[1] - across[1] * 22],
-  [caldeaSpire[0] + along[0] * 46, caldeaSpire[1] + along[1] * 46],
-  [caldeaSpire[0] + across[0] * 22, caldeaSpire[1] + across[1] * 22],
-];
-const spireFacets = spireBase
+const spireFacets = caldeaSpireBase
   .map((corner, i) => {
-    const next = spireBase[(i + 1) % 4];
+    const next = caldeaSpireBase[(i + 1) % 4];
     const mid: Point = [(corner[0] + next[0]) / 2 - caldeaSpire[0], (corner[1] + next[1]) / 2 - caldeaSpire[1]];
     const len = Math.hypot(...mid);
     const lit = shade([mid[0] / len, mid[1] / len]);
@@ -181,8 +172,8 @@ const spireFacets = spireBase
     return `<polygon points="${poly([corner, next, caldeaSpire])}" fill="${fill}"/>`;
   })
   .join("");
-const spireEdges = spireBase.map((corner) => `<polyline points="${poly([corner, caldeaSpire])}"/>`).join("");
-const spireShadow = `<polygon points="${poly(hull([...spireBase, [caldeaSpire[0] + SHADOW[0] * 170, caldeaSpire[1] + SHADOW[1] * 170]]))}"/>`;
+const spireEdges = caldeaSpireBase.map((corner) => `<polyline points="${poly([corner, caldeaSpire])}"/>`).join("");
+const spireShadow = `<polygon points="${poly(hull([...caldeaSpireBase, [caldeaSpire[0] + SHADOW[0] * 170, caldeaSpire[1] + SHADOW[1] * 170]]))}"/>`;
 
 const riffles = map.rivers
   .flatMap((river) =>
