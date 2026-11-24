@@ -1,0 +1,22 @@
+<!--
+  Damage laid over the brick texture in global.css: a few cracked and chipped bricks.
+  Only the shape and opacity matter (it's a mask). The tile is 19 × 13 bricks (42 × 44 each), so it
+  lines up with the brick grid and repeats rarely. A full brick in the top row of a 42 × 44 cell
+  sits at (42i + 1, 44j + 1); in the bottom row at (42i + 22, 44j + 23). Each is 40 × 20.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="798" height="572">
+  <g fill="none" stroke="#000" stroke-opacity=".06">
+    <!-- Crack running down a brick -->
+    <path d="M139 89l3 5-2 4 5 5-1 6" />
+    <!-- Short crack from a brick's left edge, with a branch -->
+    <path d="M442 339l6 2 3-3 6 4m-6-4l2-4" />
+    <!-- Hairline across a brick near the top of the tile -->
+    <path d="M379 12l7-2 5 3 8-1" />
+  </g>
+  <g fill="#000" fill-opacity=".06">
+    <!-- Chipped corners: the mortar shows where the brick broke off -->
+    <path d="M629 197h-9l3-4 2 1 4-7z" />
+    <path d="M694 67h7l-2 3-5 2z" />
+    <path d="M65 485h-6l2-3 4-2z" />
+  </g>
+</svg>
