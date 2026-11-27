@@ -1,0 +1,296 @@
+---
+// Adds a subtle three-dot button on hover over every paragraph in this post. Clicking it opens a
+// LinkedIn-style "Seems like AI slop" menu that collapses the paragraph into a muted line you can
+// click to reveal again.
+import { Flag02Icon, MoreHorizontalIcon } from "@hugeicons/core-free-icons";
+import Icon from "../../Icon.astro";
+---
+
+<slop-paragraphs class="not-prose contents">
+  <template data-dots-tpl>
+    <button
+      type="button"
+      data-slop-trigger
+      aria-label="More options"
+      aria-haspopup="menu"
+      aria-expanded="false"
+      class="slop-trigger"
+    >
+      <Icon icon={MoreHorizontalIcon} class="size-4" />
+    </button>
+  </template>
+  <template data-menu-tpl>
+    <span data-slop-menu role="menu" class="not-prose slop-menu">
+      <button type="button" role="menuitem" data-slop-flag class="slop-item">
+        <Icon icon={Flag02Icon} class="size-4 shrink-0" />
+        <span>Seems like AI slop</span>
+      </button>
+    </span>
+  </template>
+</slop-paragraphs>
+
+<style is:global>
+  .slop-p {
+    position: relative;
+  }
+
+  .slop-trigger {
+    position: absolute;
+    top: 0.1rem;
+    right: -0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0.125rem;
+    background: var(--color-ink);
+    color: var(--color-ash);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 150ms ease, color 150ms ease;
+  }
+
+  /* On wider screens, sit outside the right edge of the column with an invisible left bridge so
+     moving the pointer from the paragraph text onto the dots never loses hover. */
+  @media (min-width: 680px) {
+    .slop-trigger {
+      left: 100%;
+      right: auto;
+      width: 2.25rem;
+      padding-left: 0.5rem;
+      background: transparent;
+    }
+  }
+
+  .slop-p:hover > .slop-trigger,
+  .slop-p:focus-within > .slop-trigger,
+  .slop-p[data-menu-open] > .slop-trigger {
+    opacity: 1;
+  }
+
+  .slop-trigger:hover,
+  .slop-trigger:focus-visible,
+  .slop-p[data-menu-open] > .slop-trigger {
+    color: var(--color-paper);
+  }
+
+  .slop-menu {
+    position: fixed;
+    z-index: 40;
+    display: block;
+    min-width: 11.5rem;
+    padding: 0.25rem;
+    border: 1px solid color-mix(in oklab, var(--color-ash) 28%, transparent);
+    border-radius: 0.125rem;
+    background: var(--color-ink);
+    box-shadow: 0 10px 24px rgb(0 0 0 / 0.35);
+    font-family: var(--font-serif);
+  }
+
+  .slop-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: 0;
+    border-radius: 0.125rem;
+    background: transparent;
+    color: var(--color-paper);
+    font-size: 0.875rem;
+    line-height: 1.25;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+  }
+
+  .slop-item:hover,
+  .slop-item:focus-visible {
+    background: color-mix(in oklab, var(--color-paper) 8%, transparent);
+  }
+
+  .slop-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 1.25em 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid color-mix(in oklab, var(--color-ash) 22%, transparent);
+    border-radius: 0.125rem;
+    background: color-mix(in oklab, var(--color-paper) 2.5%, var(--color-ink));
+    color: var(--color-ash);
+    font-family: var(--font-serif);
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  .slop-restore {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--color-paper);
+    font: inherit;
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: var(--color-accent);
+    text-underline-offset: 4px;
+    cursor: pointer;
+    transition: text-decoration-color 150ms ease;
+  }
+
+  .slop-restore:hover {
+    text-decoration-color: var(--color-paper);
+  }
+</style>
+
+<script>
+  import { imageClick } from "../../../scripts/sounds";
+
+  class SlopParagraphs extends HTMLElement {
+    private cleanup: (() => void) | undefined;
+
+    connectedCallback() {
+      const prose = this.closest(".prose") ?? document.querySelector("article .prose");
+      const dotsTpl = this.querySelector<HTMLTemplateElement>("[data-dots-tpl]");
+      const menuTpl = this.querySelector<HTMLTemplateElement>("[data-menu-tpl]");
+      if (!prose || !dotsTpl || !menuTpl) return;
+
+      let activeMenu: HTMLElement | null = null;
+      let activeParagraph: HTMLElement | null = null;
+      let activeTrigger: HTMLButtonElement | null = null;
+
+      const closeMenu = () => {
+        activeMenu?.remove();
+        activeParagraph?.removeAttribute("data-menu-open");
+        activeTrigger?.setAttribute("aria-expanded", "false");
+        activeMenu = null;
+        activeParagraph = null;
+        activeTrigger = null;
+      };
+
+      const flagParagraph = (p: HTMLElement, trigger: HTMLButtonElement) => {
+        closeMenu();
+        imageClick();
+        const bar = document.createElement("div");
+        bar.className = "not-prose slop-placeholder";
+        const label = document.createElement("span");
+        label.textContent = "Marked as AI slop";
+        const restore = document.createElement("button");
+        restore.type = "button";
+        restore.className = "slop-restore";
+        restore.textContent = "Show anyway";
+        restore.addEventListener("click", () => {
+          imageClick();
+          p.hidden = false;
+          bar.remove();
+          trigger.focus();
+        });
+        bar.append(label, restore);
+        p.hidden = true;
+        p.after(bar);
+        restore.focus();
+      };
+
+      const openMenu = (p: HTMLElement, trigger: HTMLButtonElement) => {
+        const same = activeParagraph === p;
+        closeMenu();
+        if (same) return;
+
+        const menu = (menuTpl.content.cloneNode(true) as DocumentFragment).firstElementChild as HTMLElement;
+        trigger.after(menu);
+
+        const rect = trigger.getBoundingClientRect();
+        const menuW = menu.offsetWidth;
+        const menuH = menu.offsetHeight;
+        const margin = 12;
+        const left = Math.max(margin, Math.min(rect.right - menuW, window.innerWidth - menuW - margin));
+        const below = rect.bottom + 6 + menuH <= window.innerHeight - margin;
+        const top = below ? rect.bottom + 6 : Math.max(margin, rect.top - menuH - 6);
+        menu.style.left = `${left}px`;
+        menu.style.top = `${top}px`;
+
+        p.setAttribute("data-menu-open", "");
+        trigger.setAttribute("aria-expanded", "true");
+        activeMenu = menu;
+        activeParagraph = p;
+        activeTrigger = trigger;
+
+        const item = menu.querySelector<HTMLButtonElement>("[data-slop-flag]");
+        item?.addEventListener("click", () => flagParagraph(p, trigger));
+        item?.focus();
+      };
+
+      const paragraphs = [...prose.querySelectorAll<HTMLElement>(":scope > p")];
+      for (const p of paragraphs) {
+        if (p.dataset.slopWired) continue;
+        p.dataset.slopWired = "1";
+        p.classList.add("slop-p");
+        const trigger = (dotsTpl.content.cloneNode(true) as DocumentFragment).firstElementChild as HTMLButtonElement;
+        trigger.addEventListener("click", (event) => {
+          event.stopPropagation();
+          openMenu(p, trigger);
+        });
+        p.append(trigger);
+      }
+
+      const onDocClick = (event: MouseEvent) => {
+        if (!activeMenu) return;
+        const target = event.target as Node | null;
+        if (target && (activeMenu.contains(target) || activeTrigger?.contains(target))) return;
+        closeMenu();
+      };
+
+      const onFocusIn = (event: FocusEvent) => {
+        if (!activeMenu) return;
+        const target = event.target as Node | null;
+        if (target && (activeMenu.contains(target) || activeTrigger?.contains(target))) return;
+        closeMenu();
+      };
+
+      const onKey = (event: KeyboardEvent) => {
+        if (!activeMenu) return;
+        if (event.key === "Escape") {
+          const trigger = activeTrigger;
+          closeMenu();
+          trigger?.focus();
+        } else if (event.key === "Tab" && event.shiftKey) {
+          event.preventDefault();
+          const trigger = activeTrigger;
+          closeMenu();
+          trigger?.focus();
+        }
+      };
+
+      const onScroll = () => {
+        if (!activeMenu) return;
+        const hadFocus = activeMenu.contains(document.activeElement);
+        const trigger = activeTrigger;
+        closeMenu();
+        if (hadFocus) trigger?.focus({ preventScroll: true });
+      };
+
+      document.addEventListener("click", onDocClick);
+      document.addEventListener("focusin", onFocusIn);
+      document.addEventListener("keydown", onKey);
+      window.addEventListener("scroll", onScroll, { passive: true });
+
+      this.cleanup = () => {
+        closeMenu();
+        document.removeEventListener("click", onDocClick);
+        document.removeEventListener("focusin", onFocusIn);
+        document.removeEventListener("keydown", onKey);
+        window.removeEventListener("scroll", onScroll);
+      };
+    }
+
+    disconnectedCallback() {
+      this.cleanup?.();
+    }
+  }
+
+  if (!customElements.get("slop-paragraphs")) customElements.define("slop-paragraphs", SlopParagraphs);
+</script>

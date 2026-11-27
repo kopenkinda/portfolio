@@ -5,6 +5,13 @@ pubDate: "2026-11-27"
 cover: "../../assets/blog/linkedin-knows-you-cant-leave/trash-bags.png"
 ---
 
+import FooterArrow from "../../components/blog/linkedin-knows-you-cant-leave/FooterArrow.astro";
+import LinkedInDrop from "../../components/blog/linkedin-knows-you-cant-leave/LinkedInDrop.astro";
+import SlopParagraphs from "../../components/blog/linkedin-knows-you-cant-leave/SlopParagraphs.astro";
+
+<LinkedInDrop />
+<SlopParagraphs />
+
 LinkedIn is not for humans. Honestly, it's hard to tell who it's built for at all.
 
 The site has been around for over twenty years, and it survives for one reason. There's no real alternative. Everyone's work history and professional network are already trapped inside it. You can't build a real replacement without getting that data out of LinkedIn first, so nobody is switching overnight.
@@ -46,3 +53,5 @@ Personally, I don't really care if LinkedIn bans me for it. If they ban me becau
 ---
 
 P.S. I skipped the technical details above, but poking around made it pretty clear why LinkedIn feels so sluggish. The whole backend and frontend mix is a mess. Some UI ships in the browser bundle, and other parts stream down from the server for no obvious reason other than "why not?" They chunk too much data, preload plenty of stuff you never touch, and drop sections above your scroll position only to make you load them again. Just opening the post composer pulls around 2.7 MB of server-defined UI to write a post, and loading a profile's full language list is roughly 900 KB of HTML for one extra line of text.
+
+<FooterArrow />

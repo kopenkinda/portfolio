@@ -1,0 +1,184 @@
+---
+// A hand-drawn squiggly arrow that sits in the gap above the footer and draws itself in at the end
+// of the post, pointing straight down at the author's own LinkedIn link in the footer.
+---
+
+<footer-arrow class="not-prose pointer-events-none relative block h-0 overflow-visible" aria-hidden="true">
+  <svg
+    data-svg
+    width="1"
+    height="1"
+    class="absolute top-0 left-0 overflow-visible text-ash/75"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path data-line />
+    <path data-head />
+  </svg>
+</footer-arrow>
+
+<script>
+  class FooterArrow extends HTMLElement {
+    private cleanup: (() => void) | undefined;
+
+    connectedCallback() {
+      const svg = this.querySelector<SVGSVGElement>("[data-svg]");
+      const line = this.querySelector<SVGPathElement>("[data-line]");
+      const head = this.querySelector<SVGPathElement>("[data-head]");
+      const link = document.querySelector<HTMLElement>('footer a[href*="linkedin.com"]');
+      if (!svg || !line || !head || !link) return;
+
+      const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+      let drawn = false;
+      let headTimer: number | undefined;
+
+      const hide = () => {
+        drawn = false;
+        if (headTimer !== undefined) clearTimeout(headTimer);
+        headTimer = undefined;
+        const lineLen = line.getTotalLength();
+        const headLen = head.getTotalLength();
+        line.style.transition = "none";
+        head.style.transition = "none";
+        line.style.strokeDasharray = `${lineLen}`;
+        line.style.strokeDashoffset = `${lineLen}`;
+        head.style.strokeDasharray = `${headLen}`;
+        head.style.strokeDashoffset = `${headLen}`;
+        svg.style.opacity = "0";
+      };
+
+      const computePath = () => {
+        const origin = this.getBoundingClientRect();
+        const target = link.getBoundingClientRect();
+        const tx = target.left + target.width / 2 - origin.left;
+        const ty = target.top - origin.top - 7;
+        if (ty < 36) return;
+
+        // Keep the squiggle comfortably inside the mt-24 gap above the footer.
+        const h = Math.min(82, Math.max(46, ty - 14));
+        const sy = ty - h;
+        // Lean from the left normally, or from the right if LinkedIn sits near the left edge.
+        const dir = tx < 64 ? -1 : 1;
+
+        const dLine = [
+          `M ${(tx - dir * 42).toFixed(1)} ${(sy + 2).toFixed(1)}`,
+          `C ${(tx - dir * 8).toFixed(1)} ${(sy + h * 0.04).toFixed(1)}, ${(tx + dir * 24).toFixed(1)} ${(sy + h * 0.24).toFixed(1)}, ${(tx - dir * 4).toFixed(1)} ${(sy + h * 0.45).toFixed(1)}`,
+          `C ${(tx - dir * 24).toFixed(1)} ${(sy + h * 0.6).toFixed(1)}, ${(tx + dir * 14).toFixed(1)} ${(sy + h * 0.72).toFixed(1)}, ${tx.toFixed(1)} ${ty.toFixed(1)}`,
+        ].join(" ");
+
+        line.setAttribute("d", dLine);
+
+        // Align the arrowhead with the curve's actual incoming tangent at the tip.
+        const lineLen = line.getTotalLength();
+        const tip = line.getPointAtLength(lineLen);
+        const prev = line.getPointAtLength(Math.max(0, lineLen - 6));
+        const angle = Math.atan2(tip.y - prev.y, tip.x - prev.x);
+        const wing = 9.5;
+        const spread = 0.56;
+        const lx = tip.x - Math.cos(angle - spread) * wing;
+        const ly = tip.y - Math.sin(angle - spread) * wing;
+        const rx = tip.x - Math.cos(angle + spread) * wing;
+        const ry = tip.y - Math.sin(angle + spread) * wing;
+        const dHead = `M ${lx.toFixed(1)} ${ly.toFixed(1)} L ${tip.x.toFixed(1)} ${tip.y.toFixed(1)} L ${rx.toFixed(1)} ${ry.toFixed(1)}`;
+        head.setAttribute("d", dHead);
+
+        const headLen = head.getTotalLength();
+        line.style.strokeDasharray = `${lineLen}`;
+        head.style.strokeDasharray = `${headLen}`;
+        if (drawn) {
+          line.style.transition = "none";
+          head.style.transition = "none";
+          line.style.strokeDashoffset = "0";
+          head.style.strokeDashoffset = "0";
+          svg.style.opacity = "1";
+        } else {
+          line.style.strokeDashoffset = `${lineLen}`;
+          head.style.strokeDashoffset = `${headLen}`;
+          svg.style.opacity = "0";
+        }
+      };
+
+      const draw = () => {
+        if (drawn) return;
+        computePath();
+        drawn = true;
+        svg.style.opacity = "1";
+
+        if (reducedMotion.matches) {
+          line.style.transition = "none";
+          head.style.transition = "none";
+          line.style.strokeDashoffset = "0";
+          head.style.strokeDashoffset = "0";
+          return;
+        }
+
+        // Force layout before animating stroke-dashoffset to zero.
+        void line.getBoundingClientRect();
+        line.style.transition = "stroke-dashoffset 680ms cubic-bezier(0.32, 0.72, 0.25, 1)";
+        line.style.strokeDashoffset = "0";
+
+        headTimer = window.setTimeout(() => {
+          head.style.transition = "stroke-dashoffset 220ms ease-out";
+          head.style.strokeDashoffset = "0";
+        }, 560);
+      };
+
+      // On narrow screens where LinkedInDrop is hidden, draw directly once the footer enters view.
+      const checkMobileScroll = (strict = false) => {
+        const drop = document.querySelector("linkedin-drop");
+        if (drop && !drop.classList.contains("hidden")) return;
+        const rect = link.getBoundingClientRect();
+        const resetThreshold = strict ? window.innerHeight : window.innerHeight + 64;
+        if (rect.top <= window.innerHeight - 12 && window.scrollY > 24 && !drawn) draw();
+        else if ((rect.top > resetThreshold || window.scrollY <= 12) && drawn) hide();
+      };
+
+      const onTrashed = () => draw();
+      const onReset = () => hide();
+      const onScroll = () => checkMobileScroll(false);
+      const onResize = () => {
+        computePath();
+        checkMobileScroll(true);
+      };
+
+      const prose = this.closest(".prose");
+      const ro = prose ? new ResizeObserver(() => onResize()) : undefined;
+      ro?.observe(prose!);
+
+      computePath();
+      checkMobileScroll(false);
+      const initFrame = requestAnimationFrame(() => {
+        computePath();
+        checkMobileScroll(false);
+      });
+
+      document.addEventListener("linkedin-trashed", onTrashed);
+      document.addEventListener("linkedin-drop-start", onReset);
+      document.addEventListener("linkedin-drop-reset", onReset);
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onResize, { passive: true });
+      window.addEventListener("load", onResize, { once: true });
+
+      this.cleanup = () => {
+        cancelAnimationFrame(initFrame);
+        if (headTimer !== undefined) clearTimeout(headTimer);
+        ro?.disconnect();
+        document.removeEventListener("linkedin-trashed", onTrashed);
+        document.removeEventListener("linkedin-drop-start", onReset);
+        document.removeEventListener("linkedin-drop-reset", onReset);
+        window.removeEventListener("scroll", onScroll);
+        window.removeEventListener("resize", onResize);
+        window.removeEventListener("load", onResize);
+      };
+    }
+
+    disconnectedCallback() {
+      this.cleanup?.();
+    }
+  }
+
+  if (!customElements.get("footer-arrow")) customElements.define("footer-arrow", FooterArrow);
+</script>

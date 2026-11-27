@@ -1,0 +1,263 @@
+---
+// A tiny LinkedIn logo floating in the left margin at the height of the Blog backlink. As the
+// reader scrolls down, nothing happens until the last line of the post enters view, when a trash
+// can rises to sit level with the footer links, catches the falling logo, and disappears.
+import { Delete02Icon, Linkedin01Icon } from "@hugeicons/core-free-icons";
+import Icon from "../../Icon.astro";
+---
+
+<linkedin-drop class="not-prose pointer-events-none fixed inset-y-0 left-0 z-20 hidden w-9" aria-hidden="true">
+  <span data-logo class="absolute top-0 left-1/2 text-ash/75 will-change-transform">
+    <Icon icon={Linkedin01Icon} class="size-5" />
+  </span>
+  <span data-bin class="absolute top-0 left-1/2 text-paper/80 opacity-0 will-change-transform">
+    <Icon icon={Delete02Icon} class="size-6" />
+  </span>
+</linkedin-drop>
+
+<script>
+  import { snap } from "../../../scripts/sounds";
+
+  class LinkedInDrop extends HTMLElement {
+    private cleanup: (() => void) | undefined;
+
+    connectedCallback() {
+      const logo = this.querySelector<HTMLElement>("[data-logo]");
+      const bin = this.querySelector<HTMLElement>("[data-bin]");
+      const article = document.querySelector("article");
+      const prose = article?.querySelector(".prose");
+      if (!logo || !bin || !article || !prose) return;
+
+      const back = document.querySelector<HTMLElement>('a[href="/blog/"]');
+      const footerLink = document.querySelector<HTMLElement>('footer a[href*="linkedin.com"]');
+      const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+      let startY = 128;
+      let state: "idle" | "dropping" | "gone" = "idle";
+      let binVisible = false;
+      let anim: number | undefined;
+      let timers: number[] = [];
+
+      const after = (ms: number, fn: () => void) => {
+        const id = window.setTimeout(fn, ms);
+        timers.push(id);
+        return id;
+      };
+
+      const cancelAll = () => {
+        if (anim !== undefined) cancelAnimationFrame(anim);
+        anim = undefined;
+        for (const id of timers) clearTimeout(id);
+        timers = [];
+      };
+
+      const lastElement = () => {
+        const items = [...prose.querySelectorAll<HTMLElement>(":scope > p, :scope > .slop-placeholder")];
+        for (let i = items.length - 1; i >= 0; i--) {
+          if (!items[i].hidden && items[i].getBoundingClientRect().height > 0) return items[i];
+        }
+        return prose;
+      };
+
+      // Vertical position matching the optical centre of the footer links row.
+      const binY = () => {
+        if (footerLink) {
+          const r = footerLink.getBoundingClientRect();
+          return Math.round(r.top + r.height / 2 - 12);
+        }
+        return window.innerHeight - 76;
+      };
+
+      const placeBin = (offsetY = 0, scaleX = 1, scaleY = 1) => {
+        bin.style.transform = `translate(-50%, ${binY() + offsetY}px) scale(${scaleX}, ${scaleY})`;
+      };
+
+      const layout = () => {
+        const rect = article.getBoundingClientRect();
+        if (rect.left < 56) {
+          if (state !== "idle") {
+            state = "idle";
+            binVisible = false;
+            cancelAll();
+            bin.style.transition = "none";
+            bin.style.opacity = "0";
+            logo.style.transition = "none";
+            logo.style.opacity = "1";
+          }
+          this.classList.add("hidden");
+          return;
+        }
+        const wasHidden = this.classList.contains("hidden");
+        this.classList.remove("hidden");
+        if (wasHidden && state === "idle") {
+          document.dispatchEvent(new CustomEvent("linkedin-drop-reset"));
+        }
+        this.style.left = `${Math.round(rect.left - 52)}px`;
+        if (back) {
+          const backRect = back.getBoundingClientRect();
+          startY = Math.round(backRect.top + window.scrollY + backRect.height / 2 - 10);
+        }
+        if (state === "idle") {
+          logo.style.transform = `translate(-50%, ${startY}px)`;
+          bin.style.transition = "none";
+          placeBin(72);
+        } else if (binVisible) {
+          bin.style.transition = "none";
+          placeBin(0);
+        }
+      };
+
+      const reset = () => {
+        if (state === "idle") return;
+        state = "idle";
+        binVisible = false;
+        cancelAll();
+
+        bin.style.transition = reducedMotion.matches
+          ? "none"
+          : "transform 280ms ease-in, opacity 220ms ease-in";
+        placeBin(72);
+        bin.style.opacity = "0";
+
+        logo.style.transition = reducedMotion.matches
+          ? "none"
+          : "transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 240ms ease-out";
+        logo.style.transform = `translate(-50%, ${startY}px) rotate(0deg) scale(1)`;
+        logo.style.opacity = "1";
+
+        document.dispatchEvent(new CustomEvent("linkedin-drop-reset"));
+      };
+
+      const triggerDrop = () => {
+        if (state !== "idle") return;
+        state = "dropping";
+        cancelAll();
+        document.dispatchEvent(new CustomEvent("linkedin-drop-start"));
+
+        // Start the trash can slightly below the footer line, then rise smoothly into alignment.
+        bin.style.transition = "none";
+        placeBin(72);
+        void bin.offsetHeight;
+        binVisible = true;
+        bin.style.transition = reducedMotion.matches
+          ? "none"
+          : "transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 280ms ease-out";
+        placeBin(0);
+        bin.style.opacity = "1";
+
+        if (reducedMotion.matches) {
+          logo.style.transition = "none";
+          logo.style.opacity = "0";
+          after(500, () => {
+            binVisible = false;
+            bin.style.opacity = "0";
+            state = "gone";
+            document.dispatchEvent(new CustomEvent("linkedin-trashed"));
+          });
+          return;
+        }
+
+        // Wait for the bin to settle at the footer level, then drop the logo into it.
+        after(420, () => {
+          logo.style.transition = "none";
+          const initialDist = Math.max(1, binY() - startY);
+          const duration = Math.min(1350, Math.max(950, Math.sqrt(initialDist) * 44));
+          const started = performance.now();
+
+          const step = (now: number) => {
+            const t = Math.min(1, (now - started) / duration);
+            const targetY = Math.max(startY + 40, binY() + 2);
+            const ease = t * t * (0.4 + 0.6 * t);
+            const y = startY + (targetY - startY) * ease;
+            const rot = t * 28;
+            const tuck = t > 0.84 ? (t - 0.84) / 0.16 : 0;
+            const scale = 1 - tuck * 0.55;
+            const opacity = 1 - tuck;
+            logo.style.transform = `translate(-50%, ${y.toFixed(1)}px) rotate(${rot.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
+            logo.style.opacity = opacity.toFixed(3);
+
+            if (t < 1) {
+              anim = requestAnimationFrame(step);
+            } else {
+              anim = undefined;
+              snap();
+              // Small bounce on impact.
+              bin.style.transition = "transform 130ms ease-out";
+              placeBin(5, 1.12, 0.88);
+              after(130, () => {
+                bin.style.transition = "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)";
+                placeBin(0, 1, 1);
+              });
+              // Let the bin sit for a beat, then fade and slide it away before the arrow draws.
+              after(950, () => {
+                binVisible = false;
+                state = "gone";
+                bin.style.transition = "transform 360ms ease-in, opacity 300ms ease-in";
+                placeBin(48, 0.92, 0.92);
+                bin.style.opacity = "0";
+                after(180, () => {
+                  document.dispatchEvent(new CustomEvent("linkedin-trashed"));
+                });
+              });
+            }
+          };
+
+          anim = requestAnimationFrame(step);
+        });
+      };
+
+      const checkScroll = (strict = false) => {
+        if (this.classList.contains("hidden")) return;
+        if (binVisible) {
+          bin.style.transition = "none";
+          placeBin(0);
+        }
+        const last = lastElement();
+        const rect = last.getBoundingClientRect();
+        const atBottom = rect.bottom <= window.innerHeight - 16 && window.scrollY > 24;
+        const resetThreshold = strict ? window.innerHeight : window.innerHeight + 64;
+        const scrolledBack = rect.bottom > resetThreshold || window.scrollY <= 12;
+        if (atBottom && state === "idle") triggerDrop();
+        else if (scrolledBack && state !== "idle") reset();
+      };
+
+      const onScroll = () => checkScroll(false);
+      const onResize = () => {
+        layout();
+        checkScroll(true);
+      };
+
+      const ro = new ResizeObserver(() => {
+        layout();
+        checkScroll(true);
+      });
+      ro.observe(prose);
+
+      layout();
+      checkScroll(false);
+      const initFrame = requestAnimationFrame(() => {
+        layout();
+        checkScroll(false);
+      });
+
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onResize, { passive: true });
+      window.addEventListener("load", onResize, { once: true });
+
+      this.cleanup = () => {
+        cancelAnimationFrame(initFrame);
+        cancelAll();
+        ro.disconnect();
+        window.removeEventListener("scroll", onScroll);
+        window.removeEventListener("resize", onResize);
+        window.removeEventListener("load", onResize);
+      };
+    }
+
+    disconnectedCallback() {
+      this.cleanup?.();
+    }
+  }
+
+  if (!customElements.get("linkedin-drop")) customElements.define("linkedin-drop", LinkedInDrop);
+</script>
