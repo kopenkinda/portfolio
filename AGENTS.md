@@ -117,8 +117,8 @@ round or clicked to flip. Its sounds are in `src/scripts/sounds.ts`: `blob`, a g
 lets go of the neck, and `slosh` on a turn. `HourglassTint.astro`, in Layout, tints every page's
 background pattern in the hourglass's colours while the theme is on, stirred by the pointer. It
 paints through the texture's own pattern at full strength, so keep its mask in step with the
-textures in `global.css`. The variants tried before this one are on the
-`prototype/hourglass-variants` branch.
+textures in `global.css`. The variants tried before this one are in the
+`archive/prototype/hourglass-variants` tag.
 
 ## Open source
 
