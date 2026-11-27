@@ -63,6 +63,19 @@ const control = "h-8 cursor-pointer items-center justify-center gap-1.5 rounded-
     <link rel="canonical" href={url} />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="alternate" type="application/rss+xml" title={name} href="/rss.xml" />
+    <!-- Umami page views, production only: the dev server never loads it, and data-domains skips a
+         production build previewed locally. -->
+    {
+      import.meta.env.PROD && (
+        <script
+          is:inline
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="cf8f1353-5b5b-46ff-86e7-cac4dc4204ce"
+          data-domains="kopenkin.tech"
+        />
+      )
+    }
     <meta property="og:type" content={published ? "article" : "website"} />
     <meta property="og:site_name" content={name} />
     <meta property="og:title" content={title ?? name} />
