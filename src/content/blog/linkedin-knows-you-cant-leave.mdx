@@ -1,0 +1,48 @@
+---
+title: "LinkedIn knows you can't leave"
+description: "LinkedIn fails as a social network and barely works for hiring. I built a small browser extension to make the desktop site bearable."
+pubDate: "2026-11-27"
+cover: "../../assets/blog/linkedin-knows-you-cant-leave/trash-bags.png"
+---
+
+LinkedIn is not for humans. Honestly, it's hard to tell who it's built for at all.
+
+The site has been around for over twenty years, and it survives for one reason. There's no real alternative. Everyone's work history and professional network are already trapped inside it. You can't build a real replacement without getting that data out of LinkedIn first, so nobody is switching overnight.
+
+Because nobody can leave, there's no competition and no push to improve. They got comfortable, and the product went stale. As a social network, it fails. As a recruiting platform, it barely works. Look at the feed. It got so drowned in automated engagement bait that LinkedIn had to add a "Seems like AI slop" button under the three-dot menu on posts and comments. I get how it got there, and that's the sad part. **LinkedIn doesn't fix the platform, it just bolts another button onto the mess.**
+
+## A desktop site that fights you
+
+Even if you ignore the feed and only open LinkedIn to hire, look for work, or answer messages, the desktop interface feels awful. It's laggy, unfriendly, and full of layout decisions that make no sense.
+
+Open almost any page on a desktop monitor and LinkedIn squeezes your content into a narrow middle column while the sides fill with ads, Premium upsells, "Suggested for you" prompts, and repeated footer links. Important details sit buried behind extra clicks and separate tabs for no obvious reason. Look at the Languages section on a profile. LinkedIn gives every language a tall block of its own, shows only two, and hides the rest behind a "Show all" link to another page. Three or four languages fit easily in a couple of compact lines, yet you have to leave the profile just to see what someone speaks.
+
+The small annoyances stack up fast. Scroll down someone's profile to read their experience and the top card disappears, taking their headline, company, links, and action buttons with it. On job search, promoted listings blend right in with a faint label at the bottom, and dismissed jobs stay in the list. Open Messaging and a right sidebar still steals width while a duplicate chat bar sits in the corner.
+
+## So I built LinkedIn Tidy
+
+I wanted to be able to open LinkedIn without wanting to close the tab thirty seconds later. So I built [LinkedIn Tidy](https://github.com/kopenkinda/linkedin-tidy), a small tool that runs as either a Tampermonkey userscript or an unpacked Chrome extension.
+
+The idea is simple. Put the main thing you came for in one wide content column, and keep supporting context, links, and settings in a clean sidebar beside it. That way you can cross-reference what you need while you're actually doing something on the page, instead of losing your place or fighting three columns of ads and upsells.
+
+On a profile, a person's summary, current companies, links, and actions stay pinned in the sidebar while you scroll, and languages sit in a compact list. On the feed, you can mute words or phrases to filter out noise. Messaging drops its extra sidebar so conversations take the full width.
+
+## Getting flagged along the way
+
+The funniest part of building this was getting flagged by LinkedIn halfway through. Clicking through dozens of pages and profiles while inspecting layouts and testing changes triggered a scraping warning and kicked me out of my session. Trying to fix their interface looked suspicious to their own defenses.
+
+That's also why loading a person's full language list automatically stays off by default. Fetching a separate details page in the background is the one feature that makes extra requests. By default, the extension only rearranges and restyles what LinkedIn already loaded in your browser.
+
+## Try it, and two disclaimers
+
+The code is under the MIT license at [github.com/kopenkinda/linkedin-tidy](https://github.com/kopenkinda/linkedin-tidy). You can install the Tampermonkey userscript straight from the badge in the README or load the Chrome extension unpacked. If you want to fix something or add a feature, open a pull request. Just throw your clanker at it and let it do the work.
+
+First, LinkedIn changes its layout often, so things will break from time to time. Leave "Show all languages" off unless you're fine with extra background requests, and turn it off if LinkedIn ever warns you about scraping.
+
+Second, even though the default setup only moves elements around in your browser, I have no idea how strictly compliant this is with LinkedIn's Terms of Service. Use it at your own risk.
+
+Personally, I don't really care if LinkedIn bans me for it. If they ban me because I tried to make their platform better, so be it. That just proves they aren't willing to improve, and someone will overthrow them eventually. I just hope it happens sooner rather than later, and with a better product.
+
+---
+
+P.S. I skipped the technical details above, but poking around made it pretty clear why LinkedIn feels so sluggish. The whole backend and frontend mix is a mess. Some UI ships in the browser bundle, and other parts stream down from the server for no obvious reason other than "why not?" They chunk too much data, preload plenty of stuff you never touch, and drop sections above your scroll position only to make you load them again. Just opening the post composer pulls around 2.7 MB of server-defined UI to write a post, and loading a profile's full language list is roughly 900 KB of HTML for one extra line of text.
