@@ -38,6 +38,10 @@ video's sound as a small audio player (`video`, `title`, optional `loop`).
 Only headings (`h1`–`h6`) use the heading font (`font-display`, Mona Sans). Everything else,
 including navigation, links, labels and captions, uses the body font (Literata).
 
+Wider than a 14" laptop (94.5rem), the root font size grows, up to 125% from 124.5rem
+(`global.css`), so the whole page scales like zoom. Size anything that should grow with the text in
+rem, not px.
+
 ## Wall
 
 One file per entry in `src/content/wall/`. It's a wall, not a timeline: `date` only orders

@@ -63,7 +63,7 @@ import Icon from "../../Icon.astro";
       const binY = () => {
         if (footerLink) {
           const r = footerLink.getBoundingClientRect();
-          return Math.round(r.top + r.height / 2 - 12);
+          return Math.round(r.top + r.height / 2 - bin.offsetHeight / 2);
         }
         return window.innerHeight - 76;
       };
@@ -95,7 +95,7 @@ import Icon from "../../Icon.astro";
         this.style.left = `${Math.round(rect.left - 52)}px`;
         if (back) {
           const backRect = back.getBoundingClientRect();
-          startY = Math.round(backRect.top + window.scrollY + backRect.height / 2 - 10);
+          startY = Math.round(backRect.top + window.scrollY + backRect.height / 2 - logo.offsetHeight / 2);
         }
         if (state === "idle") {
           logo.style.transform = `translate(-50%, ${startY}px)`;

@@ -94,15 +94,15 @@ const rows = projects.map((project) => {
         <p>{project.about}</p>
         {project.totals && (
           <>
-            <div class="mt-4 grid w-max auto-cols-[9px] grid-rows-[auto_repeat(7,9px)] gap-[3px]" aria-hidden="true">
+            <div class="mt-4 grid w-max auto-cols-[0.5625rem] grid-rows-[auto_repeat(7,0.5625rem)] gap-[0.1875rem]" aria-hidden="true">
               {months.map((month, week) => (
-                <span class="h-4 w-[9px] overflow-visible text-[10px] leading-none whitespace-nowrap text-ash" style={`grid-area: 1 / ${week + 1}`}>
+                <span class="h-4 w-[0.5625rem] overflow-visible text-[0.625rem] leading-none whitespace-nowrap text-ash" style={`grid-area: 1 / ${week + 1}`}>
                   {month}
                 </span>
               ))}
               {project.cells.map((cell, i) => (
                 <span
-                  class:list={["size-[9px] rounded-[2px]", cell.future ? "invisible" : shade[cell.level]]}
+                  class:list={["size-[0.5625rem] rounded-[2px]", cell.future ? "invisible" : shade[cell.level]]}
                   style={`grid-area: ${(i % 7) + 2} / ${Math.floor(i / 7) + 1}`}
                   title={cell.date}
                 />
