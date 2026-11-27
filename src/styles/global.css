@@ -45,6 +45,10 @@
     color: var(--color-paper);
     font-family: var(--font-serif);
     -webkit-font-smoothing: antialiased;
+    /* Windows wider than a 14" laptop (94.5rem) grow the root size, up to 125% from 124.5rem.
+       Everything is in rem, so the column, scenes and text scale together, like zoom, and lines
+       keep their length. The rem here is the reader's own default size. */
+    font-size: clamp(1rem, 1rem + (100vw - 94.5rem) / 120, 1.25rem);
   }
 
   /* Image strips on the wall bleed to the window edge; clip them without a page-wide scrollbar. */
